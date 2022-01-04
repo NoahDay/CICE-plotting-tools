@@ -137,11 +137,7 @@ end
     %labels = {'Forest','Water','Agriculture','Green Areas','Built-up'};
 %lcolorbar(labels,'fontweight','normal', 'fontsize',16);
     caxis(limit);
-  %  hColourbar.Label.Position(1) = 3;
-    %colorTitleHandle = get(a,'Title');
-%titleString = 'A title';
-%set(colorTitleHandle ,'String',unit,'FontSize',16,'Rotation',0);
-    %patchm(antarctica.Lat, antarctica.Lon, [1 1 1]);
+
     figname = sprintf('image%d.png', i); 
     filedir = sprintf('/Users/%s/GitHub/CICE-plotting-tools/frames', user);
     %fname = '/Volumes/SSD/MATLAB/PhD Project/CICE Plotting/frames'; 

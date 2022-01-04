@@ -4,7 +4,7 @@ close all
 % Comparing CICE results with and without waves
 %% Preamble
 plot_title = 'FSD histograms at';
-cases = ["swhdiag", "2monthbase"];
+cases = ["8month", "1yearnowaves"];
 date = '2005-06-01';
 datapoints = 60;
 grid = 'gx1';

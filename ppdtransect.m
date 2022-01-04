@@ -1,8 +1,9 @@
 clear all
 close all
+addpath functions
 %% Preamble
 user = 'Noah'; %a1724548, noahday, Noah
-case_name = 'swhdiag';
+case_name = '8month';
 grid = 'gx1'; 
 variable = 'peak_period'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir
 variable_label = ["Peak period (s)"];

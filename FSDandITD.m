@@ -11,7 +11,7 @@ close all
  latit = -60; % desired latitude of cell -90 is south pole
  longi = 0; % desired longitude of cell 
  plot_title = 'Histogram';
- cases = "4proc";
+ cases = "8month";
  date = '2005-01-';
  times = ["01","02","03","05","06","07"];%["03600","07200","10800","14400","18000","21600","25200"];
  datapoints = length(times);

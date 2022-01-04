@@ -11,14 +11,14 @@ close all
  latit = -65; % desired latitude of cell -90 is south pole
  longi = 180; % desired longitude of cell 
  plot_title = 'Transect';
- cases = "casecawcr";
+ cases = "8month";
  date = '2005-01-';
  times = ["01","02","03","05","06","07"];%["03600","07200","10800","14400","18000","21600","25200"];
  datapoints = length(times);
  grid = 'gx1';
  timestep = 'd'; % '1', 'd', 'm', 'y'
  user = 'a1724548'; %a1724548, noahday, Noah
- variable = ["wave_sig_ht_d","peak_period_d","fsdrad_d","aice_d"];%,"fsdrad"]; %["aice","frazil"];%["wave_sig_ht","peak_period","fsdrad"];
+ variable = ["wave_sig_ht","peak_period","fsdrad","aice"];%,"fsdrad"]; %["aice","frazil"];%["wave_sig_ht","peak_period","fsdrad"];
  variable_label = ["Significant wave height (m)", "Peak period (s)", "Floe radius (m)", "Fractional ice concentration"];
  map_type = 'eqaazim'; %cassini
  no_cases = 1;

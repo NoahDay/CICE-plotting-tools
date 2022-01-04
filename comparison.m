@@ -4,8 +4,8 @@ close all
 % Comparing CICE results with and without waves
  plot_title1 = 'benchmark';
  plot_title2 = 'wim on';
- case1dir = 'benchmark';
- case2dir = 'wimwork';
+ case1dir = '1yearnowaves';
+ case2dir = '8month';
  date = '2005-06-19';
  datapoints = 1;
  grid = 'gx1';

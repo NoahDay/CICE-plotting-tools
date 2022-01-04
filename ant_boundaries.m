@@ -1,6 +1,6 @@
 clear all
 close all
-filename = 'cases/4proc/history/iceh.2005-01-01.nc';
+filename = 'cases/8month/history/iceh.2005-01-01.nc';
 
 % Read the header
 ncdisp(filename)

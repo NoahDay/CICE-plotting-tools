@@ -9,7 +9,7 @@ close all
 
 %% Preamble 
  plot_title = 'Histogram';
- cases = "4proc";
+ cases = "8month";
  date = '2005-01-';
  times = ["01","02","03","05","06","07"];%["03600","07200","10800","14400","18000","21600","25200"];
  datapoints = length(times);

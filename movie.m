@@ -1,5 +1,6 @@
 close all
 clear all
+addpath functions
 % create video writer object
 user = 'noahday'; %a1724548, noahday, Noah
 case_name = '1yearnowaves';%'8month';
