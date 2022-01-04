@@ -6,6 +6,14 @@ function y = map_creator(filename, plot_title_vec, i, variable, grid, map_type, 
 %   variable: the variable in the dataset we want to plot
 %   grid: specify the grid. eg. 'gx1', 'gx3'
 
+% Load ice shelf data
+addpath packages/bedmap2_toolbox_v4
+
+shelf = bedmap2_data('icemask');
+shelf = 0.0*(shelf == 1); 
+shelf(shelf==0) = NaN; % 1 iceshelf
+[latshelf,lonshelf] = bedmap2_data('latlon');
+
 % grid
     dim = 2;
 if grid == 'gx3'
@@ -76,6 +84,7 @@ end
     pcolorm(lat,lon,data_1)
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    pcolorm(latshelf,lonshelf,shelf)  
 
     %antarctica = shaperead('landareas', 'UseGeoCoords', true,...
     %  'Selector',{@(name) strcmp(name,'Antarctica'), 'Name'});
@@ -134,10 +143,10 @@ end
 %set(colorTitleHandle ,'String',unit,'FontSize',16,'Rotation',0);
     %patchm(antarctica.Lat, antarctica.Lon, [1 1 1]);
     figname = sprintf('image%d.png', i); 
-    text = sprintf('/Users/%s/MATLAB-Drive/MATLAB/PhD Project/CICE Plotting/frames', user);
-    fname = '/Volumes/Noah SSD/MATLAB/PhD Project/CICE Plotting/frames'; 
+    filedir = sprintf('/Users/%s/GitHub/CICE-plotting-tools/frames', user);
+    %fname = '/Volumes/SSD/MATLAB/PhD Project/CICE Plotting/frames'; 
     %'/Users/noahday/MATLAB-Drive/MATLAB/PhD Project/CICE Plotting/frames';
-    saveas(gcf,fullfile(fname, figname));
+    saveas(gcf,fullfile(filedir, figname));
 end
 end
 

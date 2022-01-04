@@ -2,7 +2,7 @@ close all
 addpath packages/bedmap2_toolbox_v4
 
 shelf = bedmap2_data('icemask');
-shelf = 0.0*(shelf == 1); 
+shelf = 1.0*(shelf == 1); 
 shelf(shelf==0) = NaN; % 1 iceshelf
 [latshelf,lonshelf] = bedmap2_data('latlon');
 
@@ -47,10 +47,12 @@ setm(w, 'plabellocation', 10);
 setm(w, 'mlabelparallel', -45);
 setm(w, 'grid', 'on');
 setm(w, 'labelrotation', 'on')
-pcolorm(lat,lon,data)
+%pcolorm(lat,lon,data)
 land = shaperead('landareas', 'UseGeoCoords', true);
 geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
 caxis([0 1])
 colorbar
-pcolorm(latshelf,lonshelf,shelf)    
+geoshow(w, shelf, 'FaceColor', [0.5 0.7 0.5])
+%pcolorm(latshelf,lonshelf,shelf)
+    
     
