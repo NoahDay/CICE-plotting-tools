@@ -5,28 +5,28 @@ function y = comparison_maker(filename, filename2, plot_title1, plot_title2, var
 %   i: the date of the data file
 %   variable: the variable in the dataset we want to plot
 %   grid: specify the grid. eg. 'gx1', 'gx3'
-
+dim = 2;
 % grid
-if grid == 'gx3'
+if grid == "gx3"
     row = 11;
     
-    ulat = ncread('grid_gx3.nc','ulat');
-    ulon = ncread('grid_gx3.nc','ulon');
+    ulat = ncread('grid/grid_gx3.nc','ulat');
+    ulon = ncread('grid/grid_gx3.nc','ulon');
 
     % converting to degrees
     lon = rad2deg(ulon);
     lat = rad2deg(ulat);
 
-    lat = rearrange_matrix(lat,row);
-    lon = rearrange_matrix(lon,row);
+    lat = rearrange_matrix(lat,row,dim);
+    lon = rearrange_matrix(lon,row,dim);
    
 else
     row = 37;
-    lat = ncread('global_gx1.bathy.nc','TLAT');
-    lon = ncread('global_gx1.bathy.nc','TLON');
+    lat = ncread('grid/global_gx1.bathy.nc','TLAT');
+    lon = ncread('grid/global_gx1.bathy.nc','TLON');
 
-    lat = rearrange_matrix(lat,row);
-    lon = rearrange_matrix(lon,row);
+    lat = rearrange_matrix(lat,row,dim);
+    lon = rearrange_matrix(lon,row,dim);
 
 
     lon = [zeros(1,384);lon];
@@ -35,6 +35,7 @@ else
 end
 
     %% Data 1
+
 data = ncread(filename, variable);
 [~, ~, n] = size(data);
 
@@ -44,7 +45,7 @@ data = ncread(filename, variable);
     latitude = [-90,90];
     longitude = [-180,180];
 
-    data_1 = rearrange_matrix(data_1,row);
+    data_1 = rearrange_matrix(data_1,row,dim);
 
     % fixing data
     [m, ~] = size(lon);
@@ -62,7 +63,7 @@ data = ncread(filename, variable);
     latitude = [-90,90];
     longitude = [-180,180];
 
-    data_2 = rearrange_matrix(data_2,row);
+    data_2 = rearrange_matrix(data_2,row,dim);
 
     % fixing data
     [m, ~] = size(lon);

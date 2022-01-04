@@ -4,6 +4,13 @@
  % variable := variable of data we want to extract
  % lat := grid latitude
  % lon := grid longitude
+ 
+ % set number of dimensions to 2 by default
+ if ~exist('dim', 'var')
+    dim = 2; 
+ end
+
+ 
  if dim == 3
     data1 = ncread(filedir, variable);
 

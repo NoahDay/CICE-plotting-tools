@@ -8,8 +8,8 @@ close all
 % - casenozero := WIM on, commenting out the reset
 
 %% Preamble
- latit = -65; % desired latitude of cell -90 is south pole
- longi = 180; % desired longitude of cell 
+ latit = -60; % desired latitude of cell -90 is south pole
+ longi = 0; % desired longitude of cell 
  plot_title = 'Histogram';
  cases = "4proc";
  date = '2005-01-';
@@ -18,7 +18,7 @@ close all
  grid = 'gx1';
  timestep = 'd'; % '1', 'd', 'm', 'y'
  user = 'a1724548'; %a1724548, noahday, Noah
- variable = ["afsd"];
+ variable = ["dafsd_wave"];
  variable_label = ["Areal floe size distribution"];
  map_type = 'eqaazim'; %cassini
  no_cases = 1;
@@ -49,9 +49,14 @@ for k = 1:datapoints
  x_axis = linspace(0,7,length(final_data));
  nexttile
  area(x_axis,final_data)
+ 
+ if k == floor(datapoints/2)
+     label_h = ylabel('Density', 'Interpreter','none', 'FontSize', 12);
+ label_h.Position(2) =0; % change vertical position of ylabel
+ end
+ 
 end
- xlabel('floe_rad_l (left side of intervals)')
- ylabel(variable_label(1), 'Interpreter','none')
+ xlabel('Floe radius (left side of intervals)')
  
  %nexttile
  %[len,wid] = size(data);

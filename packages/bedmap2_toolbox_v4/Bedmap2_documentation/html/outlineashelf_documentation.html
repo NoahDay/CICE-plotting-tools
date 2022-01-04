@@ -1,0 +1,296 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>outlineashelf documentation</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-05-23"><meta name="DC.source" content="outlineashelf_documentation.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1><tt>outlineashelf</tt> documentation</h1><!--introduction--><p>The <tt>outlineashelf</tt> function outlines the ice shelf <tt>'shelf'</tt> on a map of Antarctica.</p><p>An overview of Bedmap2 functions for AMT can be found <a href="bedmap2_overview.html">here</a>.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Syntax</a></li><li><a href="#2">Description</a></li><li><a href="#3">Example 1</a></li><li><a href="#4">Example 2</a></li><li><a href="#5">Example 3: Data analysis</a></li><li><a href="#6">References</a></li><li><a href="#7">Author Info</a></li></ul></div><h2 id="1">Syntax</h2><pre>outlineashelf('ShelfName')
+outlineashelf(...,'LineProperty',LinePropertyValue)
+h = outlineashelf(...)
+[h,lat,lon] = outlineashelf(...)</pre><h2 id="2">Description</h2><p><tt>outlineashelf('ShelfName')</tt> outlines the shelf declared by <tt>'ShelfName'</tt>. Ice shelf choices are limited to the choices below. Some ice shelves are plotted together with adjacent ice shelves. 'ShelfName' can be:</p><div><ul><li><tt>'abbot'</tt> Abbot Ice Shelf</li><li><tt>'amery'</tt> Amery Ice Shelf</li><li><tt>'bach'</tt> Bach Ice Shelf</li><li><tt>'baudouin'</tt> Baudouin, Borchgrevink, &amp; Lazarev Ice Shelves</li><li><tt>'conger'</tt> Conger Ice Shelf</li><li><tt>'cook'</tt> Cook Ice Shelf</li><li><tt>'cosgrove'</tt> Cosgrove Ice Shelf</li><li><tt>'crosson'</tt> Crosson &amp; Dotson Ice Shelf</li><li><tt>'dibble'</tt> Ice Shelf</li><li><tt>'dotson'</tt> Crosson &amp; Dotson Ice Shelf</li><li><tt>'drygalski'</tt> Drygalski Ice Tongue</li><li><tt>'fimbul'</tt> Fimbul (Fimbulisen), Atka, &amp; Ekstrom Ice Shelf</li><li><tt>'fris'</tt> Filchner-Ronne Ice Shelf</li><li><tt>'george vi'</tt> George VI Ice Shelf</li><li><tt>'getz'</tt> Getz Ice Shelf</li><li><tt>'holmes'</tt> Holmes Glacier</li><li><tt>'land'</tt> Land &amp; Nickerson Ice Shelf</li><li><tt>'larsen b'</tt> Larsen B Ice Shelf</li><li><tt>'larsen c'</tt> Larsen C &amp; Larsen D Ice Shelf</li><li><tt>'larsen d'</tt> Larsen C &amp; Larsen D Ice Shelf</li><li><tt>'larsen e'</tt> Larsen E Ice Shelf</li><li><tt>'mariner'</tt> Mariner Glacier Tongue</li><li><tt>'mertz'</tt> Mertz Glacier Tongue</li><li><tt>'muis'</tt> Moscow University Ice Shelf</li><li><tt>'nansen'</tt> Nansen Ice Shelf</li><li><tt>'nickerson'</tt> Nickerson &amp; Land Ice Shelf</li><li><tt>'ninnis'</tt> Ninnis Glacier Tongue</li><li><tt>'nivl'</tt> Nivl (Nivilisen) Ice Shelf</li><li><tt>'pig'</tt> Pine Island Glacier shelf</li><li><tt>'prince harald'</tt> Prince Harald Ice Shelf</li><li><tt>'publications'</tt> Publications Ice Shelf</li><li><tt>'quar'</tt> Quarisen</li><li><tt>'rayner'</tt> Rayner &amp; Thyer Ice Shelf</li><li><tt>'rennick'</tt> Rennick Bay Ice Shelf</li><li><tt>'riiser'</tt> Riiser-larsen, Stancomb, &amp; Brunt Ice Shelf</li><li><tt>'ross'</tt> Ross Ice Shelf</li><li><tt>'shackleton'</tt> Shackleton, Tracy/Tremenchus Ice Shelf</li><li><tt>'stange'</tt> Stange Ice Shelf</li><li><tt>'sulzberger'</tt> Sulzberger Ice Shelf</li><li><tt>'swinburne'</tt> Swinburne Ice Shelf</li><li><tt>'thwaites'</tt> Thwaites Glacier Tongue</li><li><tt>'totten'</tt> Totten Glacier</li><li><tt>'tracy'</tt> Tracy, Tremenchus, &amp; Shackleton Ice Shelf</li><li><tt>'venable'</tt> Venable Ice Shelf</li><li><tt>'vigrid'</tt> Vigridisen or Vigrid Ice Shelf</li><li><tt>'vincennes'</tt> Vincennes Bay Ice Shelf</li><li><tt>'west'</tt> West Ice Shelf</li><li><tt>'wilkins'</tt> Wilkins Ice Shelf</li><li><tt>'all'</tt> equivalent to <tt>bedmap2('shelves')</tt></li></ul></div><p><tt>outlineashelf(...,'LineProperty',LinePropertyValue)</tt> sets outline properties.</p><p><tt>h = outlineashelf(...)</tt> returns the handle <tt>h</tt> of the shelf outline.</p><p><tt>[h,lat,lon] = outlineashelf(...)</tt> returns lat,lon coordinates of the outline of an ice shelf.</p><h2 id="3">Example 1</h2><p>Here we plot all ice shelfes and highlight Ross by making it red and plot FRIS in magenta. We'll also make Amery a green patch object.</p><pre class="codeinput">bedmap2(<span class="string">'patchgl'</span>);
+outlineashelf(<span class="string">'all'</span>); <span class="comment">% (equivalent to the command bedmap2('shelves'); )</span>
+
+[~,alat,alon] = outlineashelf(<span class="string">'amery'</span>);
+patchm(alat,alon,<span class="string">'green'</span>)
+scarlabel(<span class="string">'Amery Ice Shelf'</span>);
+
+outlineashelf(<span class="string">'ross'</span>,<span class="string">'color'</span>,<span class="string">'red'</span>);
+scarlabel(<span class="string">'Ross Ice Shelf'</span>,<span class="string">'color'</span>,<span class="string">'red'</span>);
+
+outlineashelf(<span class="string">'filchner'</span>,<span class="string">'color'</span>,<span class="string">'m'</span>,<span class="string">'linewidth'</span>,1);
+scarlabel(<span class="string">'Filchner Ice Shelf'</span>,<span class="string">'color'</span>,<span class="string">'m'</span>,<span class="string">'fontweight'</span>,<span class="string">'bold'</span>,<span class="string">'rotation'</span>,30);
+scarlabel(<span class="string">'South Pole'</span>,<span class="string">'marker'</span>,<span class="string">'k*'</span>);
+</pre><pre class="codeoutput">Plotting Filchner-Ronne Ice Shelf together
+</pre><img vspace="5" hspace="5" src="outlineashelf_documentation_01.png" alt=""> <h2 id="4">Example 2</h2><p>Here we create a map of the Antarctic peninsula, outline Wilkins Ice Shelf in blue, and outline Abbot Ice Shelf with a heavy green line:</p><pre class="codeinput">figure
+bedmap2 <span class="string">'patchgl'</span>
+mapzoom(-72,-85,<span class="string">'mapwidth'</span>,1500)
+
+outlineashelf <span class="string">wilkins</span>
+scarlabel(<span class="string">'Wilkins Ice Shelf'</span>,<span class="string">'color'</span>,<span class="string">'blue'</span>)
+
+outlineashelf(<span class="string">'Abbot'</span>,<span class="string">'color'</span>,<span class="string">'g'</span>,<span class="string">'linewidth'</span>,3)
+scarlabel(<span class="string">'Abbot Ice Shelf'</span>,<span class="string">'color'</span>,[.3 .5 .2],<span class="keyword">...</span>
+    <span class="string">'fontweight'</span>,<span class="string">'bold'</span>)
+</pre><img vspace="5" hspace="5" src="outlineashelf_documentation_02.png" alt=""> <h2 id="5">Example 3: Data analysis</h2><p>To understand how an ice shelf may respond to ocean forcing, it can be useful to know how much of the ice shelf's base lies above or below the local thermocline. Here we pair the <tt>bedmap2_data</tt> function with <tt>outlineashelf</tt> to recreate Figure 4d from Jacobs et al.'s 2013 paper, <i>Getz Ice Shelf melting response to changes in ocean forcing</i>.</p><p>First, we import the full 1 km resolution Bedmap2 ice surface and thickness data. Note that Matlab sometimes gets confused if a variable is named <tt>sfc</tt>, so here we avoid this problem by naming our surface elevations <tt>sfz</tt>.  Although no map has been initialized, the <tt>outlineashelf</tt> function may be used to return the lat/lon values of the Getz Ice Shelf perimeter.  The built-in Matlab function <tt>inpolygon</tt> is then used to determine the indices of the Bedmap2 grid corresponding to Getz Ice Shelf. The basal elevations of these data points are then plotted as a histogram.  Because the Bedmap2 data set is a 1 km by 1 km grid, the count of raster data points corresponds to square kilometers of area.</p><pre class="codeinput">close <span class="string">all</span> <span class="comment">% closes previous figures</span>
+
+<span class="comment">% Define a centerpoint:</span>
+[glat,glon] = scarloc(<span class="string">'getz ice shelf'</span>);
+
+<span class="comment">% Get Bedmap2 elevation data centered on Getz:</span>
+[lat,lon,sfz] = bedmap2_data(<span class="string">'surface'</span>,glat,glon,500);
+thck = bedmap2_data(<span class="string">'thickness'</span>,glat,glon,500);
+
+<span class="comment">% Get perimeter of Getz Ice Shelf</span>
+[~,getzlat,getzlon] = outlineashelf(<span class="string">'getz'</span>);
+
+<span class="comment">% Find indices of Bedmap2 data inside Getz perimeter:</span>
+getzind = inpolygon(lat,lon,getzlat,getzlon);
+
+<span class="comment">% Ice shelf base elev. is surface elev. minus thickness:</span>
+getzBaseElevation = sfz(getzind)-thck(getzind);
+
+<span class="comment">% Calculate number of grid cells corresponding to depths:</span>
+depth = -1200:20:0; <span class="comment">% meters, ~dbar pressure</span>
+ncount = hist(getzBaseElevation,depth);
+
+<span class="comment">% Generate plot:</span>
+figure(<span class="string">'position'</span>,[100 100 358 498]);
+barh(depth,ncount,<span class="keyword">...</span>
+    <span class="string">'facecolor'</span>,.6*[1 1 1],<span class="keyword">...</span>
+    <span class="string">'edgecolor'</span>,.5*[1 1 1])
+axis([0 2400 -1200 0])
+ylabel(<span class="string">'meters depth (approx. pressure in dbar)'</span>);
+xlabel(<span class="string">'area (km^2)'</span>)
+</pre><img vspace="5" hspace="5" src="outlineashelf_documentation_03.png" alt=""> <h2 id="6">References</h2><p>If this function is useful for you, please cite the following:</p><p>Fretwell, P., et al. "Bedmap2: improved ice bed, surface and thickness datasets for Antarctica." The Cryosphere 7.1 (2013). <a href="http://dx.doi.org/10.5194/tc-7-375-2013">http://dx.doi.org/10.5194/tc-7-375-2013</a></p><p>Greene, C. A., Gwyther, D. E., &amp; Blankenship, D. D. (2016). Antarctic Mapping Tools for Matlab. Computers &amp; Geosciences. <a href="http://dx.doi.org/10.1016/j.cageo.2016.08.003">http://dx.doi.org/10.1016/j.cageo.2016.08.003</a></p><h2 id="7">Author Info</h2><p>The Bedmap2 Toolbox for Matlab and supporting documentation were created by <a href="http://www.chadagreene.com">Chad A. Greene</a> of the University of Texas at Austin's Institute for Geophysics (UTIG).</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% |outlineashelf| documentation
+% The |outlineashelf| function outlines the ice shelf |'shelf'| on a map of Antarctica. 
+% 
+% An overview of Bedmap2 functions for AMT can be found <bedmap2_overview.html here>. 
+% 
+%% Syntax 
+% 
+%  outlineashelf('ShelfName') 
+%  outlineashelf(...,'LineProperty',LinePropertyValue)
+%  h = outlineashelf(...)
+%  [h,lat,lon] = outlineashelf(...)
+% 
+%% Description
+% 
+% |outlineashelf('ShelfName')| outlines the shelf declared by |'ShelfName'|. Ice 
+% shelf choices are limited to the choices below. Some ice shelves are plotted 
+% together with adjacent ice shelves. 'ShelfName' can be: 
+% 
+% * |'abbot'| Abbot Ice Shelf
+% * |'amery'| Amery Ice Shelf
+% * |'bach'| Bach Ice Shelf
+% * |'baudouin'| Baudouin, Borchgrevink, & Lazarev Ice Shelves
+% * |'conger'| Conger Ice Shelf
+% * |'cook'| Cook Ice Shelf
+% * |'cosgrove'| Cosgrove Ice Shelf
+% * |'crosson'| Crosson & Dotson Ice Shelf
+% * |'dibble'| Ice Shelf
+% * |'dotson'| Crosson & Dotson Ice Shelf
+% * |'drygalski'| Drygalski Ice Tongue
+% * |'fimbul'| Fimbul (Fimbulisen), Atka, & Ekstrom Ice Shelf
+% * |'fris'| Filchner-Ronne Ice Shelf
+% * |'george vi'| George VI Ice Shelf
+% * |'getz'| Getz Ice Shelf
+% * |'holmes'| Holmes Glacier
+% * |'land'| Land & Nickerson Ice Shelf
+% * |'larsen b'| Larsen B Ice Shelf
+% * |'larsen c'| Larsen C & Larsen D Ice Shelf
+% * |'larsen d'| Larsen C & Larsen D Ice Shelf
+% * |'larsen e'| Larsen E Ice Shelf
+% * |'mariner'| Mariner Glacier Tongue
+% * |'mertz'| Mertz Glacier Tongue
+% * |'muis'| Moscow University Ice Shelf
+% * |'nansen'| Nansen Ice Shelf
+% * |'nickerson'| Nickerson & Land Ice Shelf
+% * |'ninnis'| Ninnis Glacier Tongue
+% * |'nivl'| Nivl (Nivilisen) Ice Shelf
+% * |'pig'| Pine Island Glacier shelf
+% * |'prince harald'| Prince Harald Ice Shelf
+% * |'publications'| Publications Ice Shelf
+% * |'quar'| Quarisen
+% * |'rayner'| Rayner & Thyer Ice Shelf
+% * |'rennick'| Rennick Bay Ice Shelf
+% * |'riiser'| Riiser-larsen, Stancomb, & Brunt Ice Shelf
+% * |'ross'| Ross Ice Shelf
+% * |'shackleton'| Shackleton, Tracy/Tremenchus Ice Shelf
+% * |'stange'| Stange Ice Shelf
+% * |'sulzberger'| Sulzberger Ice Shelf
+% * |'swinburne'| Swinburne Ice Shelf
+% * |'thwaites'| Thwaites Glacier Tongue
+% * |'totten'| Totten Glacier
+% * |'tracy'| Tracy, Tremenchus, & Shackleton Ice Shelf
+% * |'venable'| Venable Ice Shelf
+% * |'vigrid'| Vigridisen or Vigrid Ice Shelf
+% * |'vincennes'| Vincennes Bay Ice Shelf
+% * |'west'| West Ice Shelf
+% * |'wilkins'| Wilkins Ice Shelf
+% * |'all'| equivalent to |bedmap2('shelves')|
+%
+% |outlineashelf(...,'LineProperty',LinePropertyValue)| sets outline
+% properties. 
+%
+% |h = outlineashelf(...)| returns the handle |h| of the shelf outline. 
+%
+% |[h,lat,lon] = outlineashelf(...)| returns lat,lon coordinates of the
+% outline of an ice shelf. 
+% 
+%% Example 1
+% Here we plot all ice shelfes and highlight Ross by making it red and plot
+% FRIS in magenta. We'll also make Amery a green patch object. 
+
+bedmap2('patchgl');
+outlineashelf('all'); % (equivalent to the command bedmap2('shelves'); )
+
+[~,alat,alon] = outlineashelf('amery'); 
+patchm(alat,alon,'green') 
+scarlabel('Amery Ice Shelf');
+
+outlineashelf('ross','color','red');
+scarlabel('Ross Ice Shelf','color','red'); 
+
+outlineashelf('filchner','color','m','linewidth',1);
+scarlabel('Filchner Ice Shelf','color','m','fontweight','bold','rotation',30); 
+scarlabel('South Pole','marker','k*');
+
+%% Example 2
+% Here we create a map of the Antarctic peninsula, outline Wilkins Ice Shelf in 
+% blue, and outline Abbot Ice Shelf with a heavy green line:
+
+figure
+bedmap2 'patchgl'
+mapzoom(-72,-85,'mapwidth',1500)
+
+outlineashelf wilkins
+scarlabel('Wilkins Ice Shelf','color','blue')
+
+outlineashelf('Abbot','color','g','linewidth',3)
+scarlabel('Abbot Ice Shelf','color',[.3 .5 .2],...
+    'fontweight','bold')
+
+%% Example 3: Data analysis
+% To understand how an ice shelf may respond to ocean forcing, it can be useful to 
+% know how much of the ice shelf's base lies above or below the local thermocline. Here we 
+% pair the |bedmap2_data| function with |outlineashelf| to recreate Figure 4d from Jacobs et al.'s
+% 2013 paper, _Getz Ice Shelf melting response to changes in ocean forcing_.
+%
+% First, we import the full 1 km resolution Bedmap2 ice surface and thickness data. Note that Matlab 
+% sometimes gets confused if a variable is named |sfc|, so here we avoid this problem by naming our 
+% surface elevations |sfz|.  Although no map has been initialized, the |outlineashelf| function may
+% be used to return the lat/lon values of the Getz Ice Shelf perimeter.  The built-in Matlab function
+% |inpolygon| is then used to determine the indices of the Bedmap2 grid corresponding to Getz Ice Shelf.
+% The basal elevations of these data points are then plotted as a histogram.  Because the Bedmap2 data 
+% set is a 1 km by 1 km grid, the count of raster data points corresponds to square kilometers of area.  
+
+close all % closes previous figures 
+
+% Define a centerpoint: 
+[glat,glon] = scarloc('getz ice shelf'); 
+
+% Get Bedmap2 elevation data centered on Getz: 
+[lat,lon,sfz] = bedmap2_data('surface',glat,glon,500); 
+thck = bedmap2_data('thickness',glat,glon,500);
+
+% Get perimeter of Getz Ice Shelf
+[~,getzlat,getzlon] = outlineashelf('getz'); 
+
+% Find indices of Bedmap2 data inside Getz perimeter: 
+getzind = inpolygon(lat,lon,getzlat,getzlon);
+
+% Ice shelf base elev. is surface elev. minus thickness:
+getzBaseElevation = sfz(getzind)-thck(getzind);
+
+% Calculate number of grid cells corresponding to depths:
+depth = -1200:20:0; % meters, ~dbar pressure
+ncount = hist(getzBaseElevation,depth); 
+
+% Generate plot: 
+figure('position',[100 100 358 498]); 
+barh(depth,ncount,...
+    'facecolor',.6*[1 1 1],...
+    'edgecolor',.5*[1 1 1])
+axis([0 2400 -1200 0])
+ylabel('meters depth (approx. pressure in dbar)'); 
+xlabel('area (km^2)')
+
+%% References
+% If this function is useful for you, please cite the following: 
+% 
+% Fretwell, P., et al. "Bedmap2: improved ice bed, surface and thickness datasets for Antarctica." The Cryosphere 7.1 (2013).
+% <http://dx.doi.org/10.5194/tc-7-375-2013> 
+% 
+% Greene, C. A., Gwyther, D. E., & Blankenship, D. D. (2016). Antarctic Mapping Tools for Matlab. 
+% Computers & Geosciences. <http://dx.doi.org/10.1016/j.cageo.2016.08.003>
+% 
+%% Author Info
+% The Bedmap2 Toolbox for Matlab and supporting documentation were created
+% by <http://www.chadagreene.com Chad A. Greene> of the University of Texas
+% at Austin's Institute for Geophysics (UTIG).
+##### SOURCE END #####
+--></body></html>

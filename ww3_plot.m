@@ -1,6 +1,6 @@
 clear all
 close all
-filedir =  'grid/gridded_ww3.glob_24m.200501.nc';%'ww3_gx1.nc';%'gridded_ww3.glob_24m.200501.nc';%'ww3.20100101_efreq_remapgx3.nc';%'gridded_ww3.glob_24m.200501.nc';%'ww3.200501_spec.nc';
+filedir =  'grid/ww3_200506.nc'%'grid/gridded_ww3.glob_24m.200501.nc';%'ww3_gx1.nc';%'gridded_ww3.glob_24m.200501.nc';%'ww3.20100101_efreq_remapgx3.nc';%'gridded_ww3.glob_24m.200501.nc';%'ww3.200501_spec.nc';
 
 ncdisp(filedir)
 

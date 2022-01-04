@@ -3,8 +3,8 @@
     if grid == 'gx3'
     row = 11;
     
-    ulat = ncread('grid_gx3.nc','ulat');
-    ulon = ncread('grid_gx3.nc','ulon');
+    ulat = ncread('grid/grid_gx3.nc','ulat');
+    ulon = ncread('grid/grid_gx3.nc','ulon');
 
     % converting to degrees
     lon = rad2deg(ulon);
@@ -15,8 +15,8 @@
    
 else
     row = 37;
-    lat = ncread('global_gx1.bathy.nc','TLAT');
-    lon = ncread('global_gx1.bathy.nc','TLON');
+    lat = ncread('grid/global_gx1.bathy.nc','TLAT');
+    lon = ncread('grid/global_gx1.bathy.nc','TLON');
 
     lat = rearrange_matrix(lat,row,dim);
     lon = rearrange_matrix(lon,row,dim);

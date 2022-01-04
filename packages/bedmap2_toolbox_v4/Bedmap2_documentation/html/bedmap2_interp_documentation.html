@@ -1,0 +1,258 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>bedmap2_interp documentation</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-05-23"><meta name="DC.source" content="bedmap2_interp_documentation.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1><tt>bedmap2_interp</tt> documentation</h1><!--introduction--><p>This function returns Bedmap2 data interpolated to a point, line, or grid.</p><p>An overview of Bedmap2 functions for AMT can be found <a href="bedmap2_overview.html">here</a>.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Syntax</a></li><li><a href="#2">Description</a></li><li><a href="#3">Example 1: Ice thickness at a point</a></li><li><a href="#6">Example 2: Regrid bed elevations</a></li><li><a href="#7">Example 3: Comparing interpolation methods along a path</a></li><li><a href="#9">References</a></li><li><a href="#10">Author Info</a></li></ul></div><h2 id="1">Syntax</h2><pre>vari = bedmap2_interp(lati,loni,'var')
+vari = bedmap2_interp(xi,yi,'var')
+vari = bedmap2_interp(...,method)</pre><h2 id="2">Description</h2><p><tt>vari = bedmap2_interp(lati,loni,'var')</tt> returns interpolated values of the variable <tt>'var'</tt> at locations given by geographic coordinates <tt>lati</tt> and <tt>loni</tt>. <tt>lati</tt> and <tt>loni</tt> may be scalar, vector, or matrix, but their dimensions must agree. Input <tt>'var'</tt> can be any of the following:</p><div><ul><li><tt>'surface'</tt>         surface elevation of the ice (m) relative to gl04c geoid.</li><li><tt>'surfacew'</tt>        surface elevation of the ice (m) relative to WGS84.</li><li><tt>'bed'</tt>             bed elevation (m) relative to gl04c geoid.</li><li><tt>'bedw'</tt>            bed elevation (m) relative to WGS84 ellipsoid.</li><li><tt>'thickness'</tt>       ice thickness (m)</li><li><tt>'beduncertainty'</tt>  uncertainty (m)</li><li><tt>'gl04c'</tt>           gl04c geoid (z_wgs84 = z_bedmap2 + gl04c)</li><li><tt>'coverage'</tt></li><li><tt>'icemask'</tt>         includes grounded and ice shelves</li><li><tt>'rockmask'</tt>        1s indicate rocks</li><li><tt>'vostok'</tt>          1s indicate Lake Vostok</li></ul></div><p><tt>vari = bedmap2_interp(xi,yi,'var')</tt> as above, but for input coordinates <tt>xi,yi</tt> in polar stereographic (ps71) meters. Input coordinates are automatically determined to be either ps71 meters or geo coordinate degrees via the <tt>islatlon</tt> function.</p><p><tt>vari = bedmap2_interp(...,method)</tt> specifies an interpolation method, which can be <tt>'nearest'</tt>, <tt>'linear'</tt>, <tt>'spline'</tt>, or <tt>'cubic'</tt>. Default interpolation method is <tt>'linear'</tt>.</p><h2 id="3">Example 1: Ice thickness at a point</h2><p>Find the thickness of the ice at Byrd ice core in West Antarctica:</p><pre class="codeinput">[byrdlat,byrdlon] = coreloc(<span class="string">'byrd'</span>);
+ByrdCoreDepth = bedmap2_interp(byrdlat,byrdlon,<span class="string">'thickness'</span>)
+</pre><pre class="codeoutput">ByrdCoreDepth =
+       2147.78
+</pre><p>That's pretty close to the official length of Byrd Ice Core, which is listed as 2161 meters (Thompson et al., 2013). Certainly within the claimed uncertainty:</p><pre class="codeinput">ByrdBedUncertainty = bedmap2_interp(byrdlat,byrdlon,<span class="string">'beduncertainty'</span>)
+</pre><pre class="codeoutput">ByrdBedUncertainty =
+         88.00
+</pre><p>More significant uncertainty exists in regions of steep topography and anywhere there is a paucity of observational data.  Even where the Bedmap2 data set is accurate, the <tt>bedmap2_interp</tt> function may introduce errors associated with interpolation or the simple fact that elevations represent the average value with the 1 km by 1 km grid cell.</p><h2 id="6">Example 2: Regrid bed elevations</h2><p>To regrid bed data to a grid defined by <tt>mylat</tt> and <tt>mylon</tt>, simply enter your lats and lons as above. Suppose you have a 500 m resolution grid around Mount Blunt, about 200 km by 200 km wide.  The grid looks like this:</p><pre class="codeinput"><span class="comment">% Create a grid:</span>
+[mylat,mylon] = psgrid(<span class="string">'mount blunt'</span>,[200 200],0.500);
+
+<span class="comment">% Get bed elevations at your grid locations:</span>
+bed_mygrid = bedmap2_interp(mylat,mylon,<span class="string">'bed'</span>);
+
+<span class="comment">% Plot bed elevations:</span>
+pcolorps(mylat,mylon,bed_mygrid)
+
+<span class="comment">% Make it pretty:</span>
+shadem([225 45],1)
+axis <span class="string">tight</span>
+scalebarps
+</pre><img vspace="5" hspace="5" src="bedmap2_interp_documentation_01.png" alt=""> <h2 id="7">Example 3: Comparing interpolation methods along a path</h2><p>Here we take a look at a few different ways to interpolate Bedmap2 bed elevation data along a roughly 33 km north-south transect.  From the original definition of a meter (one ten-millionth of the distance from the equator to the North Pole), let's interpolate bed data at roughly 10 m resolution.</p><p>Note that spline interpolation is not used for the WGS84 data set because the WGS84 data set contains too many <tt>NaN</tt> values to allow for spline interpolation.</p><pre class="codeinput">lats = -80.1:-1/11111.1:-80.4;
+lons = -90*ones(size(lats));
+
+bedLinear = bedmap2_interp(lats,lons,<span class="string">'bed'</span>);
+bedCubic = bedmap2_interp(lats,lons,<span class="string">'bed'</span>,<span class="string">'cubic'</span>);
+bedNearest = bedmap2_interp(lats,lons,<span class="string">'bed'</span>,<span class="string">'nearest'</span>);
+bedSpline = bedmap2_interp(lats,lons,<span class="string">'bed'</span>,<span class="string">'spline'</span>);
+
+bedwLinear = bedmap2_interp(lats,lons,<span class="string">'bedw'</span>);
+bedwCubic = bedmap2_interp(lats,lons,<span class="string">'bedw'</span>,<span class="string">'cubic'</span>);
+bedwNearest = bedmap2_interp(lats,lons,<span class="string">'bedw'</span>,<span class="string">'nearest'</span>);
+
+distalongtrack = pathdist(lats,lons,<span class="string">'units'</span>,<span class="string">'kilometers'</span>);
+</pre><p>Now we can plot the data to compare:</p><pre class="codeinput">figure
+plot(distalongtrack,bedLinear,<span class="string">'r'</span>,<span class="string">'linewidth'</span>,.5); hold <span class="string">on</span>;
+plot(distalongtrack,bedCubic,<span class="string">'b'</span>,<span class="string">'linewidth'</span>,.5);
+plot(distalongtrack,bedNearest,<span class="string">'k'</span>,<span class="string">'linewidth'</span>,.5);
+plot(distalongtrack,bedSpline,<span class="string">'m'</span>,<span class="string">'linewidth'</span>,.5);
+plot(distalongtrack,bedwLinear,<span class="string">'r'</span>,<span class="string">'linewidth'</span>,2);
+plot(distalongtrack,bedwCubic,<span class="string">'b'</span>,<span class="string">'linewidth'</span>,2);
+plot(distalongtrack,bedwNearest,<span class="string">'k'</span>,<span class="string">'linewidth'</span>,2);
+ylabel(<span class="string">'bed elevation (m)'</span>)
+xlabel(<span class="string">'distance along track (km)'</span>)
+box <span class="string">off</span>;
+
+legend(<span class="string">'gl04c linear'</span>,<span class="string">'gl04c cubic'</span>,<span class="string">'gl04c nearest'</span>,<span class="keyword">...</span>
+    <span class="string">'gl04c spline'</span>,<span class="string">'wgs84 linear'</span>,<span class="string">'wgs84 cubic'</span>,<span class="keyword">...</span>
+    <span class="string">'wgs84 nearest'</span>,<span class="string">'location'</span>,<span class="string">'southeast'</span>)
+legend <span class="string">boxoff</span>
+axis([0 30 270 730])
+</pre><img vspace="5" hspace="5" src="bedmap2_interp_documentation_02.png" alt=""> <h2 id="9">References</h2><p>If this function is useful for you, please cite the following:</p><p>Fretwell, P., et al. "Bedmap2: improved ice bed, surface and thickness datasets for Antarctica." The Cryosphere 7.1 (2013). <a href="http://dx.doi.org/10.5194/tc-7-375-2013">http://dx.doi.org/10.5194/tc-7-375-2013</a></p><p>Greene, C. A., Gwyther, D. E., &amp; Blankenship, D. D. Antarctic Mapping Tools for Matlab. <i>Computers &amp; Geosciences</i>. 104 (2017) pp.151-157. <a href="http://dx.doi.org/10.1016/j.cageo.2016.08.003">doi:10.1016/j.cageo.2016.08.003</a>.</p><h2 id="10">Author Info</h2><p>Written by <a href="http://www.chadagreene.com">Chad A. Greene</a>, June 2013. Institute for Geophysics The University of Texas at Austin</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% |bedmap2_interp| documentation
+% This function returns Bedmap2 data interpolated to a point, line, or grid.
+% 
+% An overview of Bedmap2 functions for AMT can be found <bedmap2_overview.html here>. 
+%% Syntax
+% 
+%  vari = bedmap2_interp(lati,loni,'var')
+%  vari = bedmap2_interp(xi,yi,'var')
+%  vari = bedmap2_interp(...,method)
+% 
+%% Description
+% 
+% |vari = bedmap2_interp(lati,loni,'var')| returns interpolated values of the
+% variable |'var'| at locations given by geographic coordinates |lati| and |loni|.
+% |lati| and |loni| may be scalar, vector, or matrix, but their dimensions must
+% agree. Input |'var'| can be any of the following: 
+% 
+% * |'surface'|         surface elevation of the ice (m) relative to gl04c geoid. 
+% * |'surfacew'|        surface elevation of the ice (m) relative to WGS84.  
+% * |'bed'|             bed elevation (m) relative to gl04c geoid. 
+% * |'bedw'|            bed elevation (m) relative to WGS84 ellipsoid. 
+% * |'thickness'|       ice thickness (m) 
+% * |'beduncertainty'|  uncertainty (m)
+% * |'gl04c'|           gl04c geoid (z_wgs84 = z_bedmap2 + gl04c)   
+% * |'coverage'|        
+% * |'icemask'|         includes grounded and ice shelves
+% * |'rockmask'|        1s indicate rocks
+% * |'vostok'|          1s indicate Lake Vostok
+% 
+% |vari = bedmap2_interp(xi,yi,'var')| as above, but for input coordinates |xi,yi| in 
+% polar stereographic (ps71) meters. Input coordinates are automatically determined to be
+% either ps71 meters or geo coordinate degrees via the |islatlon| function. 
+% 
+% |vari = bedmap2_interp(...,method)| specifies an interpolation
+% method, which can be |'nearest'|, |'linear'|, |'spline'|, or |'cubic'|. Default 
+% interpolation method is |'linear'|. 
+% 
+% 
+%% Example 1: Ice thickness at a point
+% Find the thickness of the ice at Byrd ice core in West Antarctica: 
+
+[byrdlat,byrdlon] = coreloc('byrd');
+ByrdCoreDepth = bedmap2_interp(byrdlat,byrdlon,'thickness')
+
+%% 
+% That's pretty close to the official length of Byrd Ice Core, which is
+% listed as 2161 meters (Thompson et al., 2013). Certainly within the claimed
+% uncertainty: 
+
+ByrdBedUncertainty = bedmap2_interp(byrdlat,byrdlon,'beduncertainty')
+
+%%
+% More significant uncertainty exists in regions of steep topography and
+% anywhere there is a paucity of observational data.  Even where the
+% Bedmap2 data set is accurate, the |bedmap2_interp| function may introduce
+% errors associated with interpolation or the simple fact that elevations
+% represent the average value with the 1 km by 1 km grid cell. 
+
+%% Example 2: Regrid bed elevations
+% To regrid bed data to a grid defined by |mylat| and |mylon|, simply enter
+% your lats and lons as above. Suppose you have a 500 m resolution 
+% grid around Mount Blunt, about 200 km by 200 km wide.  The grid looks like this: 
+
+% Create a grid: 
+[mylat,mylon] = psgrid('mount blunt',[200 200],0.500); 
+
+% Get bed elevations at your grid locations: 
+bed_mygrid = bedmap2_interp(mylat,mylon,'bed');
+
+% Plot bed elevations: 
+pcolorps(mylat,mylon,bed_mygrid)
+
+% Make it pretty: 
+shadem([225 45],1)
+axis tight
+scalebarps 
+
+%% Example 3: Comparing interpolation methods along a path
+% Here we take a look at a few different ways to interpolate Bedmap2 bed elevation data 
+% along a roughly 33 km north-south transect.  From the original definition of a meter 
+% (one ten-millionth of the distance from the equator to the North Pole), let's interpolate 
+% bed data at roughly 10 m resolution.  
+%
+% Note that spline interpolation is not used for the WGS84 data set because the WGS84 data 
+% set contains too many |NaN| values to allow for spline interpolation.
+
+lats = -80.1:-1/11111.1:-80.4; 
+lons = -90*ones(size(lats)); 
+
+bedLinear = bedmap2_interp(lats,lons,'bed'); 
+bedCubic = bedmap2_interp(lats,lons,'bed','cubic');
+bedNearest = bedmap2_interp(lats,lons,'bed','nearest');
+bedSpline = bedmap2_interp(lats,lons,'bed','spline');
+
+bedwLinear = bedmap2_interp(lats,lons,'bedw'); 
+bedwCubic = bedmap2_interp(lats,lons,'bedw','cubic');
+bedwNearest = bedmap2_interp(lats,lons,'bedw','nearest');
+
+distalongtrack = pathdist(lats,lons,'units','kilometers'); 
+
+%% 
+% Now we can plot the data to compare: 
+
+figure
+plot(distalongtrack,bedLinear,'r','linewidth',.5); hold on;
+plot(distalongtrack,bedCubic,'b','linewidth',.5);
+plot(distalongtrack,bedNearest,'k','linewidth',.5);
+plot(distalongtrack,bedSpline,'m','linewidth',.5); 
+plot(distalongtrack,bedwLinear,'r','linewidth',2);
+plot(distalongtrack,bedwCubic,'b','linewidth',2);
+plot(distalongtrack,bedwNearest,'k','linewidth',2);
+ylabel('bed elevation (m)') 
+xlabel('distance along track (km)')
+box off;
+
+legend('gl04c linear','gl04c cubic','gl04c nearest',...
+    'gl04c spline','wgs84 linear','wgs84 cubic',...
+    'wgs84 nearest','location','southeast')
+legend boxoff 
+axis([0 30 270 730])
+
+%% References
+% If this function is useful for you, please cite the following: 
+% 
+% Fretwell, P., et al. "Bedmap2: improved ice bed, surface and thickness datasets for Antarctica." The Cryosphere 7.1 (2013).
+% <http://dx.doi.org/10.5194/tc-7-375-2013> 
+% 
+% Greene, C. A., Gwyther, D. E., & Blankenship, D. D. Antarctic Mapping Tools for Matlab. 
+% _Computers & Geosciences_. 104 (2017) pp.151-157. <http://dx.doi.org/10.1016/j.cageo.2016.08.003 doi:10.1016/j.cageo.2016.08.003>.
+% 
+%% Author Info
+% Written by <http://www.chadagreene.com Chad A. Greene>, June 2013. 
+% Institute for Geophysics 
+% The University of Texas at Austin
+##### SOURCE END #####
+--></body></html>

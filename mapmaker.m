@@ -1,18 +1,27 @@
  function map_out = mapmaker(data,lat,lon,plot_title,map_type,variable,endline)
         color_map = seaicecolormap();
-        if map_type == 'cassini'
+        w = worldmap('world');
+        if map_type == "cassini"
             x_origin = -20;
+            axesm cassini;
+            setm(w, 'mlabelparallel', -45);
+            setm(w, 'mlabellocation', 30);
+        elseif map_type == "eqdcylin"
+            x_origin = 0;
+            axesm eqdcylin;
+            setm(w, 'mlabelparallel', -85);
+            setm(w, 'mlabellocation', 60);
         else
             x_origin = -90;
+            axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+            setm(w, 'mlabelparallel', -45);
+            setm(w, 'mlabellocation', 30);
         end
-        w = worldmap('world');
-        axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
         setm(w, 'Origin', [x_origin 0 0]);
         setm(w, 'maplatlimit', [-90,-40]);
         setm(w, 'maplonlimit', [-180,180]);
         setm(w, 'meridianlabel', 'on')
         setm(w, 'parallellabel', 'off')
-        setm(w, 'mlabellocation', 30);
         setm(w, 'plabellocation', 10);
         setm(w, 'mlabelparallel', -45);
         setm(w, 'grid', 'on');

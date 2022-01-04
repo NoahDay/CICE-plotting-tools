@@ -16,8 +16,16 @@ function limit = colorlims(variable)
     limit=[0,1];
  elseif variable  == "peak_period"
     limit=[0,20];
+elseif variable  == "peak_period_d"
+    limit=[0,20];
  elseif variable == "mean_wave_dir"
      limit=[0,2*pi];
+ elseif variable == "mean_wave_dir_d"
+     limit=[0,2*pi];
+ elseif variable == "hi"
+     limit = [0,2];
+ elseif variable == "frazil"
+     limit = [0,5];
  else
      limit = [0,1];
  end

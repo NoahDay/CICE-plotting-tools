@@ -1,23 +1,14 @@
 clear all
 close all
-filename = 'cases/20day/history/iceh.2005-01-18.nc';
-
+filename = 'cases/8month/history/iceh.2005-08-31.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+latit = 1;
 % Read the header
 ncdisp(filename)
 % 
-% u_vel=ncread(filename,'uvel');
-% v_vel=ncread(filename,'vvel');
-
 % grid
 lat = ncread('grid/global_gx1.bathy.nc','TLAT');
 lon = ncread('grid/global_gx1.bathy.nc','TLON');
 
-% converting to degrees
-%deglon = rad2deg(lon);
-%deglat = rad2deg(lat);
-
-%row = 80;
-%copies = 5;
 dim = 2;
 lat = rearrange_matrix(lat,37,dim);
 lon = rearrange_matrix(lon,37,dim);
@@ -26,15 +17,15 @@ lon = rearrange_matrix(lon,37,dim);
 lon = [zeros(1,384);lon];
 lat = [lat(1,:); lat];
 
-
-
 % sea ice area
-data = ncread(filename, 'wave_sig_ht'); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
-%data = data(:,:,6);
+data = ncread(filename, 'dafsd_wave'); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
+data1 = data;
+data = data(:,:,1);
 data = rearrange_matrix(data,37,dim);
 data = [data; data(end,:)];
+%data(:,latit) = 10;
 
-
+%caxis([0,2])
 color_map = seaicecolormap();
 %% Mapping
 
@@ -56,20 +47,21 @@ longitude = [-180,180];
 
 
 w = worldmap('world');
-axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim.
-setm(w, 'Origin', [-90 0 0]);
-setm(w, 'maplatlimit', [-90,-40]);
-setm(w, 'maplonlimit', [-180,180]);
-setm(w, 'meridianlabel', 'on')
-setm(w, 'parallellabel', 'off')
-setm(w, 'mlabellocation', 30);
-setm(w, 'plabellocation', 10);
-setm(w, 'mlabelparallel', -55);
-setm(w, 'grid', 'on');
-%setm(w, 'frame', 'on');
-setm(w, 'labelrotation', 'on')
-%land = shaperead('landareas', 'UseGeoCoords', true);
-%geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,data)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
 
 %antarctica = shaperead('landareas', 'UseGeoCoords', true,...
   %'Selector',{@(name) strcmp(name,'Antarctica'), 'Name'});
@@ -94,8 +86,8 @@ deltalat = [5 5];
 deltalon = [3 3];
 %quiverm(lat0,lon0,deltalat,deltalon,'r')
 colorbar
-%caxis([0,10]);
-%title("Mean wave direction")
+caxis([0,600]);
+title("Representative FSD per cell (m) on 31-08-2005",'interpreter','latex','FontSize', 18)
 %caxis([-1 1])
 %patchm(antarctica.Lat, antarctica.Lon, [1 1 1])
 %saveas(gcf,'test.png')

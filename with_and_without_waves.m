@@ -13,19 +13,22 @@ close all
 
 % Comparing CICE results with and without waves
  total_plot_title = 'Comparison between having WIM on/off';
- cases = [ "casecawcr","casegx1"];%["casezero","casenozero"];%["casenozero", "casenowaves"];
- date = '2005-01-06';
+ cases = [ "8month","1yearnowaves"];%["casezero","casenozero"];%["casenozero", "casenowaves"];
+ date = '2005-08-31';
  datapoints = 1;
  grid = 'gx1';
  timestep = 'd'; % '1', 'd', 'm', 'y'
  user = 'noahday'; %a1724548, noahday, Noah
- variable = ["wave_sig_ht","frazil","aice"]; %["aice","frazil"];%["wave_sig_ht","peak_period","fsdrad"]; 
+ variable = ["uvel","vvel","hi"]; %["aice","frazil"];%["wave_sig_ht","peak_period","fsdrad"]; 
  pancake = 'off';
- map_type = 'eqaazim'; %cassini
+ map_type = "eqdcylin"; %cassini, eqdcylin
+ % eqaazim = Round Earth
+ % eqdcylin = Cylinder, rectangular plot
  rad = 110;
  no_cases = length(cases);
  no_variables = length(variable);
  filedir = [];
+ dim = 2;
  
  % sea ice area: 'aicen' or 'aice'
  % horizonal velocity: 'uvel'
@@ -70,12 +73,12 @@ ncdisp(filedir(2));
             %else
             %    variable = ["wave_sig_ht","peak_period","fsdrad"];
             %end
-            if i == 1
-                variable = ["wave_sig_ht_d","fsdrad_d","aice_d"];
-            else
-                variable = ["wave_sig_ht","fsdrad","aice"];
-            end
-            data(:,:,i,j) = data_format(filedir(i),variable(j),row,lat,lon);
+            %if i == 1
+            %    variable = ["wave_sig_ht","fsdrad","aice"];
+            %else
+            %    variable = ["wave_sig_ht","fsdrad","aice"];
+            %end
+            data(:,:,i,j) = data_format(filedir(i),variable(j),row,lat,lon,dim);
             if i ==  no_cases
                 endline = 1;
             else
@@ -84,20 +87,18 @@ ncdisp(filedir(2));
             
             mapmaker(data(:,:,i,j),lat,lon,plot_title,map_type,variable(j),endline)
            else
-           
             difference_maker(filedir(1), filedir(2),plot_title, variable(j), grid, map_type, user)
            end
            idx = idx+1;
         end
         
     end
-    
-    %for j = 1:no_variables
+
         
     
     % Add layout title
     title(t,total_plot_title)
-    
+    set(gcf, 'Position',  [100, 100, 1200, 400])
     
 
     

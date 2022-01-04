@@ -82,24 +82,56 @@ end
 
  if variable == "fsdrad"
          plot_variable = "FSD radius ";
+         unit = "metres";
+     elseif  variable == "fsdrad_d"
+         plot_variable = "FSD radius ";
+         unit = "metres";
      elseif variable == "wave_sig_ht"
          plot_variable = "Significant wave height ";
+         unit = "metres";
+     elseif variable == "wave_sig_ht_d"
+         plot_variable = "Significant wave height ";
+         unit = "metres";
      elseif variable == "peak_period"
          plot_variable = "Peak period ";
+         unit = "s";
+     elseif variable == "peak_period_d"
+         plot_variable = "Peak period ";
+         unit = "s";
      elseif variable == "aice"
          plot_variable = "Concentration of ice ";
+         unit = " ";
+     elseif variable == "aice_d"
+         plot_variable = "Concentration of ice ";
+         unit = " ";
      elseif variable == "mean_wave_dir"
          plot_variable = "Mean wave direction (rads) ";
+         unit = "radians";
+     elseif variable == "mean_wave_dir_d"
+         plot_variable = "Mean wave direction (rads) ";
+         unit = "radians";
      else
          plot_variable = variable;
  end
-    fontSize = 14; 
-    plot_title = strcat(plot_variable, plot_title_vec(i));
+    set(gcf, 'Position',  [100, 100, 1000, 800])
+    set(gcf,'Visible', 'off')
+    fontSize = 20; 
+    plot_title = strcat(plot_variable, plot_title_vec);
     title(plot_title, 'FontSize', fontSize);
     %caxis([0 400]) %fsdrad [80 250]
-    colorbar
+    a=colorbar;
+    label_c = ylabel(a,unit,'FontSize',16,'Rotation',270);
+    label_c.Position(1) = 4;
+    label_h.Position(2) = 1; % change vertical position of ylabel
     limit = colorlims(variable);
+    
+    %labels = {'Forest','Water','Agriculture','Green Areas','Built-up'};
+%lcolorbar(labels,'fontweight','normal', 'fontsize',16);
     caxis(limit);
+  %  hColourbar.Label.Position(1) = 3;
+    %colorTitleHandle = get(a,'Title');
+%titleString = 'A title';
+%set(colorTitleHandle ,'String',unit,'FontSize',16,'Rotation',0);
     %patchm(antarctica.Lat, antarctica.Lon, [1 1 1]);
     figname = sprintf('image%d.png', i); 
     text = sprintf('/Users/%s/MATLAB-Drive/MATLAB/PhD Project/CICE Plotting/frames', user);
