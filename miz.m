@@ -134,7 +134,6 @@ if movie_miz == 1
          % write the frame to the video
          writeVideo(writerObj,frame);
      end
-
      % close the writer
      close(writerObj);
 end % if movie
@@ -145,17 +144,35 @@ if sum_miz_switch == 1
     date = sprintf('%d-0%d-0%d', year, month, day);
     for i = 1:datapoints
        % Get the file name
-       filename = strcat(case_name,"/history/iceh.",date,".nc");
        filename = strcat("cases/",case_name,"/history/iceh.",date,".nc");
        data = ncread(filename, variable); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
        data = rearrange_matrix(data,37,dim);
        data_formatted = [data; data(end,:)];
        idx = data_formatted > fsd_max; 
+       % Ice mask per day
+%        latit = 100;
+%        dim = 2;
+%        datapoints = 92;
+%        [lat,lon,row] = grid_read(grid);
+%        aice_data(:,:) = ncread(filename, "aice");
+%        aice_data = rearrange_matrix(aice_data,37,dim);
+%        aice_data_formatted = [aice_data; aice_data(end,:)];
+%        [len, wid] = size(aice_data_formatted);
+%        ice_pos = zeros(len,wid);
+%        for i = 1:len
+%            long_ice_edge = aice_data_formatted(i,1:latit);
+%            pos = find(long_ice_edge > 0.05);
+%            ice_pos(i,pos) = 1;
+%        end
+%        mask = ice_pos;
+%        
+       
+       
        fsd_miz = data_formatted;
        fsd_miz(idx) = 0.0;
        idx = fsd_miz > eps;
        fsd_miz(idx) = 1.0;
-       total_data(:,:,i) = fsd_miz;
+       total_data(:,:,i) = fsd_miz;%.*mask;
        date = update_date(date);
     end    
     sum_miz = sum(total_data,3)/datapoints;
@@ -237,26 +254,61 @@ if swh_ice_miz_switch == 1
         plot_map(lat,lon,combined_data,latshelf,lonshelf,shelf,text,4)
 
         text = "Correlation between the two MIZ definitions";
-        plot_map(lat,lon,correlation_data,latshelf,lonshelf,shelf,text,5)
+        %plot_map(lat,lon,correlation_data,latshelf,lonshelf,shelf,text,5)
     end
 end
 
 
+
 % Correlation
 nan_idx = isnan(correlation_data);
+size_fsd = sum(sum(sum_miz(nan_idx)));
+size_swh = sum(sum(swh_miz(nan_idx)));
 
-same_count = sum(sum(correlation_data(~nan_idx)));
-total = numel(correlation_data(~nan_idx));
+indic = sum_miz > eps;
+indic_fsd = sum_miz;
+indic_fsd(indic) = 1.0;
+
+indic = swh_miz > eps;
+indic_swh = swh_miz;
+indic_swh(indic) = 2.0;
+
+if size_fsd > size_swh % FSD MIZ is bigger
+    diff_data = sum_miz - swh_miz;
+else
+    diff_data = swh_miz - sum_miz;
+end
+
+combined_miz = sum_miz + swh_miz;
+nan_idx = isnan(combined_miz);
+idx = combined_miz>eps;
+combined_miz(idx) = 1.0;
+total = sum(sum(combined_miz(~nan_idx)));
+
+add_miz = indic_fsd + indic_swh;
+idx = add_miz == 3.0;
+same_count = sum(sum(idx));
+idx = add_miz == 1.0;
+fsd_not_swh = sum(sum(idx));
+idx = add_miz == 2.0;
+swh_not_fsd = sum(sum(idx));
+%same_count = sum(sum(correlation_data(~nan_idx)));
+%total = numel(correlation_data(~nan_idx));
 
 correlation = same_count/total;
+fsd_prop = fsd_not_swh/total;
+swh_prop = swh_not_fsd/total;
 fprintf("The correlation between the two MIZ definitions is: %f \n",correlation);
+fprintf("Proportion that is in FSD definition and not in SWH is: %f \n",fsd_prop);
+fprintf("Proportion that is in SWH definition and not in FSD is: %f \n",swh_prop);
+
 
 
 % FSD - SWH
 
-diff_data = sum_miz - swh_miz;
-text = "Difference between FSD amd SWH MIZs";
- plot_map(lat,lon,diff_data,latshelf,lonshelf,shelf,text,6)
+
+text = "Comparison of FSD amd SWH MIZs; yellow: shared, green: FSD, light blue: SWH";
+ plot_map(lat,lon,add_miz,latshelf,lonshelf,shelf,text,6)
 
 %% MIZ width
  
