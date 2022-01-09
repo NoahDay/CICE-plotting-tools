@@ -68,6 +68,6 @@ function color_map = seaicecolormap()
         
         
                 colormap (CMap1)  % sets a universal colormap, () are needed for a colour map that isn't pre-programmed.
-color_map = "SeaIceColorMap";
+color_map = CMap1;%"SeaIceColorMap";
 end
 
