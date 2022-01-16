@@ -12,10 +12,13 @@ movie_miz = 0; % 0 is off, 1 is on
 average_miz_switch = 0; 
 sum_miz_switch = 1;
 swh_ice_miz_switch = 1;
+swh_ice_miz_switch2 = 0;
 iceedge = 0;
+wave_height = 0.01;
+SIC = 0.15;
 %% Preamble
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = '8month';
+case_name = '12monthswim';
 grid = 'gx1'; 
 variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
 time_period = 'd'; %'1','d','m','y'
@@ -95,7 +98,8 @@ if average_miz_switch == 1
 
     % Combining the datasets 
     total_miz = fsd_miz;% + swh_miz; %+ dafsd_miz;
-    plot_map(lat,lon,total_miz,latshelf,lonshelf,shelf,text,1)
+    colour_bar = 1;
+    plot_map(lat,lon,total_miz,latshelf,lonshelf,shelf,text,1,colour_bar)
 end
 
 % CICE data at each day during the season - movie
@@ -145,33 +149,71 @@ if sum_miz_switch == 1
        fsd_miz(idx) = 0.0;
        idx = fsd_miz > eps;
        fsd_miz(idx) = 1.0;
-       total_data(:,:,i) = fsd_miz;%.*mask;
+       % only print FSD where there is significant ice
+       mask = ice_mask(case_name,date,grid,SIC);
+       total_data(:,:,i) = fsd_miz.*mask;
        date = update_date(date);
     end    
     sum_miz = sum(total_data,3)/datapoints;
     fsdradius = sprintf("with floe radius less than %d m", fsd_max);
     text = strcat("Proportion of days with ",fsdradius, " during ",season, " in 2005");
-    plot_map(lat,lon,sum_miz,latshelf,lonshelf,shelf,text,2)
+    colour_bar = 1;
+    plot_map(lat,lon,sum_miz,latshelf,lonshelf,shelf,text,2,colour_bar)
 end
 
-%% 3. Average SWH within sea ice regions (greater than 15% SIC)
+%% 3. Proportion of days with SWH > wave_height within sea ice regions (greater than 15% SIC)
 if swh_ice_miz_switch == 1
    date = sprintf('%d-0%d-0%d', year, month, day);
 % a) Find the ice edge
-    %mask = ice_mask(case_name,date,grid);
+    
+
+% b) SWH > 0
+    dim = 2;
+    variable = "wave_sig_ht";
+
+     for i = 1:datapoints
+       % Get the file name
+       filename = strcat("cases/",case_name,"/history/iceh.",date,".nc");
+       data = ncread(filename, variable); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
+       data = rearrange_matrix(data,37,dim);
+       data_formatted = [data; data(end,:)];
+       idx = data_formatted > fsd_max;    
+       swh_miz = data_formatted;
+       swh_miz(idx) = 0.0;
+       idx = swh_miz > wave_height;
+       swh_miz(idx) = 1.0;
+       % only print SWH in areas where there is sea ice
+       mask = ice_mask(case_name,date,grid,SIC);
+       total_data(:,:,i) = swh_miz.*mask;
+       date = update_date(date);
+     end
+    % Proportion of days per season (datapoints)
+    swh_miz = sum(total_data,3)/datapoints;
+    text = "Proportion of days with SWH $ > 1$ m and SIC $> 0.15$ over winter 2005";
+    colour_bar = 1;
+    plot_map(lat,lon,swh_miz,latshelf,lonshelf,shelf,text,3,colour_bar)
+end
+
+%% 3b. Average SWH within sea ice regions (greater than 15% SIC)
+if swh_ice_miz_switch2 == 1
+   date = sprintf('%d-0%d-0%d', year, month, day);
+% a) Find the ice edge
+    %mask = ice_mask(case_name,date,grid,SIC);
 
 % b) SWH > 0
     dim = 2;
     variable = "wave_sig_ht";
     swh_data = aggregate_data(case_name,date,datapoints,variable,dim);
-    idx = swh_data < eps;
+     
+    idx = swh_data < wave_height;
     swh_miz = swh_data;
     swh_miz(idx) = 0.0;
     
     % only print SWH in areas where there is sea ice
-    swh_miz = swh_miz;%.*mask;
-    text = "SWH $ > 0$ m with SIC $> 0.15$ averaged over winter 2005";
-    plot_map(lat,lon,swh_miz,latshelf,lonshelf,shelf,text,3)
+    %swh_miz = swh_miz;%.*mask;
+    text = "Proportion of days with SWH $ > 1$ m and SIC $> 0.15$ over winter 2005";
+    colour_bar = 1;
+    plot_map(lat,lon,swh_miz,latshelf,lonshelf,shelf,text,7,colour_bar)
 end
 
 %% Ice edge
@@ -182,105 +224,109 @@ if iceedge == 1
         edge_data(i,edge(i)) = 1.0;
     end
     figure(3)
-    plot_map(lat,lon,edge_data,latshelf,lonshelf,shelf,text,3)
+    plot_map(lat,lon,edge_data,latshelf,lonshelf,shelf,text,3,colour_bar)
 end
 
 %% Correlation between FSD and SWH MIZ definitions
-filename = strcat("cases/",case_name,"/history/iceh.",date,".nc");
-land_mask = ncread(filename, "tmask");
-land_mask = rearrange_matrix(land_mask,37,dim);
-combined_data = swh_miz;%~land_mask*NaN;
-correlation_data = swh_miz;
-idx = swh_miz > eps;
-combined_data(idx) = 0.0;
-correlation_data(idx) = 0.0;
-count1= 0;
-count2 = 0;
+if sum_miz_switch == 1 && swh_ice_miz_switch == 1
+    
+    date = sprintf('%d-0%d-0%d', year, month, day);
+    filename = strcat("cases/",case_name,"/history/iceh.",date,".nc");
+    land_mask = ncread(filename, "tmask");
+    land_mask = rearrange_matrix(land_mask,37,dim);
+    combined_data = swh_miz;%~land_mask*NaN;
+    correlation_data = swh_miz;
+    idx = swh_miz > eps;
+    combined_data(idx) = 0.0;
+    correlation_data(idx) = 0.0;
+    count1= 0;
+    count2 = 0;
 
-if swh_ice_miz_switch == 1
-    if sum_miz_switch == 1
-        [len, wid] = size(swh_miz);
-        for i = 1:len
-            for j = 1:wid
-                if isnan(sum_miz(i,j)) == 0
-                    if sum_miz(i,j) > eps && swh_miz(i,j) > eps
-                        combined_data(i,j) = 1.0;
-                    else
-                        combined_data(i,j) = 0.0;
-                    end
-                    if sum_miz(i,j) < eps && swh_miz(i,j) < eps
-                        correlation_data(i,j) = 1.0;
-                        count1 = count1 + 1;
-                    elseif sum_miz(i,j) > eps && swh_miz(i,j) > eps
-                        correlation_data(i,j) = 1.0;
-                        count2 = count2 + 1;
-                    else
-                        correlation_data(i,j) = 0.0;
+    if swh_ice_miz_switch == 1
+        if sum_miz_switch == 1
+            [len, wid] = size(swh_miz);
+            for i = 1:len
+                for j = 1:wid
+                    if isnan(sum_miz(i,j)) == 0
+                        if sum_miz(i,j) > eps && swh_miz(i,j) > eps
+                            combined_data(i,j) = 1.0;
+                        else
+                            combined_data(i,j) = 0.0;
+                        end
+                        if sum_miz(i,j) < eps && swh_miz(i,j) < eps
+                            correlation_data(i,j) = 1.0;
+                            count1 = count1 + 1;
+                        elseif sum_miz(i,j) > eps && swh_miz(i,j) > eps
+                            correlation_data(i,j) = 1.0;
+                            count2 = count2 + 1;
+                        else
+                            correlation_data(i,j) = 0.0;
+                        end
                     end
                 end
             end
+            figure(4)
+            text = "Combined MIZ";
+            colour_bar = 1;
+            plot_map(lat,lon,combined_data,latshelf,lonshelf,shelf,text,4,colour_bar)
+
+            text = "Correlation between the two MIZ definitions";
+            %plot_map(lat,lon,correlation_data,latshelf,lonshelf,shelf,text,5)
         end
-        figure(4)
-        text = "Combined MIZ";
-        plot_map(lat,lon,combined_data,latshelf,lonshelf,shelf,text,4)
-
-        text = "Correlation between the two MIZ definitions";
-        %plot_map(lat,lon,correlation_data,latshelf,lonshelf,shelf,text,5)
     end
+
+
+
+    % Correlation
+    nan_idx = isnan(correlation_data);
+    size_fsd = sum(sum(sum_miz(nan_idx)));
+    size_swh = sum(sum(swh_miz(nan_idx)));
+
+    indic = sum_miz > eps;
+    indic_fsd = sum_miz;
+    indic_fsd(indic) = 1.0;
+
+    indic = swh_miz > eps;
+    indic_swh = swh_miz;
+    indic_swh(indic) = 2.0;
+
+    if size_fsd > size_swh % FSD MIZ is bigger
+        diff_data = sum_miz - swh_miz;
+    else
+        diff_data = swh_miz - sum_miz;
+    end
+
+    combined_miz = sum_miz + swh_miz;
+    nan_idx = isnan(combined_miz);
+    idx = combined_miz>eps;
+    combined_miz(idx) = 1.0;
+    total = sum(sum(combined_miz(~nan_idx)));
+
+    add_miz = indic_fsd + indic_swh;
+    idx = add_miz == 3.0;
+    same_count = sum(sum(idx));
+    idx = add_miz == 1.0;
+    fsd_not_swh = sum(sum(idx));
+    idx = add_miz == 2.0;
+    swh_not_fsd = sum(sum(idx));
+    %same_count = sum(sum(correlation_data(~nan_idx)));
+    %total = numel(correlation_data(~nan_idx));
+
+    correlation = same_count/total;
+    fsd_prop = fsd_not_swh/total;
+    swh_prop = swh_not_fsd/total;
+    fprintf("The correlation between the two MIZ definitions is: %f \n",correlation);
+    fprintf("Proportion that is in FSD definition and not in SWH is: %f \n",fsd_prop);
+    fprintf("Proportion that is in SWH definition and not in FSD is: %f \n",swh_prop);
+
+
+
+    % FSD - SWH
+
+    colour_bar = 0;
+    text = "Comparison of FSD and SWH MIZs; yellow: shared, green: FSD, light blue: SWH";
+    plot_map(lat,lon,add_miz,latshelf,lonshelf,shelf,text,6,colour_bar)
 end
-
-
-
-% Correlation
-nan_idx = isnan(correlation_data);
-size_fsd = sum(sum(sum_miz(nan_idx)));
-size_swh = sum(sum(swh_miz(nan_idx)));
-
-indic = sum_miz > eps;
-indic_fsd = sum_miz;
-indic_fsd(indic) = 1.0;
-
-indic = swh_miz > eps;
-indic_swh = swh_miz;
-indic_swh(indic) = 2.0;
-
-if size_fsd > size_swh % FSD MIZ is bigger
-    diff_data = sum_miz - swh_miz;
-else
-    diff_data = swh_miz - sum_miz;
-end
-
-combined_miz = sum_miz + swh_miz;
-nan_idx = isnan(combined_miz);
-idx = combined_miz>eps;
-combined_miz(idx) = 1.0;
-total = sum(sum(combined_miz(~nan_idx)));
-
-add_miz = indic_fsd + indic_swh;
-idx = add_miz == 3.0;
-same_count = sum(sum(idx));
-idx = add_miz == 1.0;
-fsd_not_swh = sum(sum(idx));
-idx = add_miz == 2.0;
-swh_not_fsd = sum(sum(idx));
-%same_count = sum(sum(correlation_data(~nan_idx)));
-%total = numel(correlation_data(~nan_idx));
-
-correlation = same_count/total;
-fsd_prop = fsd_not_swh/total;
-swh_prop = swh_not_fsd/total;
-fprintf("The correlation between the two MIZ definitions is: %f \n",correlation);
-fprintf("Proportion that is in FSD definition and not in SWH is: %f \n",fsd_prop);
-fprintf("Proportion that is in SWH definition and not in FSD is: %f \n",swh_prop);
-
-
-
-% FSD - SWH
-
-
-text = "Comparison of FSD amd SWH MIZs; yellow: shared, green: FSD, light blue: SWH";
-plot_map(lat,lon,add_miz,latshelf,lonshelf,shelf,text,6)
-
 %% MIZ width
  
 %% Printing ice area
@@ -322,7 +368,7 @@ function ave_data = aggregate_data(case_name,date,datapoints,variable,dim)
            data = rearrange_matrix(data,37,dim);
            data_formatted = [data; data(end,:)];
            grid = "gx1";
-           mask = ice_mask(case_name,date,grid);
+           mask = ice_mask(case_name,date,grid,SIC);
            total_data(:,:,i) = data_formatted.*mask;
            % update date
            date = update_date(date);
@@ -363,7 +409,7 @@ function edge = ice_edge(case_name,date,grid)
 end
 
 
-function mask = ice_mask(case_name,date,grid)
+function mask = ice_mask(case_name,date,grid,conc)
     %% Find the ice edge
     % Find the ice edge and land edge
     filename = strcat("cases/",case_name,"/history/iceh.",date,".nc");
@@ -380,7 +426,7 @@ function mask = ice_mask(case_name,date,grid)
     ice_pos = zeros(len,wid);
     for i = 1:len
         long_ice_edge = aice_data_formatted(i,1:latit);
-        pos = find(long_ice_edge > 0.15);
+        pos = find(long_ice_edge > conc);
         ice_pos(i,pos) = 1;
     end
     mask = ice_pos;
@@ -530,7 +576,7 @@ end
 end
 end
 
-function [] = plot_map(lat,lon,total_miz,latshelf,lonshelf,shelf,text,i)
+function [] = plot_map(lat,lon,total_miz,latshelf,lonshelf,shelf,text,i,colourbar)
     %% Mapping
     latitude = [-90,-30];
     longitude = [-180,180];
@@ -553,6 +599,9 @@ function [] = plot_map(lat,lon,total_miz,latshelf,lonshelf,shelf,text,i)
         land = shaperead('landareas', 'UseGeoCoords', true);
         geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])  
         colorbar
+        if colourbar == 1
+            caxis([0,1])
+        end
         title(text,'interpreter','latex','FontSize', 18)
         set(gcf, 'Position',  [100, 100, 1000, 800])
 end

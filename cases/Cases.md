@@ -23,4 +23,15 @@
 | NFSD | 12 |
 | NCAT | 5 |
 
+### ```12monthswim``` 
+| Variable | Status |
+| ------ | ------ |
+| Date | 01/01/2005 -- 31/12/2005 |
+| FSD | on |
+| WIM | on |
+| MWD | north/south |
+| Propagation | block |
+| NFSD | 12 |
+| NCAT | 5 |
+
 

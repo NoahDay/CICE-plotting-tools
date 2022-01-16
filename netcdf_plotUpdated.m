@@ -1,6 +1,7 @@
 clear all
 close all
-filename = 'cases/8month/history/iceh.2005-08-31.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+addpath functions
+filename = 'cases/block/history/iceh_inst.2005-01-02-00000.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 latit = 1;
 % Read the header
 ncdisp(filename)
@@ -18,7 +19,7 @@ lon = [zeros(1,384);lon];
 lat = [lat(1,:); lat];
 
 % sea ice area
-data = ncread(filename, 'dafsd_wave'); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
+data = ncread(filename, 'wave_sig_ht'); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
 data1 = data;
 data = data(:,:,1);
 data = rearrange_matrix(data,37,dim);
@@ -86,8 +87,8 @@ deltalat = [5 5];
 deltalon = [3 3];
 %quiverm(lat0,lon0,deltalat,deltalon,'r')
 colorbar
-caxis([0,600]);
-title("Representative FSD per cell (m) on 31-08-2005",'interpreter','latex','FontSize', 18)
+%caxis([0,600]);
+%title("Representative FSD per cell (m) on 31-08-2005",'interpreter','latex','FontSize', 18)
 %caxis([-1 1])
 %patchm(antarctica.Lat, antarctica.Lon, [1 1 1])
 %saveas(gcf,'test.png')
