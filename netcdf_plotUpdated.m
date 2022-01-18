@@ -1,7 +1,7 @@
 clear all
 close all
 addpath functions
-filename = 'cases/block/history/iceh_inst.2005-01-02-00000.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = 'cases/init/history/iceh_ic.2005-01-01-03600.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 latit = 1;
 % Read the header
 ncdisp(filename)

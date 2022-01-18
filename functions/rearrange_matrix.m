@@ -7,7 +7,12 @@ if dim == 3
     n = size(data);
     mat1 = data(1:row-1,:,:);
     mat2 = data(row:n,:,:);
-    output = [mat2; mat1];   
+    output = [mat2; mat1]; 
+elseif dim == 4
+    n = size(data);
+    mat1 = data(1:row-1,:,:,:);
+    mat2 = data(row:n,:,:,:);
+    output = [mat2; mat1]; 
 else
     n = size(data);
     mat1 = data(1:row-1,:);

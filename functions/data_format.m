@@ -24,8 +24,20 @@
     lon = [lon; lon(end,:) + 360/m];
     lat = [lat; lat(end,:)];
     data_out = [data1; data1(end,:,:)];
-     
- else   
+ elseif dim == 4
+    data1 = ncread(filedir, variable);
+
+    latitude = [-90,90];
+    longitude = [-180,180];
+
+    data1 = rearrange_matrix(data1,row,dim);
+
+    % fixing data
+    [m, ~] = size(lon);
+    lon = [lon; lon(end,:) + 360/m];
+    lat = [lat; lat(end,:)];
+    data_out = [data1; data1(end,:,:,:)];
+ else % dim = 2 
     data1 = ncread(filedir, variable);
 
     latitude = [-90,90];
