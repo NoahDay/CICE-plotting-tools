@@ -129,7 +129,7 @@ end
     title(plot_title, 'FontSize', fontSize);
     %caxis([0 400]) %fsdrad [80 250]
     a=colorbar;
-    label_c = ylabel(a,unit,'FontSize',16,'Rotation',270);
+%    label_c = ylabel(a,unit,'FontSize',16,'Rotation',270);
     label_c.Position(1) = 4;
     label_h.Position(2) = 1; % change vertical position of ylabel
     limit = colorlims(variable);
