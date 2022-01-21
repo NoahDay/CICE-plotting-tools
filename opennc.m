@@ -1,15 +1,15 @@
 clear all
 close all
 addpath functions
-filename = 'cases/test/history/q_10.1958.30Jun2016.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = 'DATA/gx1v3/forcing/prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_195801010130-195812312230.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 % Read the header
 ncdisp(filename)
 % 
-% grid
-lat = ncread(filename,'latitude');
-lon = ncread(filename,'longitude');
-
-data = ncread(filename, 'huss_10m');
+grid = "gx1";
+lat = ncread(filename,'lat');
+lon = ncread(filename,'lon');
+%[lat,lon,row] = grid_read(grid);
+data = ncread(filename, 'prra');
 data = data(:,:,1);
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini

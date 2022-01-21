@@ -6,16 +6,16 @@
 clear
 close all
 addpath functions
-filedir = ["cases/init/history/iced_gx1_v6.2005-01-01.nc";
+filedir = [%"cases/init/history/iced_gx1_v6.2005-01-01.nc";
            "cases/init/history/iceh_ic.2005-01-01-03600.nc";
-           "cases/init/history/iceh_inst.2005-01-01-03600.nc";
+           %"cases/init/history/iceh_inst.2005-01-01-03600.nc";
            "cases/init/history/iceh.2005-01-01.nc";
            "cases/init/history/iceh.2005-09-30.nc";
            "cases/init/history/iceh.2005-12-31.nc"];
            
-filecase = ["iced\_gx1\_v6.2005-01-01";
+filecase = [%"iced\_gx1\_v6.2005-01-01";
             "iceh\_ic.2005-01-01-03600";
-            "iceh\_inst.2005-01-01-03600";
+            %"iceh\_inst.2005-01-01-03600";
             "iceh.2005-01-01";
             "iceh.2005-09-30";
             "iceh.2005-12-31.nc"];
@@ -37,7 +37,7 @@ data = data_format(filedir(1),'aicen',row,lat,lon,3); %aicen
 t=tiledlayout(2,2);
 figure(1)
 nexttile
-norm_ITD = frac_pdf(data);
+norm_ITD = frac_pdf(data,0);
 x_axis = 1:5;%linspace(0,5,length(final_data));
 area(x_axis,norm_ITD)
 title("Initial ITD provided from iced\_gx1\_v6.2005-01-01")
@@ -101,7 +101,7 @@ for j = 2:length(filedir)
     xlabel("ITD bins")
     nexttile
     % FSD
-    data = data_format(filedir(j),'afsd',row,lat,lon,3); %aicen
+    data = data_format(filedir(j),'afsd_d',row,lat,lon,3); %aicen
     norm_FSD = frac_pdf(data);
     x_axis = 1:length(norm_FSD);
     area(x_axis,norm_FSD)
@@ -110,7 +110,7 @@ for j = 2:length(filedir)
     xlabel("FSD bins")
     nexttile
     % SST
-    data = data_format(filedir(j),'sst',row,lat,lon,3); %aicen
+    data = data_format(filedir(j),'sst_d',row,lat,lon,3); %aicen
     w = worldmap('world');
         axesm eqaazim; 
         setm(w, 'Origin', [-90 0 0]);
@@ -128,7 +128,7 @@ for j = 2:length(filedir)
         title("SST",'interpreter','latex','FontSize', 12)
      nexttile
      % hi
-     data = data_format(filedir(j),'hi',row,lat,lon,3); %aicen
+     data = data_format(filedir(j),'hi_d',row,lat,lon,3); %aicen
     w = worldmap('world');
         axesm eqaazim; 
         setm(w, 'Origin', [-90 0 0]);
@@ -170,17 +170,4 @@ end
     
     
 %% Functions
-function output = frac_pdf(data)
-    [~,~,depth] = size(data);
-    idx = isnan(data(:,:,1)); % Land mask
-    % ITD
-    for i = 1:depth
-        temp_data = data(:,:,i);
-        num_pdf(i) = sum(sum(temp_data(~idx)));
-    end
-    if sum(num_pdf < eps)
-        output = zeros(depth);
-    else
-        output = num_pdf/sum(num_pdf); % normalize
-    end
-end
+

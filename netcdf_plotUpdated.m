@@ -1,7 +1,7 @@
 clear all
 close all
 addpath functions
-filename = 'cases/12monthswim/history/iceh.2005-09-30.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = 'cases/testing/history/iceh.2005-01-02.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 latit = 1;
 % Read the header
 ncdisp(filename)
@@ -19,7 +19,7 @@ lon = [zeros(1,384);lon];
 lat = [lat(1,:); lat];
 
 % sea ice area
-data = ncread(filename, 'sst'); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
+data = ncread(filename, 'wave_sig_ht'); % wave_sig_ht, dafsd_wave, fsdrad, peak_period
 data1 = data;
 data = data(:,:,1);
 data = rearrange_matrix(data,37,dim);
