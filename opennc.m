@@ -1,15 +1,17 @@
 clear all
 close all
 addpath functions
-filename = 'DATA/gx1v3/forcing/prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_195801010130-195812312230.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = 'cases/restoreocn/history/iceh.2005-01-01.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+%filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
 % Read the header
 ncdisp(filename)
 % 
-grid = "gx1";
-lat = ncread(filename,'lat');
-lon = ncread(filename,'lon');
-%[lat,lon,row] = grid_read(grid);
-data = ncread(filename, 'prra');
+grid = 'gx1';
+%lat = ncread(filename,'lat');
+%lon = ncread(filename,'lon');
+[lat,lon,row] = grid_read(grid);
+%data = ncread(filename, 'sst');
+data = data_format(filename,'sst',row,lat,lon,3);
 data = data(:,:,1);
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
@@ -27,3 +29,4 @@ w = worldmap('world');
     pcolorm(lat,lon,data)
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
