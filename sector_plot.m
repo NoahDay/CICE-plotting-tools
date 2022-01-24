@@ -1,6 +1,9 @@
-%sector_plot plot the chosen Antarctic sector.
-%   There are two sectors available, SA := South Africa, and EA := East
-%   Antarctic
+%sector_analysis analyse an Antarctic sector
+%   There are three sectors available:
+%       SA := South Africa, 
+%       WS := Weddell Sea,
+%       and EA := East Antarctica
+% 
 %% Read in the data.
 clear
 close all
@@ -14,45 +17,29 @@ grid = 'gx1';
 filedir = "cases/init/history/iceh_ic.2005-01-01-03600.nc";
 
 % Coordinates
-if sector == "SA"
-    coords = [-45,20;-65,20;-45,40;-65,40]; %(NW;SW,NE,SE)
-elseif sector == "EA"
-    coords = [];
-end
-%% Retreive the grid.
+coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon)
+
+%% Ice Area
 [lat,lon,row] = grid_read(grid);
 for i = 1:4
     [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
 end
 data = data_format(filedir,'aice',row,lat,lon);
-% Vertices
-for i = 1:4
-    data(lon_out(i),lat_out(i)) = 10;
-end
-% Edges
-% North latitude
-%data(lon_out(1):lon_out(3), lat_out(1):lat_out(3)) = 10;
-
 
 % Make sector mask
 [len,wid] = size(data);
-ocean_mask = ncread(filedir,'tmask');
-sector_mask = zeros(len,wid);
-sector_mask = ~ocean_mask*NaN;
+ocean_mask = data_format(filedir,'tmask',row,lat,lon);
+sector_data = zeros(len,wid);
+sector_mask = false(len,wid);
+sector_data = ~ocean_mask*NaN;
 
 for i = 0:lat_out(1)-lat_out(2)
-    data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = 10;
-    sector_mask(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = 1;
+    sector_mask(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = true;
+    sector_data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3));
 end
 
 
-% % South latitude
-% data(lon_out(2):lon_out(4), lat_out(2):lat_out(4)) = 10;
-% % East longitude
-% data(lon_out(2):lon_out(1), lat_out(2):lat_out(1)) = 10;
-% % West longitude
-% data(lon_out(4):lon_out(3), lat_out(4):lat_out(3)) = 10;
-%% Begin mapping.
+%data = data(sector_mask);
 color_map = seaicecolormap();
 latitude = [-90,-60];
 longitude = [10,50];
@@ -70,10 +57,39 @@ w = worldmap('world');
     setm(w, 'grid', 'on');
     setm(w, 'frame', 'on');
     setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,sector_mask)
+    pcolorm(lat,lon,sector_data)
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
     %caxis([0,600]);
     %title("Representative FSD per cell (m) on 31-08-2005",'interpreter','latex','FontSize', 18)
 
+%% Pancake ice concentration
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+%% Functions
+function coords = sector_coords(sector)
+% Coordinates of sector
+%   There are three sectors available:
+%       SA := South Africa, 
+%       WS := Weddell Sea,
+%       and EA := East Antarctica
+    if sector == "SA"
+        coords = [-45,20;-65,20;-45,40;-65,40]; %(NW;NE,SW,SE)
+    elseif sector == "EA"
+        coords = [];
+    elseif sector == "WS"
+        coords = [];
+    end
+end

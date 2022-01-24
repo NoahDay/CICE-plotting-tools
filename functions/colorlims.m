@@ -7,7 +7,7 @@ function limit = colorlims(variable)
  elseif variable == "wave_sig_ht_d"
     limit=[0,10];
  elseif variable == "fsdrad"
-    limit=[0,400];
+    limit=[0,1000];
  elseif variable ==  "fsdrad_d"
     limit=[0,800];
  elseif variable  == "aice"

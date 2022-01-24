@@ -1,0 +1,343 @@
+% This LaTeX was auto-generated from MATLAB code.
+% To make changes, update the MATLAB code and export to LaTeX again.
+
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{epstopdf}
+\usepackage[table]{xcolor}
+\usepackage{matlab}
+
+\sloppy
+\epstopdfsetup{outdir=./}
+\graphicspath{ {./sector_analysis_images/} }
+
+\begin{document}
+
+\matlabtitle{Analysis of Antarctic sectors}
+
+\begin{par}
+\begin{flushleft}
+There are three sectors available:
+\end{flushleft}
+\end{par}
+
+\begin{enumerate}
+\setlength{\itemsep}{-1ex}
+   \item{\begin{flushleft} SA := South Africa,  \end{flushleft}}
+   \item{\begin{flushleft} WS := Weddell Sea, \end{flushleft}}
+   \item{\begin{flushleft}  and EA := East Antarctica \end{flushleft}}
+\end{enumerate}
+
+\matlabheading{Table of contents}
+
+\begin{enumerate}
+\setlength{\itemsep}{-1ex}
+   \item{\begin{flushleft} Preamble \end{flushleft}}
+   \item{\begin{flushleft} Ice concentration (aice) \end{flushleft}}
+   \item{\begin{flushleft} Pancake ice concentration \end{flushleft}}
+   \item{\begin{flushleft} Pancake ice width \end{flushleft}}
+   \item{\begin{flushleft} Pancake ice growth  \end{flushleft}}
+   \item{\begin{flushleft} SWH presence \end{flushleft}}
+   \item{\begin{flushleft} SWH distance into the ice \end{flushleft}}
+   \item{\begin{flushleft} Ice velocities \end{flushleft}}
+   \item{\begin{flushleft} Wind and ice relationship \end{flushleft}}
+\end{enumerate}
+
+\matlabheading{1. Preamble}
+
+\begin{matlabcode}
+%% Read in the data.
+clear
+close all
+addpath functions
+%ncdisp(filename)
+
+% Parameters
+sector = "SA";
+grid = 'gx1';
+filedir = 'cases/12monthswim/history/iceh.2005-09-30.nc';
+[lat,lon,row] = grid_read(grid);
+
+% Make sector mask
+[len,wid] = size(lat);
+\end{matlabcode}
+
+\matlabheading{2. Ice area}
+
+\begin{matlabcode}
+variable = "aice";
+sector_data = data_format_sector(filedir,variable,sector);
+%data = data(sector_mask);
+%color_map = seaicecolormap();
+latitude = [-90,-60];
+longitude = [10,50];
+figure(1)
+w = worldmap('world');
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-70,-40]);
+    setm(w, 'maplonlimit', [10,50]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'on')
+    setm(w, 'mlabellocation', 10);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', 0);
+    setm(w, 'grid', 'on');
+    setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,sector_data)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis(colorlims(variable));
+    title(strcat("AICE in the ", sector_name(sector)), 'interpreter','latex','FontSize', 14)
+\end{matlabcode}
+\begin{center}
+\includegraphics[width=\maxwidth{56.196688409433015em}]{figure_0.png}
+\end{center}
+
+\matlabheading{3. Pancake ice concentration}
+
+\begin{matlabcode}
+variable = "fsdrad";
+sector_data = data_format_sector(filedir,variable,sector);
+%data = data(sector_mask);
+%color_map = seaicecolormap();
+%colormap turbo
+latitude = [-90,-60];
+longitude = [10,50];
+figure(2)
+w = worldmap('world');
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-70,-40]);
+    setm(w, 'maplonlimit', [10,50]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'on')
+    setm(w, 'mlabellocation', 10);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', 0);
+    setm(w, 'grid', 'on');
+    setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,sector_data)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis(colorlims(variable));
+    title(strcat("FSDRAD in the ", sector_name(sector)), 'interpreter','latex','FontSize', 14)
+    %colormap turbo
+\end{matlabcode}
+
+\matlabheading{4. Pancake ice width}
+
+
+\vspace{1em}
+\matlabheading{5. Pancake ice growth}
+
+\begin{matlabcode}
+variable = "fsdrad";
+sector_data = data_format_sector(filedir,variable,sector);
+%data = data(sector_mask);
+%color_map = seaicecolormap();
+%colormap turbo
+latitude = [-90,-60];
+longitude = [10,50];
+figure(5)
+w = worldmap('world');
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-70,-40]);
+    setm(w, 'maplonlimit', [10,50]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'on')
+    setm(w, 'mlabellocation', 10);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', 0);
+    setm(w, 'grid', 'on');
+    setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,sector_data)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis(colorlims(variable));
+    title(strcat("FSDRAD in the ", sector_name(sector)), 'interpreter','latex','FontSize', 14)
+\end{matlabcode}
+\begin{center}
+\includegraphics[width=\maxwidth{56.196688409433015em}]{figure_1.png}
+\end{center}
+\begin{matlabcode}
+    %colormap turbo
+\end{matlabcode}
+
+\vspace{1em}
+
+\matlabheading{6. SWH presence}
+
+\begin{matlabcode}
+variable = "wave_sig_ht";
+sector_data = data_format_sector(filedir,variable,sector);
+%data = data(sector_mask);
+%color_map = seaicecolormap();
+%colormap turbo
+latitude = [-90,-60];
+longitude = [10,50];
+figure(6)
+w = worldmap('world');
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-70,-40]);
+    setm(w, 'maplonlimit', [10,50]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'on')
+    setm(w, 'mlabellocation', 10);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', 0);
+    setm(w, 'grid', 'on');
+    setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,sector_data)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis(colorlims(variable));
+    title(strcat("SWH in the ", sector_name(sector)), 'interpreter','latex','FontSize', 14)
+\end{matlabcode}
+\begin{center}
+\includegraphics[width=\maxwidth{56.196688409433015em}]{figure_2.png}
+\end{center}
+\begin{matlabcode}
+    %colormap turbo
+\end{matlabcode}
+
+\vspace{1em}
+
+\matlabheading{7. SWH distance into the ice}
+
+
+\vspace{1em}
+\matlabheading{8. Ice velocities}
+
+
+\vspace{1em}
+
+\vspace{1em}
+\matlabheading{9. Wind and ice velocity relationship}
+
+
+\vspace{1em}
+\matlabheading{10. Ice thickness}
+
+\begin{matlabcode}
+variable = "hi";
+sector_data = data_format_sector(filedir,variable,sector);
+%data = data(sector_mask);
+%color_map = seaicecolormap();
+%colormap turbo
+latitude = [-90,-60];
+longitude = [10,50];
+figure(2)
+w = worldmap('world');
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-70,-40]);
+    setm(w, 'maplonlimit', [10,50]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'on')
+    setm(w, 'mlabellocation', 10);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', 0);
+    setm(w, 'grid', 'on');
+    setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,sector_data)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis(colorlims(variable));
+    title(strcat("Ice thickness in the ", sector_name(sector)), 'interpreter','latex','FontSize', 14)
+\end{matlabcode}
+\begin{center}
+\includegraphics[width=\maxwidth{56.196688409433015em}]{figure_3.png}
+\end{center}
+\begin{matlabcode}
+    %colormap turbo
+\end{matlabcode}
+
+\vspace{1em}
+
+
+\vspace{1em}
+
+\vspace{1em}
+
+\matlabheading{Functions}
+
+\begin{matlabcode}
+function coords = sector_coords(sector)
+% Coordinates of sector
+%   There are three sectors available:
+%       SA := South Africa, 
+%       WS := Weddell Sea,
+%       and EA := East Antarctica
+    if sector == "SA"
+        coords = [-45,20;-65,20;-45,40;-65,40]; %(NW;NE,SW,SE)
+    elseif sector == "EA"
+        coords = [];
+    elseif sector == "WS"
+        coords = [];
+    end
+end
+
+function sector_data = data_format_sector(filedir,variable,sector,dim)
+     if ~exist('dim', 'var')
+        dim = 2; 
+     end
+
+    % Grid
+    grid = "gx1";
+    [lat,lon,row] = grid_read(grid);
+    % Read in data
+    data = data_format(filedir,variable,row,lat,lon,dim);
+    ocean_mask = data_format(filedir,'tmask',row,lat,lon);
+    % Coordinates
+    coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon)
+    for i = 1:4
+        [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+    end
+    [len,wid] = size(data);
+    sector_data = zeros(len,wid);
+    sector_mask = false(len,wid);
+    sector_data = ~ocean_mask*NaN;
+    for i = 0:lat_out(1)-lat_out(2)
+        sector_mask(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = true;
+        sector_data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3));
+    end
+    
+end
+
+function name = sector_name(sector)
+    if sector == "SA"
+        name = "South African Antarctic";
+    elseif sector == "WS"
+        name = "Weddell Sea";
+    elseif sector == "EA"
+        name = "East Antarctic";
+    else
+        name = "";
+        
+    end
+end
+
+\end{matlabcode}
+
+\end{document}

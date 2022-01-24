@@ -65,8 +65,7 @@ function color_map = seaicecolormap()
                 CMap1(Map_Correction1) = 1;
                 Map_Correction2 = find(CMap1 < 0);
                 CMap1(Map_Correction2) = 0;
-        
-        
+
                 colormap (CMap1)  % sets a universal colormap, () are needed for a colour map that isn't pre-programmed.
 color_map = CMap1;%"SeaIceColorMap";
 end
