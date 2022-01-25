@@ -1,7 +1,7 @@
 clear all
 close all
 addpath functions
-filename = 'cases/restoreocn/history/iceh.2005-01-01.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = 'cases/12monthswim/history/iceh.2005-09-30.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
 % Read the header
 ncdisp(filename)
