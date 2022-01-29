@@ -100,7 +100,7 @@
 | Time to run a day (iMac) |  2.22 mins| 
 | intial file | 01/01/2005| 
 
-### ```3month``` - running
+### ```3monthjulyinit``` - complete
 | Variable | Status |
 | ------ | ------ |
 | Date | 01/07/2005 -- 30/09/2005 |
