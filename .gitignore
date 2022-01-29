@@ -11,3 +11,4 @@ bedmap2_test.asv
 *.fig
 *.jpg
 *.eps
+*cases/
