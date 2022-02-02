@@ -130,7 +130,7 @@
 | ```oceanmixed_ice``` | on| 
 | Time to run a day (iMac) |  2.22 mins| 
 
-### ```6month``` - need to run
+### ```6month``` - running
 | Variable | Status |
 | ------ | ------ |
 | Date | 01/04/2005 -- 30/09/2005 |
@@ -143,6 +143,7 @@
 | SST Forcing | Yes |
 | ```oceanmixed_ice``` | on| 
 | Time to run a day (iMac) |  2.22 mins| 
+| intial file | 01/04/2005| 
 
 
 

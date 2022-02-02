@@ -3,10 +3,10 @@ clear all
 addpath functions
 % create video writer object
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = '12monthswim';%'8month';
+case_name = '1year';%'8month';
 grid = 'gx1'; 
-variable = 'sst'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
-video_name = strcat(variable, '_', case_name, '_', '2021_11_30', '.avi');
+variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
+video_name = strcat(variable, '_', case_name, '_', '2022_01_31', '.avi');
 writerObj = VideoWriter(video_name);
 time_period = 'd'; %'1','d','m','y'
 datapoints = 365;%242;
