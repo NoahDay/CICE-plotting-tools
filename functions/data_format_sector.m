@@ -1,4 +1,4 @@
-function sector_data = data_format_sector(filedir,variable,sector,dim)
+function [sector_data, sector_mask] = data_format_sector(filedir,variable,sector,dim)
 cd '/Users/noahday/GitHub/CICE-plotting-tools'
 addpath functions
      if ~exist('dim', 'var')

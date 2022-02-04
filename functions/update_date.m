@@ -21,11 +21,18 @@ function new_date = update_date(old_date)
     if valid_date == 0 % If false update month
         new_day = 1;
         new_month = current_month + 1;
+        new_year = current_year;
         if new_month < 10
+            str_month = sprintf('0%d',new_month);
+        elseif new_month < 13
+            str_month = sprintf('%d',new_month);
+        else% New year
+            new_year = current_year + 1;
+            new_month = 1;
             str_month = sprintf('0%d',new_month);
         end
         str_date = strcat('%d-',str_month,'-0%d');
-        new_date = sprintf(str_date,current_year,new_day);
+        new_date = sprintf(str_date,new_year,new_day);
     else % If true
         if new_day < 10
              str_date = strcat('%d-',str_month,'-0%d');
@@ -51,6 +58,7 @@ function new_date = update_date(old_date)
     elseif month == 4 || month == 6 || month == 9 || month == 11
         max_day = 30;
     else
+        disp('Failed to find month')
         return
     end
     if day < max_day + 1

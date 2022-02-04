@@ -3,16 +3,17 @@ clear all
 addpath functions
 % create video writer object
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = '1year';%'8month';
+case_name = '2005_2006';
 grid = 'gx1'; 
 variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
-video_name = strcat(variable, '_', case_name, '_', '2022_01_31', '.avi');
+video_name = strcat(variable, '_', case_name, '_', '2022_02_02_2', '.avi');
 writerObj = VideoWriter(video_name);
 time_period = 'd'; %'1','d','m','y'
-datapoints = 365;%242;
+datapoints = 30;%242;
 day = 1;
-month = 1;
+month = 9;
 year = 2005;
+sector = "SA";
 date = sprintf('%d-0%d-0%d', year, month, day);
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
@@ -29,7 +30,7 @@ for i = 1:datapoints
    % Get the file name
    filename = strcat(case_name,"/history/iceh.",date,".nc");
    % Plot the map
-   map_creator(filename, date, i, variable, grid, map_type, user)
+   map_creator(filename, date, i, variable, grid, sector, user)
    % Update date
    date = update_date(date);
 end    

@@ -1,4 +1,4 @@
-function y = map_creator(filename, plot_title_vec, i, variable, grid, map_type, user)
+function y = map_creator(filename, plot_title_vec, i, variable, grid, sector, user)
 %MAP_CREATOR creates map images of Antarctica given netcdf data files
 %   filename: the directory to the .nc file
 %   plot_title: string containing the title for the plot
@@ -8,40 +8,17 @@ function y = map_creator(filename, plot_title_vec, i, variable, grid, map_type, 
 
 % Load ice shelf data
 addpath packages/bedmap2_toolbox_v4
+%addpath ~/Users/noahday/Library/Application Support/MathWorks/MATLAB Add-Ons/Collections/Bedmap2 Toolbox for Matlab
 
-shelf = bedmap2_data('icemask');
-shelf = 0.0*(shelf == 1); 
-shelf(shelf==0) = NaN; % 1 iceshelf
-[latshelf,lonshelf] = bedmap2_data('latlon');
+
+%shelf = bedmap2_data('icemask');
+%shelf = 0.0*(shelf == 1); 
+%shelf(shelf==0) = NaN; % 1 iceshelf
+%[latshelf,lonshelf] = bedmap2_data('latlon');
 
 % grid
     dim = 2;
-if grid == 'gx3'
-    row = 11;
-
-    ulat = ncread('grid_gx3.nc','ulat');
-    ulon = ncread('grid_gx3.nc','ulon');
-
-    % converting to degrees
-    lon = rad2deg(ulon);
-    lat = rad2deg(ulat);
-
-    lat = rearrange_matrix(lat,row,dim);
-    lon = rearrange_matrix(lon,row,dim);
-   
-else
-    row = 37;
-    lat = ncread('grid/global_gx1.bathy.nc','TLAT');
-    lon = ncread('grid/global_gx1.bathy.nc','TLON');
-
-    lat = rearrange_matrix(lat,row,dim);
-    lon = rearrange_matrix(lon,row,dim);
-
-
-    lon = [zeros(1,384);lon];
-    lat = [lat(1,:); lat];
-        
-end
+[lat,lon,row] = grid_read(grid);
 
 %filename = strcat('cases/',filename);
 data = ncread(filename, variable);
@@ -63,32 +40,31 @@ for level = 1:n
 
     %% Mapping
     color_map = seaicecolormap();
-if map_type == 'cassini'
-    x_origin = -20;
-else
+if sector == "world"
     x_origin = -90;
 end
+data = data_1;
+if sector == "world"
     w = worldmap('world');
-    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
-    setm(w, 'Origin', [x_origin 0 0]);
-    setm(w, 'maplatlimit', [-90,-30]);
-    setm(w, 'maplonlimit', [-180,180]);
-    setm(w, 'meridianlabel', 'on')
-    setm(w, 'parallellabel', 'off')
-    setm(w, 'mlabellocation', 30);
-    setm(w, 'plabellocation', 10);
-    setm(w, 'mlabelparallel', -45);
-    setm(w, 'grid', 'on');
-    %setm(w, 'frame', 'on');
-    setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,data_1)
-    land = shaperead('landareas', 'UseGeoCoords', true);
-    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
-    pcolorm(latshelf,lonshelf,shelf)  
-
-    %antarctica = shaperead('landareas', 'UseGeoCoords', true,...
-    %  'Selector',{@(name) strcmp(name,'Antarctica'), 'Name'});
-
+        axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+        setm(w, 'Origin', [x_origin 0 0]);
+        setm(w, 'maplatlimit', [-90,-30]);
+        setm(w, 'maplonlimit', [-180,180]);
+        setm(w, 'meridianlabel', 'on')
+        setm(w, 'parallellabel', 'off')
+        setm(w, 'mlabellocation', 30);
+        setm(w, 'plabellocation', 10);
+        setm(w, 'mlabelparallel', -45);
+        setm(w, 'grid', 'on');
+        %setm(w, 'frame', 'on');
+        setm(w, 'labelrotation', 'on')
+        pcolorm(lat,lon,data)
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+        %pcolorm(latshelf,lonshelf,shelf)  
+elseif sector == "SA"
+    [w a] = map_plot(data,variable,sector,grid);
+end
  if variable == "fsdrad"
          plot_variable = "FSD radius ";
          unit = "metres";

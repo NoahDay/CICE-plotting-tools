@@ -1,4 +1,4 @@
-function [w a] = map_plot(data,variable,sector,grid)
+function [w a] = map_plot(data,variable,sector,grid,clims)
 %Plot a worldmap
 cd '/Users/noahday/GitHub/CICE-plotting-tools'
 addpath functions
@@ -33,7 +33,12 @@ if sector == "world"
         land = shaperead('landareas', 'UseGeoCoords', true);
         geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
         a = colorbar;
-        caxis(colorlims(variable));
+        if ~exist('clims', 'var')
+            % Set sector to world by default
+            caxis(colorlims(variable));
+        else
+            caxis(clims)
+        end
 else
     coords = sector_coords(sector);
     min_lat = min(coords(:,1));
@@ -41,24 +46,30 @@ else
     min_lon = min(coords(:,2));
     max_lon = max(coords(:,2));
     w = worldmap('world');
-    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
-    setm(w, 'Origin', [0 0 0]);
-    setm(w, 'maplatlimit', [min_lat-5,max_lat+5]);
-    setm(w, 'maplonlimit', [min_lon-5,max_lon+5]);
-    setm(w, 'meridianlabel', 'on')
-    setm(w, 'parallellabel', 'on')
-    setm(w, 'mlabellocation', 10);
-    setm(w, 'plabellocation', 10);
-    setm(w, 'mlabelparallel', 0);
-    setm(w, 'mlabelParallel', 'south');
-    setm(w, 'grid', 'on');
-    setm(w, 'frame', 'on');
-    setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,data)
-    land = shaperead('landareas', 'UseGeoCoords', true);
-    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
-    a = colorbar;
-    caxis(colorlims(variable));
+        axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+        setm(w, 'Origin', [0 0 0]);
+        setm(w, 'maplatlimit', [min_lat-5,max_lat+5]);
+        setm(w, 'maplonlimit', [min_lon-5,max_lon+5]);
+        setm(w, 'meridianlabel', 'on')
+        setm(w, 'parallellabel', 'on')
+        setm(w, 'mlabellocation', 10);
+        setm(w, 'plabellocation', 10);
+        setm(w, 'mlabelparallel', 0);
+        setm(w, 'mlabelParallel', 'south');
+        setm(w, 'grid', 'on');
+        setm(w, 'frame', 'on');
+        setm(w, 'labelrotation', 'on')
+        pcolorm(lat,lon,data)
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
+        a = colorbar;
+        if ~exist('clims', 'var')
+            % Set sector to world by default
+            caxis(colorlims(variable));
+        else
+            caxis(clims)
+        end
+        
 end
 
 end
