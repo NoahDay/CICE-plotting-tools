@@ -8,10 +8,12 @@ addpath packages/bedmap2_toolbox_v4
 color_map = seaicecolormap();
 
 fsd_max = 10;
+
+% Switches
 movie_miz = 0; % 0 is off, 1 is on
 average_miz_switch = 0; 
-sum_miz_switch = 1;
-swh_ice_miz_switch = 1;
+sum_miz_switch = 0;
+swh_ice_miz_switch = 0;
 swh_ice_miz_switch2 = 0;
 iceedge = 0;
 wave_height = 0.01;
@@ -42,16 +44,13 @@ elseif season == "spring"
 end
 year = 2005;
 date = sprintf('%d-0%d-0%d', year, month, day);
+ssd_dir = '/Volumes/Noah_SSD/run_data';
+filedir = strcat(ssd_dir,'/cases/',case_name);
+
 map_type = 'eqaazim'; 
 % Load the grid, ice shelf, and MIZ statistics.
 % Grid
-lat = ncread('grid/global_gx1.bathy.nc','TLAT');
-lon = ncread('grid/global_gx1.bathy.nc','TLON');
-dim = 2;
-lat = rearrange_matrix(lat,37,dim);
-lon = rearrange_matrix(lon,37,dim);
-lon = [zeros(1,384);lon];
-lat = [lat(1,:); lat];
+[lat,lon,row] = grid_read(grid);
 
 % Load ice shelf data
 shelf = bedmap2_data('icemask');
@@ -60,7 +59,13 @@ shelf(shelf==0) = NaN; % 1 iceshelf
 [latshelf,lonshelf] = bedmap2_data('latlon');
 
 
-%% 1. CICE data in mean
+%% 1. SIC defintion
+% The SIC MIZ is defined between 0.15 and 0.8 SIC
+
+
+
+
+
 if average_miz_switch == 1
     date = sprintf('%d-0%d-0%d', year, month, day);
     [len, wid] = size(lat);

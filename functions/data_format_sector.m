@@ -11,18 +11,28 @@ addpath functions
     % Read in data
     data = data_format(filedir,variable,row,lat,lon,dim);
     ocean_mask = data_format(filedir,'tmask',row,lat,lon);
-    % Coordinates
-    coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon)
-    for i = 1:4
-        [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
-    end
-    [len,wid] = size(data);
-    sector_data = zeros(len,wid);
-    sector_mask = false(len,wid);
-    sector_data = ~ocean_mask*NaN;
-    for i = 0:lat_out(1)-lat_out(2)
-        sector_mask(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = true;
-        sector_data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3));
+    
+    if isstring(sector)
+        % Export a grid of the the specific sector
+        % Coordinates
+        coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon)
+        for i = 1:4
+            [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+        end
+        [len,wid] = size(data);
+        sector_data = zeros(len,wid);
+        sector_mask = false(len,wid);
+        sector_data = ~ocean_mask*NaN;
+        for i = 0:lat_out(1)-lat_out(2)
+            sector_mask(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = true;
+            sector_data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3));
+        end
+    else % Transect
+        [len,wid] = size(data);
+        [lat_out,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
+        sector_mask = false(len,wid);
+        sector_mask(lon_out,:) = true;
+        sector_data(lon_out,:) = data(lon_out,:);
     end
     
 end
