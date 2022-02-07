@@ -12,3 +12,11 @@ bedmap2_test.asv
 *.jpg
 *.eps
 *cases/
+*.out
+*.log
+*.fls
+*.fdb_latexmk
+*.aux
+*.fdb_latexmk
+*.fls
+*.pdf

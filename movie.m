@@ -5,15 +5,15 @@ addpath functions
 user = 'noahday'; %a1724548, noahday, Noah
 case_name = '2005_2006';
 grid = 'gx1'; 
-variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
-video_name = strcat(variable, '_', case_name, '_', '2022_02_02_2', '.avi');
+variable = 'sigP'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
+video_name = strcat(variable, '_', case_name, '_', '2022_02_06', '.avi');
 writerObj = VideoWriter(video_name);
 time_period = 'd'; %'1','d','m','y'
 datapoints = 30;%242;
 day = 1;
 month = 9;
-year = 2005;
-sector = "SA";
+year = 2006;
+sector = "world";
 date = sprintf('%d-0%d-0%d', year, month, day);
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
@@ -23,12 +23,13 @@ open(writerObj);
 ticker = 1;
  
 %% Plotting
-
-case_name = strcat('cases/',case_name);
+user = 'noahday'; %a1724548, noahday, Noah
+case_name = 'twoyearproper';
+%ssd_dir = '/Users/noahday/Maths1/';%'/Volumes/Noah_SSD/run_data';
 
 for i = 1:datapoints
    % Get the file name
-   filename = strcat(case_name,"/history/iceh.",date,".nc");
+   filename = strcat('cases/',case_name,"/history/iceh.",date,".nc");
    % Plot the map
    map_creator(filename, date, i, variable, grid, sector, user)
    % Update date

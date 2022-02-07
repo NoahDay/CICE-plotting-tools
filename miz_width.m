@@ -14,15 +14,19 @@ iceedge = 0;
 plotting = 0;
 printing = 0;
 sector = [-65, 360-132.2];
-
-SIC = [0.15, 0.9];
-SWH = 0.1;
-fsd_max = 10;
+ssd = 0; % ssd or local data
+SIC = [0.15, 0.8];
+SWH = 0.0001;
+fsd_max = 50;
 %% Preamble
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = '2005_2006';
-ssd_dir = '/Volumes/Noah_SSD/run_data';
-filedir = strcat(ssd_dir,'/cases/',case_name);
+case_name = 'twoyearproper';
+if ssd == 1
+    ssd_dir = '/Volumes/Noah_SSD/run_data';
+    filedir = strcat(ssd_dir,case_name);
+else
+    filedir = strcat('cases/',case_name);
+end
 grid = 'gx1'; 
 time_period = 'd'; %'1','d','m','y'
 season = "winter";
@@ -32,22 +36,22 @@ season = "winter";
 day = 1;
 if season == "summer"
     datapoints = 59;
-    month = 1;
+    month_init = 1;
 elseif season == "autumn"
     datapoints = 92;
-    month = 3;
+    month_init = 3;
 elseif season == "winter"
     datapoints = 92;
-    month = 6;
+    month_init = 6;
 elseif season == "spring"
     datapoints = 91;
-    month = 9;
+    month_init = 9;
 end
 
 day = 1;
-month = 9;
+month_init = 9;
 year = 2006;
-date = sprintf('%d-0%d-0%d', year, month, day);
+date = sprintf('%d-0%d-0%d', year, month_init, day);
 months = [2, 5, 9, 12];
 dim = 2;
 % Load the grid, ice shelf, and MIZ statistics.
@@ -65,7 +69,7 @@ figcount = 0;
 %% 1. SIC defintion
 % The SIC MIZ is defined between 0.15 and 0.8 SIC
 if sic_miz_switch == 1
-    date = sprintf('%d-0%d-0%d', year, month, day);
+    date = sprintf('%d-0%d-0%d', year, month_init, day);
     filename = strcat(filedir,"/history/iceh.",date,".nc");
     [len, wid] = size(lat);
     dim = 2;
@@ -83,7 +87,7 @@ end
 
 %% 2. SWH definition
 if swh_miz_switch == 1
-    date = sprintf('%d-0%d-0%d', year, month, day);
+    date = sprintf('%d-0%d-0%d', year, month_init, day);
     filename = strcat(filedir,"/history/iceh.",date,".nc");
     [len, wid] = size(lat);
     dim = 2;
@@ -99,7 +103,7 @@ end
 
 %% 3. FSD definition
 if fsd_miz_switch == 1
-    date = sprintf('%d-0%d-0%d', year, month, day);
+    date = sprintf('%d-0%d-0%d', year, month_init, day);
     filename = strcat(filedir,"/history/iceh.",date,".nc");
     [len, wid] = size(lat);
     dim = 2;
@@ -115,15 +119,15 @@ end
 %% 4. MIZ widths
 Data = struct('Month',{},'SIC',{},'SWH',{},'FSD',{});
 for k = 1:4
-    month = months(k);
-    if month < 10
-        date = sprintf('%d-0%d-0%d', year, month, day);
+    month_init = months(k);
+    if month_init < 10
+        date = sprintf('%d-0%d-0%d', year, month_init, day);
     else
-        date = sprintf('%d-%d-0%d', year, month, day);
+        date = sprintf('%d-%d-0%d', year, month_init, day);
     end
-    if month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 ||  month == 12
+    if month_init == 1 || month_init == 3 || month_init == 5 || month_init == 7 || month_init == 8 || month_init == 10 ||  month_init == 12
         datapoints = 31;
-    elseif month == 2
+    elseif month_init == 2
         datapoints = 28;
     else
         datapoints = 30;
@@ -206,7 +210,10 @@ for k = 1:4
     
         end
         transect_data = output_data(lon_out,:); % Take the southern hemisphere
-        idx_transect = transect_data < fsd_max;
+        idx1 = transect_data < fsd_max;
+        idx2 = transect_data > eps;
+        idx_transect = logical(idx1.*idx2);
+        
         
         points = lat(lon_out,idx_transect);
         southern_hemi_points = points(points < 0);
@@ -224,16 +231,52 @@ for k = 1:4
     Data(k).Month = [distSIC;distSWH;distFSD];
 end
 %% Plotting
+%% a) Boxplot widths
+f = figure;
+t = tiledlayout(1,length(months));
 for i = 1:length(months)
     plot_data = Data(i).Month;
     figcount = figcount + 1;
-    figure(figcount)
+    %figure(figcount)
+    nexttile
     boxplot(plot_data',["SIC","SWH","FSD"])
     ylabel('MIZ width (km)')
     xlabel('MIZ definition')
-    title(sprintf('MIZ widths of the %g E transect over %g-%g',sector(2),months(i),year))
+    ylim([0,1200])
+    text = strcat("MIZ widths of the %g E transect over " ,monthName(months(i))," %g");
+    title(sprintf(text,sector(2),year))
+    f.Position = [100 100 1500 400];
 end
-
+%% b) Correlations
+f = figure(2);
+t2 = tiledlayout(1,length(months));
+for i = 1:length(months)
+    plot_data = Data(i).Month;
+    figcount = figcount + 1;
+    %figure(figcount)
+    nexttile
+    x = plot_data(2,:);
+    y = plot_data(3,:);
+    %scatter(x,y)
+    % Get coefficients of a line fit through the data.
+    coefficients = polyfit(x, y, 1);
+    % Create a new x axis with exactly 1000 points (or whatever you want).
+    xFit = linspace(min(x), max(x), 1000);
+    % Get the estimated yFit value for each of those 1000 new x locations.
+    yFit = polyval(coefficients , xFit);
+    % Plot everything.
+    plot(x, y, 'b.', 'MarkerSize', 15); % Plot training data.
+    hold on; % Set hold on so the next plot does not blow away the one we just drew.
+    plot(xFit, yFit, 'r-', 'LineWidth', 2); % Plot fitted line.
+    grid on;
+    ylabel('SWH MIZ width (km)')
+    xlabel('FSD MIZ width (km)')
+    ylim([0,800])
+    xlim([0,1000])
+    text = strcat(monthName(months(i))," %g along %g E transect");
+    title(sprintf(text,year,sector(2)))
+    f.Position = [100 100 1500 400];
+end
 %% Functions
 
 function ave_data = aggregate_data(case_name,date,datapoints,variable,dim)
@@ -480,4 +523,8 @@ function [] = plot_map(lat,lon,total_miz,latshelf,lonshelf,shelf,text,i,colourba
         end
         title(text,'interpreter','latex','FontSize', 18)
         set(gcf, 'Position',  [100, 100, 1000, 800])
+end
+function name = monthName(num)
+    name = month(datetime(1,num,1), 'name');
+    name = name{1};
 end
