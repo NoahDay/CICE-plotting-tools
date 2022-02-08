@@ -13,7 +13,7 @@ iceedge = 0;
 
 plotting = 0;
 printing = 0;
-sector = [-65, 360-132.2];
+sector = "SA";%[-65, 360-132.2];
 ssd = 0; % ssd or local data
 SIC = [0.15, 0.8];
 SWH = 0.0001;
@@ -30,29 +30,12 @@ end
 grid = 'gx1'; 
 time_period = 'd'; %'1','d','m','y'
 season = "winter";
-% Winter has 92 days
-% Autumn has 92 days
-% Summer has 59 (no Decemeber)
-day = 1;
-if season == "summer"
-    datapoints = 59;
-    month_init = 1;
-elseif season == "autumn"
-    datapoints = 92;
-    month_init = 3;
-elseif season == "winter"
-    datapoints = 92;
-    month_init = 6;
-elseif season == "spring"
-    datapoints = 91;
-    month_init = 9;
-end
 
 day = 1;
 month_init = 9;
 year = 2006;
 date = sprintf('%d-0%d-0%d', year, month_init, day);
-months = [2, 5, 9, 12];
+months = [2];
 dim = 2;
 % Load the grid, ice shelf, and MIZ statistics.
 % Grid
@@ -118,7 +101,138 @@ if fsd_miz_switch == 1
 end
 %% 4. MIZ widths
 Data = struct('Month',{},'SIC',{},'SWH',{},'FSD',{});
-for k = 1:4
+
+if isstring(sector) % is a sector
+    coords = sector_coords(sector);
+    for k = 1:length(months)
+    month_init = months(k);
+    if month_init < 10
+        date = sprintf('%d-0%d-0%d', year, month_init, day);
+    else
+        date = sprintf('%d-%d-0%d', year, month_init, day);
+    end
+    if month_init == 1 || month_init == 3 || month_init == 5 || month_init == 7 || month_init == 8 || month_init == 10 ||  month_init == 12
+        datapoints = 31;
+    elseif month_init == 2
+        datapoints = 28;
+    else
+        datapoints = 30;
+    end
+    distSIC = zeros(1,datapoints);
+    distSWH = zeros(1,datapoints); 
+    distFSD = zeros(1,datapoints);
+    for j = 1:datapoints
+        filename = strcat(filedir,"/history/iceh.",date,".nc");
+       
+        % Find the longitudes of the edges of the sector
+        [~,lon_out1] = lat_lon_finder(coords(1,1),coords(1,2),lat,lon); 
+        [~,lon_out2] = lat_lon_finder(coords(3,1),coords(3,2),lat,lon); 
+        
+        
+        % 4. a) SIC
+        variable = "aice";
+        data = data_format(filename,variable,row,lat,lon,dim);
+        if plotting == 1
+            figcount = figcount + 1;
+            figure(figcount)
+            [w, a, output_data] = map_plot(data,variable,sector,grid,[0,11],plotting);
+                title('FSDrad along transect')
+        else
+            [~, ~, output_data] = map_plot(data,variable,sector,grid,[0,11],plotting);
+        end
+        transect_data = output_data(lon_out1:lon_out2,:); % Take the southern hemisphere
+        
+
+        for l = 1:lon_out2-lon_out1
+            % Find the cells that satisfy the requirements
+            idx1 = transect_data(l,:) > SIC(1);
+            idx2 = transect_data(l,:) < SIC(2);
+            idx_transect = logical(idx1.*idx2);
+            
+            points = lat(lon_out1+l-1,idx_transect);
+            southern_hemi_points = points(points < 0);
+            [~,wid] = size(southern_hemi_points);
+            if wid == 0 % No MIZ
+                distSIC(l,j) = 0;
+            else
+                distSIC(l,j) = lldistkm([southern_hemi_points(1), l], [southern_hemi_points(end), l]);
+            end
+            if printing == 1
+                fprintf(strcat("The width of the SIC MIZ in the ", sector," sector is: %g km\n"), distSIC)
+            end
+        end
+        
+        % 4.b SWH
+        variable = "wave_sig_ht";
+        data = data_format(filename,variable,row,lat,lon,dim);
+        if plotting == 1
+            figcount = figcount + 1;
+            figure(figcount)
+            [w, a, output_data] = map_plot(data,variable,sector,grid,[0,11],plotting);
+        else
+            [~, ~, output_data] = map_plot(data,variable,sector,grid,[0,11],plotting);
+        end
+        transect_data = output_data(lon_out1:lon_out2,:); % Take the southern hemisphere
+        
+
+        for l = 1:lon_out2-lon_out1
+            % Find the cells that satisfy the requirements
+           idx_transect = transect_data(l,:) > SWH;
+            
+            points = lat(lon_out1+l-1,idx_transect);
+            southern_hemi_points = points(points < 0);
+            [~,wid] = size(southern_hemi_points);
+            if wid == 0 % No MIZ
+                distSWH(l,j) = 0;
+            else
+                distSWH(l,j) = lldistkm([southern_hemi_points(1), l], [southern_hemi_points(end), l]);
+            end
+            if printing == 1
+                fprintf(strcat("The width of the SWH MIZ in the ", sector," sector is: %g km\n"), distSWH)
+            end
+        end
+
+
+
+        % 4.c FSD
+        variable = "fsdrad";
+        data = data_format(filename,variable,row,lat,lon,dim);
+        if plotting == 1
+            figcount = figcount + 1;
+            figure(figcount)
+            [w, a, output_data] = map_plot(data,variable,sector,grid,[0,11],plotting);
+                title('FSDrad along transect')
+        else
+            [~, ~, output_data] = map_plot(data,variable,sector,grid,[0,11],plotting);
+    
+        end
+        transect_data = output_data(lon_out1:lon_out2,:); % Take the southern hemisphere
+        
+
+        for l = 1:lon_out2-lon_out1
+            % Find the cells that satisfy the requirements
+            idx1 = transect_data(l,:) > eps;
+            idx2 = transect_data(l,:) < fsd_max;
+            idx_transect = logical(idx1.*idx2);
+            
+            points = lat(lon_out1+l-1,idx_transect);
+            southern_hemi_points = points(points < 0);
+            [~,wid] = size(southern_hemi_points);
+            if wid == 0 % No MIZ
+                distFSD(l,j) = 0;
+            else
+                distFSD(l,j) = lldistkm([southern_hemi_points(1), l], [southern_hemi_points(end), l]);
+            end
+            if printing == 1
+                fprintf(strcat("The width of the FSD MIZ in the ", sector," sector is: %g km\n"), distFSD)
+            end
+        end
+        date = update_date(date);
+    end
+    Data(k).Month = [distSIC;distSWH;distFSD];
+end
+else % is a transect
+for k = 1:length(months)
     month_init = months(k);
     if month_init < 10
         date = sprintf('%d-0%d-0%d', year, month_init, day);
@@ -160,7 +274,7 @@ for k = 1:4
         southern_hemi_points = points(points < 0);
         [~,wid] = size(southern_hemi_points);
         if wid == 0 % No MIZ
-            distSWH(j) = 0;
+            distSIC(j) = 0;
         else
             distSIC(j) = lldistkm([southern_hemi_points(1), lon_out], [southern_hemi_points(end), lon_out]);
         end
@@ -214,7 +328,6 @@ for k = 1:4
         idx2 = transect_data > eps;
         idx_transect = logical(idx1.*idx2);
         
-        
         points = lat(lon_out,idx_transect);
         southern_hemi_points = points(points < 0);
         [~,wid] = size(southern_hemi_points);
@@ -230,52 +343,105 @@ for k = 1:4
     end
     Data(k).Month = [distSIC;distSWH;distFSD];
 end
-%% Plotting
-%% a) Boxplot widths
-f = figure;
-t = tiledlayout(1,length(months));
-for i = 1:length(months)
-    plot_data = Data(i).Month;
-    figcount = figcount + 1;
-    %figure(figcount)
-    nexttile
-    boxplot(plot_data',["SIC","SWH","FSD"])
-    ylabel('MIZ width (km)')
-    xlabel('MIZ definition')
-    ylim([0,1200])
-    text = strcat("MIZ widths of the %g E transect over " ,monthName(months(i))," %g");
-    title(sprintf(text,sector(2),year))
-    f.Position = [100 100 1500 400];
 end
-%% b) Correlations
-f = figure(2);
-t2 = tiledlayout(1,length(months));
-for i = 1:length(months)
-    plot_data = Data(i).Month;
+%% Plotting
+
+if isstring(sector)
+    for i = 1:datapoints
+        distSIC_ave_daily(i) = mean(distSIC(:,i));
+        distSWH_ave_daily(i) = mean(distSWH(:,i));
+        distFSD_ave_daily(i) = mean(distFSD(:,i));
+    end
+     %% a) Boxplot widths
+    figcount = figcount + 1;   
+    f = figure(figcount);
+    t = tiledlayout(1,length(months));
+    for i = 1:length(months)
+        plot_data = [distSIC_ave_daily;distSWH_ave_daily;distFSD_ave_daily];
+        nexttile
+        boxplot(plot_data',["SIC","SWH","FSD"])
+        ylabel('MIZ width (km)')
+        xlabel('MIZ definition')
+        ylim([0,1200])
+        text = strcat("MIZ widths of the ", sector, " sector transect over " ,monthName(months(i))," %g");
+        title(sprintf(text,year))
+        f.Position = [100 100 1500 400];
+    end
+
+      %% b) Correlations
     figcount = figcount + 1;
-    %figure(figcount)
-    nexttile
-    x = plot_data(2,:);
-    y = plot_data(3,:);
-    %scatter(x,y)
-    % Get coefficients of a line fit through the data.
-    coefficients = polyfit(x, y, 1);
-    % Create a new x axis with exactly 1000 points (or whatever you want).
-    xFit = linspace(min(x), max(x), 1000);
-    % Get the estimated yFit value for each of those 1000 new x locations.
-    yFit = polyval(coefficients , xFit);
-    % Plot everything.
-    plot(x, y, 'b.', 'MarkerSize', 15); % Plot training data.
-    hold on; % Set hold on so the next plot does not blow away the one we just drew.
-    plot(xFit, yFit, 'r-', 'LineWidth', 2); % Plot fitted line.
-    grid on;
-    ylabel('SWH MIZ width (km)')
-    xlabel('FSD MIZ width (km)')
-    ylim([0,800])
-    xlim([0,1000])
-    text = strcat(monthName(months(i))," %g along %g E transect");
-    title(sprintf(text,year,sector(2)))
-    f.Position = [100 100 1500 400];
+    f = figure(figcount);
+    t2 = tiledlayout(1,length(months));
+    for i = 1:length(months)
+        %plot_data = Data(i).Month;
+        nexttile
+        x = plot_data(2,:);
+        y = plot_data(3,:);
+        %scatter(x,y)
+        % Get coefficients of a line fit through the data.
+        coefficients = polyfit(x, y, 1);
+        % Create a new x axis with exactly 1000 points (or whatever you want).
+        xFit = linspace(min(x), max(x), 1000);
+        % Get the estimated yFit value for each of those 1000 new x locations.
+        yFit = polyval(coefficients , xFit);
+        % Plot everything.
+        plot(x, y, 'b.', 'MarkerSize', 15); % Plot training data.
+        hold on; % Set hold on so the next plot does not blow away the one we just drew.
+        plot(xFit, yFit, 'r-', 'LineWidth', 2); % Plot fitted line.
+        grid on;
+        ylabel('SWH MIZ width (km)')
+        xlabel('FSD MIZ width (km)')
+        ylim([0,800])
+        xlim([0,1000])
+        text = strcat(monthName(months(i))," %g along %g E transect");
+        title(sprintf(text,year,sector(2)))
+        f.Position = [100 100 1500 400];
+    end
+else
+    %% a) Boxplot widths
+    figcount = figcount + 1;
+    f = figure(figcount);
+    t = tiledlayout(1,length(months));
+    for i = 1:length(months)
+        plot_data = Data(i).Month;
+        nexttile
+        boxplot(plot_data',["SIC","SWH","FSD"])
+        ylabel('MIZ width (km)')
+        xlabel('MIZ definition')
+        ylim([0,1200])
+        text = strcat("MIZ widths of the %g E transect over " ,monthName(months(i))," %g");
+        title(sprintf(text,sector(2),year))
+        f.Position = [100 100 1500 400];
+    end
+    %% b) Correlations
+    figcount = figcount + 1;
+    f = figure(figcount);
+    t2 = tiledlayout(1,length(months));
+    for i = 1:length(months)
+        plot_data = Data(i).Month;
+        nexttile
+        x = plot_data(2,:);
+        y = plot_data(3,:);
+        %scatter(x,y)
+        % Get coefficients of a line fit through the data.
+        coefficients = polyfit(x, y, 1);
+        % Create a new x axis with exactly 1000 points (or whatever you want).
+        xFit = linspace(min(x), max(x), 1000);
+        % Get the estimated yFit value for each of those 1000 new x locations.
+        yFit = polyval(coefficients , xFit);
+        % Plot everything.
+        plot(x, y, 'b.', 'MarkerSize', 15); % Plot training data.
+        hold on; % Set hold on so the next plot does not blow away the one we just drew.
+        plot(xFit, yFit, 'r-', 'LineWidth', 2); % Plot fitted line.
+        grid on;
+        ylabel('SWH MIZ width (km)')
+        xlabel('FSD MIZ width (km)')
+        ylim([0,800])
+        xlim([0,1000])
+        text = strcat(monthName(months(i))," %g along %g E transect");
+        title(sprintf(text,year,sector(2)))
+        f.Position = [100 100 1500 400];
+    end
 end
 %% Functions
 
