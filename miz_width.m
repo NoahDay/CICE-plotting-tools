@@ -20,7 +20,7 @@ SWH = 0.0001;
 fsd_max = 50;
 %% Preamble
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'twoyearproper';
+case_name = 'fixedwaves';
 if ssd == 1
     ssd_dir = '/Volumes/Noah_SSD/run_data';
     filedir = strcat(ssd_dir,case_name);
@@ -393,7 +393,7 @@ if isstring(sector)
         xlabel('FSD MIZ width (km)')
         ylim([0,800])
         xlim([0,1000])
-        text = strcat(monthName(months(i))," %g along %g E transect");
+        text = strcat(monthName(months(i))," %g in the ", sector, " sector");
         title(sprintf(text,year,sector(2)))
         f.Position = [100 100 1500 400];
     end
