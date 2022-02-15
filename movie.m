@@ -3,16 +3,16 @@ clear all
 addpath functions
 % create video writer object
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'testing';
+case_name = 'fixedwaves';
 grid = 'gx1'; 
-variable = 'wave_sig_ht'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
-video_name = strcat(variable, '_', case_name, '_', '2022_02_08', '.avi');
+variable = 'aice'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
+video_name = strcat(variable, '_', case_name, '_', '2022_02_10', '.avi');
 writerObj = VideoWriter(video_name);
 time_period = 'd'; %'1','d','m','y'
-datapoints = 30;%242;
+datapoints = 10;%242;
 day = 1;
-month = 1;
-year = 2005;
+month = 2;
+year = 2006;
 sector = "world";
 date = sprintf('%d-0%d-0%d', year, month, day);
 map_type = 'eqaazim'; %cassini
@@ -24,7 +24,6 @@ ticker = 1;
  
 %% Plotting
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'testing';
 %ssd_dir = '/Users/noahday/Maths1/';%'/Volumes/Noah_SSD/run_data';
 
 for i = 1:datapoints

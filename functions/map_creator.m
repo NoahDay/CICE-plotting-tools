@@ -24,20 +24,6 @@ addpath packages/bedmap2_toolbox_v4
 data = ncread(filename, variable);
 [~, ~, n] = size(data);
 
-for level = 1:n
-    data_1 = data(:,:,level);
-
-    latitude = [-90,90];
-    longitude = [-180,180];
-
-    data_1 = rearrange_matrix(data_1,row,dim);
-
-    % fixing data
-    [m, ~] = size(lon);
-    lon = [lon; lon(end,:) + 360/m];
-    lat = [lat; lat(end,:)];
-    data_1 = [data_1; data_1(end,:)];
-
     %% Mapping
     color_map = seaicecolormap();
 if sector == "world"
@@ -119,6 +105,5 @@ end
     %fname = '/Volumes/SSD/MATLAB/PhD Project/CICE Plotting/frames'; 
     %'/Users/noahday/MATLAB-Drive/MATLAB/PhD Project/CICE Plotting/frames';
     saveas(gcf,fullfile(filedir, figname));
-end
 end
 

@@ -7,10 +7,10 @@ addpath functions
 addpath packages/quiverwcolorbar
 % create video writer object
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'twoyearproper';
+case_name = 'fixedwaves';
 grid = 'gx1'; 
 time_period = 'd'; %'1','d','m','y'
-datapoints = 730;
+datapoints = 365;
 day = 1;
 month = 1;
 year = 2005;
