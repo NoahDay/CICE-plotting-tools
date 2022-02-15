@@ -1,17 +1,17 @@
 clear all
 close all
 addpath functions
-filename = 'cases/fixedwaves/history/iceh.2006-02-28.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
 % Read the header
 ncdisp(filename)
 % 
 grid = 'gx1';
-%lat = ncread(filename,'lat');
-%lon = ncread(filename,'lon');
-[lat,lon,row] = grid_read(grid);
-%data = ncread(filename, 'sst');
-data = data_format(filename,'aice',row,lat,lon,3);
+lat = ncread(filename,'LAT');
+lon = ncread(filename,'LON');
+%[lat,lon,row] = grid_read(grid);
+data = ncread(filename, 'prra');
+%data = data_format(filename,'prra',row,lat,lon,3);
 data = data(:,:,1);
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
