@@ -6,8 +6,8 @@ user = 'noahday'; %a1724548, noahday, Noah
 case_name = 'fixedwaves';
 grid = 'gx1'; 
 variable = 'aice'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel
-video_name = strcat(variable, '_', case_name, '_', '2022_02_10', '.avi');
-writerObj = VideoWriter(video_name);
+video_name = strcat(variable, '_', case_name, '_', '2022_02_10', '.mp4');
+writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
 datapoints = 10;%242;
 day = 1;
@@ -28,7 +28,8 @@ user = 'noahday'; %a1724548, noahday, Noah
 
 for i = 1:datapoints
    % Get the file name
-   filename = strcat('cases/',case_name,"/history/iceh.",date,".nc");
+   filename = strcat('/Volumes/NoahDay5TB/casesmbp/',case_name,"/history/iceh.",date,".nc");
+ 
    % Plot the map
    map_creator(filename, date, i, variable, grid, sector, user)
    % Update date
@@ -52,6 +53,4 @@ end
 
  % close the writer
  close(writerObj);
- 
- %% Functions
  

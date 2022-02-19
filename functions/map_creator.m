@@ -29,7 +29,6 @@ data = ncread(filename, variable);
 if sector == "world"
     x_origin = -90;
 end
-data = data_1;
 if sector == "world"
     w = worldmap('world');
         axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
