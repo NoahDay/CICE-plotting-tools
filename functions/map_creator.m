@@ -17,15 +17,30 @@ addpath packages/bedmap2_toolbox_v4
 %[latshelf,lonshelf] = bedmap2_data('latlon');
 
 % grid
-    dim = 2;
+    dim = 3;
 [lat,lon,row] = grid_read(grid);
 
 %filename = strcat('cases/',filename);
-data = ncread(filename, variable);
+if variable == "vvel"
+    data_x = ncread(filename, variable);
+    data_y = ncread(filename, "uvel");
+    data = sqrt(data_x.^2 + data_y.^2);
+elseif variable == "vatm"
+    data_x = ncread(filename, "uatm");
+    data_y = ncread(filename, "vatm");
+    data = sqrt(data_x.^2 + data_y.^2);
+else
+    if dim == 3
+        data3d = ncread(filename, variable);
+        data(:,:) = data3d(:,:,1);
+    else
+        data = ncread(filename, variable);
+    end
+end
 [~, ~, n] = size(data);
 
     %% Mapping
-    color_map = seaicecolormap();
+    %color_map = seaicecolormap();
 if sector == "world"
     x_origin = -90;
 end
@@ -47,6 +62,7 @@ if sector == "world"
         land = shaperead('landareas', 'UseGeoCoords', true);
         geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
         %pcolorm(latshelf,lonshelf,shelf)  
+        colormap("cool")
 elseif sector == "SA"
     [w a] = map_plot(data,variable,sector,grid);
 end
@@ -80,6 +96,12 @@ end
      elseif variable == "mean_wave_dir_d"
          plot_variable = "Mean wave direction (rads) ";
          unit = "radians";
+    elseif variable == "vvel"
+        plot_variable = "Ice drift magnitude ";
+        unit = "m/s";
+    elseif variable == "vatm"
+        plot_variable = "Wind magnitude ";
+        unit = "m/s";
      else
          plot_variable = variable;
  end

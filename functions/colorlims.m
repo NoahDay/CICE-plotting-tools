@@ -7,9 +7,9 @@ function limit = colorlims(variable)
  elseif variable == "wave_sig_ht_d"
     limit=[0,10];
  elseif variable == "fsdrad"
-    limit=[0,1000];
+    limit=[0,100];
  elseif variable ==  "fsdrad_d"
-    limit=[0,800];
+    limit=[0,2000];
  elseif variable  == "aice"
     limit=[0,1];
  elseif variable  == "aice_d"
@@ -26,6 +26,20 @@ elseif variable  == "peak_period_d"
      limit = [0,2];
  elseif variable == "frazil"
      limit = [0,5];
+ elseif variable == "sigP"
+     limit = [0,5000];
+ elseif variable == "Tair"
+     limit = [-30,30];
+ elseif variable == "sst"
+     limit = [-10,20];
+ elseif variable == "Tsfc"
+     limit = [-20,10];
+ elseif variable == "dafsd_wave"
+     limit = [-0.05,0.05];
+ elseif variable == "iage"
+     limit = [0,2];
+ elseif variable == "vatm"
+     limit = [0,20];
  else
      limit = [0,1];
  end
