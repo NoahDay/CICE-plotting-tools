@@ -42,6 +42,7 @@ if isstring(sector)
             end
     else
         coords = sector_coords(sector);
+
         min_lat = min(coords(:,1));
         max_lat = max(coords(:,1));
         min_lon = min(coords(:,2));

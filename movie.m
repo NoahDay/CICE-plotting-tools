@@ -5,20 +5,19 @@ addpath functions
 user = 'noahday'; %a1724548, noahday, Noah
 case_name = 'fixedwaves';
 grid = 'gx1'; 
-variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
+variable = 'aice'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
 % afsd, dafsd_wave, Tsfc
 
-variable = ["aice","wave_sig_ht","sigP","fsdrad"];
-for j = 1:numel(variable)
-video_name = strcat(variable, '_', case_name, '_', '2022_02_21_storm1', '.mp4');
+video_name = strcat(variable, '_', case_name, '_', '2022_02_22_2006', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
-datapoints = 12;%242;
-day = 26;
-month = 9;
-year = 2009;
-sector = "SA";
-date = sprintf('%d-0%d-%d', year, month, day);
+datapoints = 90;
+timestep = 7;
+day = 1;
+month = 1;
+year = 2006;
+sector = "world";
+date = sprintf('%d-0%d-0%d', year, month, day);
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
 set(writerObj,'FrameRate',datapoints/10); % 0.5 = 2 seconds per frame
@@ -26,22 +25,24 @@ set(writerObj,'FrameRate',datapoints/10); % 0.5 = 2 seconds per frame
 open(writerObj);
 ticker = 1;
  
-%%Plotting
+%Plotting
 user = 'noahday'; %a1724548, noahday, Noah
-%ssd_dir = '/Users/noahday/Maths1/';%'/Volumes/Noah_SSD/run_data';
-
 for i = 1:datapoints
    % Get the file name
    filename = strcat('/Volumes/NoahDay5TB/casesmbp/',case_name,"/history/iceh.",date,".nc");
- 
    % Plot the map
    map_creator(filename, date, i, variable, grid, sector, user)
    % Update date
-   date = update_date(date);
+   %for j = 1:timestep
+    date = update_date(date);
+   %end
+   if mod(i,round(datapoints/10)) == 0
+       clc
+       fprintf('%g0%% complete\n',ticker);
+       ticker = ticker + 1;
+   end
 end    
         
-
-    
 % iterate over each image
  for k=1:datapoints
      % use imread to read the image
