@@ -16,7 +16,7 @@ timestep = 7;
 day = 1;
 month = 1;
 year = 2006;
-sector = "world";
+sector = "SA";
 date = sprintf('%d-0%d-0%d', year, month, day);
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
@@ -24,14 +24,14 @@ set(writerObj,'FrameRate',datapoints/10); % 0.5 = 2 seconds per frame
 % open the writer
 open(writerObj);
 ticker = 1;
- 
+SIC = 0.15; 
 %Plotting
 user = 'noahday'; %a1724548, noahday, Noah
 for i = 1:datapoints
    % Get the file name
    filename = strcat('/Volumes/NoahDay5TB/casesmbp/',case_name,"/history/iceh.",date,".nc");
    % Plot the map
-   map_creator(filename, date, i, variable, grid, sector, user)
+   map_creator(filename, date, i, variable, grid, sector, user, SIC)
    % Update date
    %for j = 1:timestep
     date = update_date(date);

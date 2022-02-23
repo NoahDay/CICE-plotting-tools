@@ -50,8 +50,8 @@ if isstring(sector)
         w = worldmap('world');
             axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
             setm(w, 'Origin', [0 0 0]);
-            setm(w, 'maplatlimit', [min_lat-5,max_lat+5]);
-            setm(w, 'maplonlimit', [min_lon-5,max_lon+5]);
+            setm(w, 'maplatlimit', [min_lat,max_lat]);
+            setm(w, 'maplonlimit', [min_lon,max_lon]);
             setm(w, 'meridianlabel', 'on')
             setm(w, 'parallellabel', 'on')
             setm(w, 'mlabellocation', 10);

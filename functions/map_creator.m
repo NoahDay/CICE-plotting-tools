@@ -1,4 +1,4 @@
-function y = map_creator(filename, plot_title_vec, i, variable, grid, sector, user)
+function y = map_creator(filename, plot_title_vec, i, variable, grid, sector, user, SIC)
 %MAP_CREATOR creates map images of Antarctica given netcdf data files
 %   filename: the directory to the .nc file
 %   plot_title: string containing the title for the plot
@@ -65,6 +65,11 @@ if sector == "world"
         colormap("cool")
 elseif sector == "SA"
     [w a] = map_plot(data,variable,sector,grid);
+    if SIC > eps
+         aice = ncread(filename, "aice");
+        [lat_ice_edge, lon_ice_edge] = find_ice_edge(aice,SIC,sector,lat,lon);
+        plotm(lat_ice_edge,lon_ice_edge,'m-','LineWidth',2)
+    end
 end
  if variable == "fsdrad"
          plot_variable = "FSD radius ";
