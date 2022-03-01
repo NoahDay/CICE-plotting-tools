@@ -65,10 +65,13 @@ if isstring(sector)
             land = shaperead('landareas', 'UseGeoCoords', true);
             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
             a = colorbar;
-            colormap turbo
+            a.TickLabelInterpreter = 'latex';
+            a.Label.String = colorlabel(variable);
+            %colormap turbo
+
             if ~exist('clims', 'var')
                 % Set sector to world by default
-                caxis(colorlims(variable));
+                caxis(colorlims(variable));       
             else
                 caxis(clims)
             end

@@ -17,27 +17,34 @@ addpath packages/bedmap2_toolbox_v4
 %[latshelf,lonshelf] = bedmap2_data('latlon');
 
 % grid
-    dim = 3;
 [lat,lon,row] = grid_read(grid);
 
+dim = 2;
 %filename = strcat('cases/',filename);
 if variable == "vvel"
-    data_x = ncread(filename, variable);
-    data_y = ncread(filename, "uvel");
+    dim = 2;
+    data_x = data_format(filename,"uvel",row,lat,lon,dim);
+    data_y = data_format(filename,"vvel",row,lat,lon,dim);
     data = sqrt(data_x.^2 + data_y.^2);
-elseif variable == "vatm"
-    data_x = ncread(filename, "uatm");
-    data_y = ncread(filename, "vatm");
+elseif variable == "vatm" 
+    dim = 2;
+    data_x = data_format(filename,"uatm",row,lat,lon,dim);
+    data_y = data_format(filename,"vatm",row,lat,lon,dim);
     data = sqrt(data_x.^2 + data_y.^2);
+elseif variable == "Tsfc" || variable == "Tair" || variable == "sst"
+    dim = 2;
+    data_x = data_format(filename,"uatm",row,lat,lon,dim);
+    data_y = data_format(filename,"vatm",row,lat,lon,dim);
+    data = data_format(filename,variable,row,lat,lon,dim);
 else
     if dim == 3
         data3d = ncread(filename, variable);
         data(:,:) = data3d(:,:,1);
     else
-        data = ncread(filename, variable);
+        data = data_format(filename,variable,row,lat,lon,dim);%ncread(filename, variable);
     end
 end
-[~, ~, n] = size(data);
+
 
     %% Mapping
     %color_map = seaicecolormap();
@@ -64,12 +71,49 @@ if sector == "world"
         %pcolorm(latshelf,lonshelf,shelf)  
         colormap("cool")
 elseif sector == "SA"
-    [w a] = map_plot(data,variable,sector,grid);
-    if SIC > eps
-         aice = ncread(filename, "aice");
-        [lat_ice_edge, lon_ice_edge] = find_ice_edge(aice,SIC,sector,lat,lon);
-        plotm(lat_ice_edge,lon_ice_edge,'m-','LineWidth',2)
+    if variable == "fsdrad"
+        aice = data_format(filename,"aice",row,lat,lon,2);
+        idx = aice > 0.01;
+        data = data.*idx;
     end
+    [w ~] = map_plot(data,variable,sector);
+    if SIC > eps
+        aice = data_format(filename,"aice",row,lat,lon,2);
+        [lat_ice_edge, lon_ice_edge] = find_ice_edge(aice,SIC,sector,lat,lon);
+        t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',SIC),'HorizontalAlignment','right');
+    end
+    if variable == "vatm" || variable == "Tair" || variable == "Tsfc" || variable == "sst"
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)
+        lat_vec = reshape(lat,1,[]);
+        lon_vec = reshape(lon,1,[]);
+        x_vec = reshape(data_x,1,[]);
+        y_vec = reshape(data_y,1,[]);
+        color = 'thermal';
+        cmocean(color,15)
+        quiverm(lat_vec,lon_vec,x_vec,y_vec,'cyan') 
+    elseif variable == "vvel"
+        lat_vec = reshape(lat,1,[]);
+        lon_vec = reshape(lon,1,[]);
+        x_vec = reshape(data_x,1,[]);
+        y_vec = reshape(data_y,1,[]);
+        quiverm(lat_vec,lon_vec,x_vec,y_vec,'cyan') 
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)
+        colormap(turbo(20))
+    elseif variable == "wave_sig_ht"
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)
+        colormap(winter(20))
+    elseif variable == "fsdrad"
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)
+        colormap(jet(30))
+    elseif variable == "aice"
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',0.7*[0.4660 0.6740 0.1880],'LineWidth',2) % Dark green
+        cmocean('ice',10)
+    else
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)
+        colormap(turbo(20))
+    end
+    
+      %  edge_color = 0.7*[0.4660 0.6740 0.1880]; % Dark green
 end
  if variable == "fsdrad"
          plot_variable = "FSD radius ";
@@ -105,26 +149,33 @@ end
         plot_variable = "Ice drift magnitude ";
         unit = "m/s";
     elseif variable == "vatm"
-        plot_variable = "Wind magnitude ";
+        plot_variable = "Wind forcing ";
         unit = "m/s";
+    elseif variable == "sst"
+        plot_variable = "Sea surface temperature ";
+        unit = "C";
+    elseif variable == "Tair"
+        plot_variable = "Air temperature ";
+        unit = "C";
      else
          plot_variable = variable;
  end
-    set(gcf, 'Position',  [100, 100, 1000, 800])
+    set(gcf, 'Position',  [100, 100, 300, 400])
     set(gcf,'Visible', 'off')
-    fontSize = 20; 
+    fontSize = 16; 
     plot_title = strcat(plot_variable, plot_title_vec);
     title(plot_title, 'FontSize', fontSize);
-    %caxis([0 400]) %fsdrad [80 250]
-    a=colorbar;
-%    label_c = ylabel(a,unit,'FontSize',16,'Rotation',270);
-    label_c.Position(1) = 4;
-    label_h.Position(2) = 1; % change vertical position of ylabel
-    limit = colorlims(variable);
-    
-    %labels = {'Forest','Water','Agriculture','Green Areas','Built-up'};
-%lcolorbar(labels,'fontweight','normal', 'fontsize',16);
-    caxis(limit);
+
+
+%     %caxis([0 400]) %fsdrad [80 250]
+%     a=colorbar;
+% %    label_c = ylabel(a,unit,'FontSize',16,'Rotation',270);
+%     label_c.Position(1) = 4;
+%     label_h.Position(2) = 1; % change vertical position of ylabel
+%     limit = colorlims(variable);
+%     
+% 
+%     caxis(limit);
 
     figname = sprintf('image%d.png', i); 
     filedir = sprintf('/Users/%s/GitHub/CICE-plotting-tools/frames', user);

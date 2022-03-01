@@ -5,29 +5,35 @@ clear
 close
 addpath functions
 addpath packages/quiverwcolorbar
-% create video writer object
+
+
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'fixedwaves';
+case_name = 'momentum';
 grid = 'gx1'; 
 time_period = 'd'; %'1','d','m','y'
-datapoints = 365;
-day = 1;
-month = 1;
-year = 2005;
+datapoints = 10;
+day = 28;
+month = 6;
+year = 2009;
 sector = "SA";
-date = sprintf('%d-0%d-0%d', year, month, day);
+if day > 9
+    date = sprintf('%d-0%d-%d', year, month, day);
+else
+    date = sprintf('%d-0%d-0%d', year, month, day);
+end
 
 ticker = 1;
- 
-%% Plotting
+fig_count = 1;
+
+%% Read in data
 %ssd_dir = '/Volumes/Noah_SSD/run_data';
-filedir = strcat('cases/',case_name);
+filedir = strcat('cases/',case_name);%strcat('/Volumes/NoahDay5TB/','cases/',case_name);
 
 for i = 1:datapoints
    % Get the file name
    filename = strcat(filedir,"/history/iceh.",date(i,:),".nc");
-   % Find storm
-   wind_max(i) = storm_finder(filename, grid, sector);
+   % Find the maximum wind speed in that sector
+   [wind_max(i) wind_mean(i) wind_min(i)] = storm_finder(filename, sector);
    % Update date
    date(i+1,:) = update_date(date(i,:));
 end    
@@ -42,11 +48,12 @@ idx_cyclone = wind_max > cyclone_threshold;
     
 storm_dates = date(idx_storm,:);
 cyclone_dates = date(idx_cyclone,:);
-%% Plot the storm images
+
+
+%% Plot the ice and wind velocities every day that there is a storm
 [lat,lon,row] = grid_read(grid);
 [wid,len] = size(lat);
 
-fig_count = 1;
 dim = 2;
 
 [~, sector_mask] = data_format_sector(filename,"uatm",sector,dim);
@@ -60,6 +67,7 @@ atm_var1 = "uatm"; % atm velocity (x)
 atm_var2 = "vatm"; % atm velocity (y)
 ice_var1 = "uvel"; % ice velocity (x)
 ice_var2 = "vvel"; % ice velocity (y)
+
 [len, wid] = size(storm_dates);
 for k=1:len
     figure(fig_count)
@@ -113,7 +121,7 @@ for k=1:len
         fig_count = fig_count + 1;    
 end
 
-%% Time series
+%% Time series of wind speeds and frequencies of stormy days
 end_date = date(end,:);
 end_year = str2double(end_date(1:4));
 end_month = str2double(end_date(6:7));
@@ -129,11 +137,12 @@ ts1.Name = 'Storm frequency in the SA sector';
 ts1.TimeInfo.Units = 'days';
 month_name = datestr(datetime(1,month,1),'mmmm');
 ts1.TimeInfo.StartDate = strcat(sprintf('%d',day),'-',month_name,'-',sprintf('%d',year));% Set start date.
-ts1.TimeInfo.Format = 'mmm dd, yy';       % Set format for display on x-axis.
+ts1.TimeInfo.Format = 'dd mmm, yy';       % Set format for display on x-axis.
 
 line_width = 3;
 
-figure(100)
+fig_count = fig_count + 1;
+figure(fig_count)
 t = tiledlayout(1,2);
 nexttile
 plot(ts1,'LineWidth',line_width)
@@ -158,27 +167,127 @@ ylim([0,2])
 
 
 % Max wind speed
-figure(99)
+fig_count = fig_count + 1;
+figure(fig_count)
 t1 = datetime(year,month,day);
 t2 = datetime(end_year,end_month,end_day);
 dates = datevec(t1:t2);
 
 ts2 = timeseries(wind_max,1:length(wind_max));
-ts2.Name = 'Max wind speed in the SA sector';
+ts2.Name = 'Max wind speed (m/s)';
 ts2.TimeInfo.Units = 'days';
 month_name = datestr(datetime(1,month,1),'mmmm');
-ts2.TimeInfo.StartDate = strcat(sprintf('%d',day),'-',month_name,'-',sprintf('%d',year));     % Set start date.
+ts2.TimeInfo.StartDate = strcat(sprintf('%d',day-1),'-',month_name,'-',sprintf('%d',year));     % Set start date.
 ts2.TimeInfo.Format = 'mmm dd, yy';       % Set format for display on x-axis.
 
 line_width = 3;
 plot(ts2,'LineWidth',line_width)
-yline(storm_threshold)
-yline(cyclone_threshold)
+grid on
+yline(storm_threshold,'--')
+yline(cyclone_threshold,'--')
+xline(5,'--')
+txt = 'Start of storm';
+h = text(4.8,10,txt);
+ set(h,'Rotation',90);
+
+txt = 'Start of pre-storm';
+h = text(0.2,10,txt);
+ set(h,'Rotation',90); 
+
+
 txt = 'Storm threshold (Beaufort Wind Scale)';
 text(0,storm_threshold+1,txt)
 
 txt = 'Cyclone threshold (Beaufort Wind Scale)';
 text(0,cyclone_threshold+1,txt)
+
+
+% Mean wind speed
+fig_count = fig_count + 1;
+figure(fig_count)
+t1 = datetime(year,month,day);
+t2 = datetime(end_year,end_month,end_day);
+dates = datevec(t1:t2);
+
+ts2 = timeseries(wind_mean,1:length(wind_max));
+ts2.Name = 'Mean wind speed (m/s)';
+ts2.TimeInfo.Units = 'days';
+month_name = datestr(datetime(1,month,1),'mmmm');
+ts2.TimeInfo.StartDate = strcat(sprintf('%d',day-1),'-',month_name,'-',sprintf('%d',year));     % Set start date.
+ts2.TimeInfo.Format = 'mmm dd, yy';       % Set format for display on x-axis.
+
+line_width = 3;
+plot(ts2,'LineWidth',line_width)
+grid on
+yline(storm_threshold,'--')
+yline(cyclone_threshold,'--')
+xline(5,'--')
+txt = 'Start of storm';
+h = text(4.8,10,txt);
+ set(h,'Rotation',90);
+
+txt = 'Start of pre-storm';
+h = text(0.2,10,txt);
+ set(h,'Rotation',90); 
+
+
+txt = 'Storm threshold (Beaufort Wind Scale)';
+text(0,storm_threshold+1,txt)
+
+txt = 'Cyclone threshold (Beaufort Wind Scale)';
+text(0,cyclone_threshold+1,txt)
+
+
+% Min wind speed
+fig_count = fig_count + 1;
+figure(fig_count)
+t1 = datetime(year,month,day);
+t2 = datetime(end_year,end_month,end_day);
+dates = datevec(t1:t2);
+
+ts2 = timeseries(wind_min,1:length(wind_max));
+ts2.Name = 'Min wind speed (m/s)';
+ts2.TimeInfo.Units = 'days';
+month_name = datestr(datetime(1,month,1),'mmmm');
+ts2.TimeInfo.StartDate = strcat(sprintf('%d',day-1),'-',month_name,'-',sprintf('%d',year));     % Set start date.
+ts2.TimeInfo.Format = 'mmm dd, yy';       % Set format for display on x-axis.
+
+line_width = 3;
+plot(ts2,'LineWidth',line_width)
+grid on
+yline(storm_threshold,'--')
+yline(cyclone_threshold,'--')
+xline(5,'--')
+txt = 'Start of storm';
+h = text(4.8,10,txt);
+ set(h,'Rotation',90);
+
+txt = 'Start of pre-storm';
+h = text(0.2,10,txt);
+ set(h,'Rotation',90); 
+
+
+txt = 'Storm threshold (Beaufort Wind Scale)';
+text(0,storm_threshold+1,txt)
+
+txt = 'Cyclone threshold (Beaufort Wind Scale)';
+text(0,cyclone_threshold+1,txt)
+
+
+%% Investigate the stormiest day
+
+% What day has the greatest winds
+find(wind_max = max(wind_max));
+
+
+% Calculate the ice edge
+aice_data = data_format_sector(filename,"aice",sector);
+
+lat_vec = reshape(lat,1,[]);
+lon_vec = reshape(lon,1,[]);
+
+SIC = 0.15;
+[lat_ice_edge, lon_ice_edge] = find_ice_edge(aice_data,SIC,sector,lat,lon);
 
  %% Functions
  

@@ -1,19 +1,7 @@
 clear all
 close all
 addpath functions
-day = 2;
-month = 1;
-year = 2009;
-sector = "SA";
-if day < 9
-    date = sprintf('%d-0%d-0%d', year, month, day);
-else
-    date = sprintf('%d-0%d-%d', year, month, day);
-end
-case_name = 'ocntest';
-ticker = 1;
-SIC = 0.15; 
-filename = strcat('cases/',case_name,"/history/iceh.",date,".nc");
+filename = 'ocean_forcing_clim_2D_gx1.nc';
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
 % Read the header
@@ -29,11 +17,11 @@ grid = 'gx1';
 [lat,lon,row] = grid_read(grid);
 lat_vec = reshape(lat,1,[]);
 lon_vec = reshape(lon,1,[]);
-dim = 2;
+dim = 3;
 
-data_u = data_format(filename,'uocn',row,lat,lon,dim);
+data_u = data_format(filename,'U',row,lat,lon,dim);
 data_u2 = data_u(:,:,1);
-data_v = data_format(filename,'vocn',row,lat,lon,dim);
+data_v = data_format(filename,'V',row,lat,lon,dim);
 data_v2 = data_v(:,:,1);
 u_vec = reshape(data_u2,1,[]);
 v_vec = reshape(data_v2,1,[]);
