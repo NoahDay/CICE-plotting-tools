@@ -72,9 +72,9 @@ if sector == "world"
         colormap("cool")
 elseif sector == "SA"
     if variable == "fsdrad"
-        aice = data_format(filename,"aice",row,lat,lon,2);
-        idx = aice > 0.01;
-        data = data.*idx;
+        data = data_format(filename,"fsdrad",row,lat,lon,2);
+        idx = data < 0.01;
+        data(idx) = NaN;% = data.*idx;
     end
     [w ~] = map_plot(data,variable,sector);
     if SIC > eps

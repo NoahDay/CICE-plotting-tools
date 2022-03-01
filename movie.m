@@ -5,17 +5,17 @@ addpath functions
 user = 'noahday'; %a1724548, noahday, Noah
 case_name = 'momentum';
 grid = 'gx1'; 
-variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
+variable = 'aice'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
 % afsd, dafsd_wave, Tsfc
 
-video_name = strcat(variable, '_', case_name, '_', '2022_02_28_storm2', '.mp4');
+video_name = strcat(variable, '_', case_name, '_', '2022_03_02_winter', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
-datapoints = 5;
+datapoints = 90;
 %timestep = 7;
 % Prestorm: 28/6
 % Storm: 3/7
-day = 3;
+day = 1;
 month = 7;
 year = 2009;
 sector = "SA";
@@ -26,7 +26,7 @@ else
 end
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
-set(writerObj,'FrameRate',datapoints/10); % 0.5 = 2 seconds per frame
+set(writerObj,'FrameRate',datapoints/20); % 0.5 = 2 seconds per frame
 % open the writer
 open(writerObj);
 ticker = 1;
