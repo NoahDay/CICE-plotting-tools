@@ -1,5 +1,12 @@
 function [sector_data, sector_mask] = data_format_sector(filedir,variable,sector,dim)
-cd '/Users/noahday/GitHub/CICE-plotting-tools'
+%  if ~exist('user', 'var')
+%         cd '/Users/noahday/GitHub/CICE-plotting-tools'
+%  end
+%  
+%  if user == "a1724548"
+%      cd '/Users/a1724548/GitHub/CICE-plotting-tools'
+%  end
+%cd '..'
 addpath functions
      if ~exist('dim', 'var')
         dim = 2; 

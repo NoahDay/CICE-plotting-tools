@@ -5,7 +5,7 @@ function coords = sector_coords(sector)
 %       WS := Weddell Sea,
 %       and EA := East Antarctica
     if sector == "SA"
-        coords = [-45,20;-70,20;-45,40;-70,40]; %(NW;SW,NE,SE)
+        coords = [-55,20;-70,20;-55,40;-70,40]; %(NW;SW,NE,SE)
     elseif sector == "EA"
         coords = [-45,60;-75,60;-45,120;-75,120]; %(NW;SW,NE,SE) %% Need to verify these points with papers!!
     elseif sector == "WS"

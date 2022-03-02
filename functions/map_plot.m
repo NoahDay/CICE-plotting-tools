@@ -1,6 +1,8 @@
 function [w, a, output_data] = map_plot(data,variable,sector,grid,clims,plotting)
 %Plot a worldmap
-cd '/Users/noahday/GitHub/CICE-plotting-tools'
+%cd '/Users/noahday/GitHub/CICE-plotting-tools'
+
+
 addpath functions
 if ~exist('sector', 'var')
     % Set sector to world by default

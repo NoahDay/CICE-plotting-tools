@@ -1,7 +1,7 @@
 clear all
 close all
 addpath functions
-day = 2;
+day = 6;
 month = 1;
 year = 2009;
 sector = "SA";
@@ -31,15 +31,15 @@ lat_vec = reshape(lat,1,[]);
 lon_vec = reshape(lon,1,[]);
 dim = 2;
 
-data_u = data_format(filename,'uocn',row,lat,lon,dim);
+data_u = data_format(filename,'strocnx',row,lat,lon,dim);
 data_u2 = data_u(:,:,1);
-data_v = data_format(filename,'vocn',row,lat,lon,dim);
+data_v = data_format(filename,'strocny',row,lat,lon,dim);
 data_v2 = data_v(:,:,1);
 u_vec = reshape(data_u2,1,[]);
 v_vec = reshape(data_v2,1,[]);
 
 data = sqrt(data_u2.^2 + data_v2.^2);
-
+data =  data_format(filename,'dvidtd',row,lat,lon,dim);
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
     setm(w, 'Origin', [-90 0 0]);
@@ -57,4 +57,4 @@ w = worldmap('world');
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
-    quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
