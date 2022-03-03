@@ -41,8 +41,9 @@ SIC = 0.15;
 
 NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
+Nf = numel(NFSD);
 lon_pos = 28;
-lat_pos = edge(lon_pos)-10;
+lat_pos = edge(lon_pos)-11;
 floe_binwidth = [5.2438,8.9763,14.7711,23.3545,35.4569,51.6493,72.1173,96.4015,123.1658,150.0742,173.8638,190.6718,397.7316,479.1093,649.9598,881.7363];
 thick_binwidth = NCAT - [0;NCAT(1:end-1)];
 
@@ -67,15 +68,21 @@ afsd(1:numel(NFSD)) = afsd_data(lon_pos,lat_pos,:);
 fsd = afsd.*floe_binwidth/conc;
 %fprintf('The normalised FSD is: %g \n', fsd')
 
-bar(1:16,fsd,'hist')
-xlabel('FSD radius')
+bar(1:Nf,fsd,'hist')
+xlabel('FSD radius (m)')
 ylabel('Fraction of sea ice belonging to each category')
 Nf = numel(NFSD);
-for i = 1:Nf
-    lbls(i,:) = num2str(floor(NFSD(i)));
+format shortg
+r_NFSD = round(round(NFSD,1));
+r1_NFSD = round(round([0;NFSD(1:end-1)],1));
+s_NFSD = num2str(r_NFSD);
+for i = 1:16
+    lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
 end
+    xticks(1:Nf)
+xticklabels(lab)
+title(sprintf("FSD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
 
-xticklabels({lbls})
 %% AFSDN
 % Sum_{Nc} Sum_{Nf} a_{in} F_{in,k} = 1
 dim = 4;
@@ -98,7 +105,7 @@ sum(afsdn')
 afsd
 %afsdn_test = afsdn./sum(sum(afsdn))
 
-Nf = numel(NFSD);
+
 for nf = 1:Nf
    test(nf) = sum(afsdn(nf,:)./aicen);
 end

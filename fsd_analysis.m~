@@ -65,8 +65,16 @@ afsd_data = data_format_sector(filename,"afsd",sector,dim);
 afsd(1:numel(NFSD)) = afsd_data(lon_pos,lat_pos,:);
 % 
 fsd = afsd.*floe_binwidth/conc;
-fsd
+%fprintf('The normalised FSD is: %g \n', fsd')
 
+bar(1:16,fsd,'hist')
+xlabel('FSD radius')
+ylabel('Fraction of sea ice belonging to each category')
+Nf = numel(NFSD);
+
+r_NFSD = round(NFSD,2);
+s_NFSD = num2str(r_NFSD);
+xticklabels(num2str(NFSD)')
 %% AFSDN
 % Sum_{Nc} Sum_{Nf} a_{in} F_{in,k} = 1
 dim = 4;
@@ -81,7 +89,7 @@ for nf = 1:numel(NFSD)
 end
 
 afsd_cal = sum(afsdn');
-afsd_cal.*floe_binwidth
+afsd_cal.*floe_binwidth; % = fsd
 
 
 %% JUNK
