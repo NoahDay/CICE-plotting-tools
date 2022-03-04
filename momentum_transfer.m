@@ -25,7 +25,7 @@ sector = "SA";%struct('coords',sector_coords(sector),'centre_lon',(coords(1,1)+c
 clear coords
 
 initial_date.day = 3;
-initial_date.month = 8;
+initial_date.month = 7;
 initial_date.year = 2009; % 2005 is a spin-up year
 initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 
@@ -55,7 +55,8 @@ lon_vec = reshape(lon,1,[]);
 SIC = 0.15;
 [lat_ice_edge, lon_ice_edge] = find_ice_edge(aice_data,SIC,sector,lat,lon);
 
-% 1. Ice drift
+scale = 1;
+%% 1. Ice drift
 % Variables: uvel, vvel
 
 uvel_data = data_format_sector(filename,"uvel",sector);
@@ -67,16 +68,12 @@ ice_vel_mag = sqrt(uvel_data.^2 + vvel_data.^2);
 
 
 
-t1 = tiledlayout(1,5);
+fig_count = fig_count + 1;
+figure(fig_count)
 
-
-
-%fig_count = fig_count + 1;
-%figure(fig_count)
-nexttile
 figs.ice = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    quiverm(lat_vec,lon_vec,uvel_vec,vvel_vec,pram.quiver_color)
+    quiverm(lat_vec,lon_vec,uvel_vec,vvel_vec,pram.quiver_color,scale)
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
     %set(gcf,'Position',[1200 1000 300 400])
@@ -96,14 +93,15 @@ strair_mag = sqrt(strairx_data.^2 + strairy_data.^2);
 
 %fig_count = fig_count + 1;
 %figure(fig_count)
+t1 = tiledlayout(1,5);
 nexttile
 figs.wind = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,pram.quiver_color)
+    quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,pram.quiver_color,scale)
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
     %set(gcf,'Position',[1200 1000 300 400])
-    title(strcat("Wind stress on ice - ",initial_date.char), 'interpreter','latex','FontSize', 14)
+    title(strcat("Wind stress - ",initial_date.char), 'interpreter','latex','FontSize', 14)
     cmocean(pram.colormap,10)
 
 % 3. Ocean stress
@@ -121,7 +119,7 @@ strocn_mag = sqrt(strocnx_data.^2 + strocny_data.^2);
 nexttile
 figs.ocn = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,pram.quiver_color)
+    quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,pram.quiver_color,scale)
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
     %set(gcf,'Position',[1200 1000 300 400])
@@ -131,16 +129,16 @@ figs.ocn = map_plot(aice_data,"aice",sector);
 % 4a. Internal stress
 % Variables: sig1, sig2, sigP
 
-nexttile
-strength_data = data_format_sector(filename,"sigP",sector);
-figs.cor = map_plot(strength_data,"sigP",sector);  
-    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-   % quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,pram.quiver_color)
-    t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
-    t.Color = pram.label_color;
-    %set(gcf,'Position',[1200 1000 300 400])
-    title(strcat("Internal ice pressure - ",initial_date.char), 'interpreter','latex','FontSize', 14)
-    cmocean(pram.colormap,10)
+% nexttile
+% strength_data = data_format_sector(filename,"sigP",sector);
+% figs.cor = map_plot(strength_data,"sigP",sector);  
+%     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
+%    % quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,pram.quiver_color)
+%     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+%     t.Color = pram.label_color;
+%     %set(gcf,'Position',[1200 1000 300 400])
+%     title(strcat("Internal ice pressure - ",initial_date.char), 'interpreter','latex','FontSize', 14)
+%     cmocean(pram.colormap,10)
 
 
 % 4b. Divergence of internal
@@ -161,7 +159,7 @@ strcor_mag = sqrt(strcorx_data.^2 + strcory_data.^2);
 nexttile
 figs.cor = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,pram.quiver_color)
+    quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,pram.quiver_color,scale)
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
     %set(gcf,'Position',[1200 1000 300 400])
@@ -171,10 +169,9 @@ figs.cor = map_plot(aice_data,"aice",sector);
  
 
 
-%% 6. Sea surface slope
+% 6. Sea surface slope
 % Variables: strtltx, strtlty
 
-t2 = tiledlayout(1,3);
 strtltx_data = data_format_sector(filename,"strtltx",sector);
 strtlty_data = data_format_sector(filename,"strtlty",sector);
 
@@ -187,7 +184,7 @@ strtlt_mag = sqrt(strtltx_data.^2 + strtlty_data.^2);
 nexttile
 figs.tlt = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,pram.quiver_color)
+    quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,pram.quiver_color,scale)
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
     set(gcf,'Position',[1200 1000 300 400])
@@ -208,7 +205,7 @@ strint_mag = sqrt(strintx_data.^2 + strinty_data.^2);
 nexttile
 figs.int = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,pram.quiver_color)
+    quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,pram.quiver_color,scale)
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
     set(gcf,'Position',[1200 1000 300 400])
@@ -216,7 +213,7 @@ figs.int = map_plot(aice_data,"aice",sector);
     cmocean(pram.colormap,10)
 
 
-% 8. Sum the stresses
+%% 8. Sum the stresses
 % Variables x: strairx, strocnx, strcorx, strtltx, strintx
 % Variables y: strairy, strocny, strcory, strtlty, strinty
 
@@ -225,9 +222,9 @@ sum_vec_y = strairy_vec + strocny_vec + strcory_vec + strtlty_vec + strinty_vec;
 sum_mag = sqrt(sum_vec_x.^2 + sum_vec_y.^2);
 scale = 50;
 
-%fig_count = fig_count + 1;
-%figure(fig_count)
-nexttile
+fig_count = fig_count + 1;
+figure(fig_count)
+
 figs.sum = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
     quiverm(lat_vec,lon_vec,sum_vec_x,sum_vec_y)
@@ -262,7 +259,7 @@ fsd_data(idx) = NaN;
 fig_count = fig_count + 1;
 figure(fig_count)
 fig.all = map_plot(fsd_data,"fsdrad",sector);  
-    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
+    plotm(lat_ice_edge,lon_ice_edge,'-','color','k','LineWidth',2)
     q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b');
     q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r');
     q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g');
@@ -274,25 +271,25 @@ fig.all = map_plot(fsd_data,"fsdrad",sector);
     set(gcf,'Position',[1200 1000 300 400])
     title(strcat("All of ice stress - ",initial_date.char), 'interpreter','latex','FontSize', 14)
     legend([q1(1), q2(1), q3(1), q4(1), q5(1)], 'Air', 'Ocean','Coriolis','Sea surface slope','Internal')
-    cmocean(pram.colormap,30)
-    %colormap(jet(30))
+    %cmocean(pram.colormap,30)
+    colormap(summer(20))
     %cmap(parula(20))
-    %caxis([0 1000])
+    caxis([0 500])
     %set(gca,'ColorScale','log')
 
 %% Stress comparison
 
-initial_date.day = 28;
-initial_date.month = 6;
-initial_date.year = 2009; 
-if initial_date.day > 9
-    initial_date.char = sprintf('%d-0%d-%d', initial_date.year, initial_date.month, initial_date.day);
-else
-    initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
-end
-datapoints = 10;
-
-filedir = '/Volumes/NoahDay5TB/cases/ocnforcing';
+% initial_date.day = 28;
+% initial_date.month = 6;
+% initial_date.year = 2009; 
+% if initial_date.day > 9
+%     initial_date.char = sprintf('%d-0%d-%d', initial_date.year, initial_date.month, initial_date.day);
+% else
+%     initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
+% end
+% datapoints = 10;
+% 
+% filedir = '/Volumes/NoahDay5TB/cases/ocnforcing';
 % 1. Pick a cell along the ice edge
 
 % For now just pick (-55 S, 30 E)

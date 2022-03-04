@@ -39,7 +39,7 @@ u_vec = reshape(data_u2,1,[]);
 v_vec = reshape(data_v2,1,[]);
 
 data = sqrt(data_u2.^2 + data_v2.^2);
-data =  data_format(filename,'dvidtd',row,lat,lon,dim);
+data =  data_format(filename,'sst',row,lat,lon,dim);
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
     setm(w, 'Origin', [-90 0 0]);
