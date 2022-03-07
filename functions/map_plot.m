@@ -66,15 +66,23 @@ if isstring(sector)
             pcolorm(lat,lon,data)
             land = shaperead('landareas', 'UseGeoCoords', true);
             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
-%             a = colorbar;
-%             a.TickLabelInterpreter = 'latex';
-%             a.Label.String = colorlabel(variable);
-%             a.Ruler.Scale = 'log';
+            if variable == "fsdrad"
+                c_tick = round([0;1;2;3;5;10;20;50;100;250;500;1000;2000;3000]);
+                 a = contourcbar('peer', w, 'v', ...
+                       'XTickLabel',num2cell(c_tick'), ...
+                       'XTick', c_tick, ...
+                       'Location','eastoutside');
+                 a.Ruler.Scale = 'log';
+            else
+                a = colorbar;
+                a.TickLabelInterpreter = 'latex';
+                a.Label.String = colorlabel(variable);
             %colormap turbo
+            end
 
             if ~exist('clims', 'var')
                 % Set sector to world by default
-                caxis(colorlims(variable));       
+                %caxis(colorlims(variable));       
             else
                 caxis(clims)
             end

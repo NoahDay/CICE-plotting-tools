@@ -114,7 +114,8 @@ elseif sector == "SA"
         idx = data < 0.01;
         data(idx) = NaN;% = data.*idx;
     end
-    [w ~] = map_plot(data,variable,sector);
+    [w,a] = map_plot(data,variable,sector);
+    
     if SIC > eps
         aice = data_format(filename,"aice",row,lat,lon,2);
         idx = aice < 0.01;
@@ -144,7 +145,7 @@ elseif sector == "SA"
         colormap(winter(20))
     elseif variable == "fsdrad"
         plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)
-        colormap(jet(30))
+        %colormap(jet(30))
     elseif variable == "aice"
         plotm(lat_ice_edge,lon_ice_edge,'-','color',0.7*[0.4660 0.6740 0.1880],'LineWidth',2) % Dark green
         cmocean('ice',10)

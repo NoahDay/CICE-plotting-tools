@@ -1,7 +1,5 @@
 %% Set custom colorbar ticks
 
-%% Calculate the momentum of the ice from the components and equation
-
 %% Read in the data.
 clear
 close all
@@ -12,10 +10,10 @@ clc
 sector = "SA";
 grid = 'gx1';
 case_name = 'ocntest';
-filedir = '/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.';
+filedir = 'cases/ocntest/history/iceh.';%'/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
 [lat,lon,row] = grid_read(grid);
-user = "a1724548";
+user = "noahday";
 % Make sector mask
 %[len,wid] = size(lat);
 fig_count = 0;
@@ -26,8 +24,8 @@ coords = sector_coords(sector);
 sector = "SA";%struct('coords',sector_coords(sector),'centre_lon',(coords(1,1)+coords(2,1))/2,'north_lat',[],'south_lat',[]);
 clear coords
 
-initial_date.day = 3;
-initial_date.month = 7;
+initial_date.day = 2;
+initial_date.month = 1;
 initial_date.year = 2009; % 2005 is a spin-up year
 initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 
@@ -75,7 +73,8 @@ scale = 0;
            % a.Ruler.Scale = 'log';
            
 
-
+NFSD = ncread(filename,"NFSD");
+c_tick = round([0;NFSD]);
 % FSD radius
 fsd_data = data_format_sector(filename,"fsdrad",sector);
 idx = fsd_data < eps;
@@ -107,14 +106,23 @@ figure(1)
     t.Color = pram.label_color;
     set(gcf,'Position',[1500 1000 500 600])
     cb = contourcbar('peer', w, 'v', ...
-                       'XTickLabel',{'0','5','10','50','100','500','1000','2000'}, ...
-                       'XTick', [0,5, 10,50,100,500,1000,2000], ...
+                       'XTickLabel',num2cell(c_tick'), ...
+                       'XTick', c_tick, ...
                        'Location','eastoutside');
     cb.Ruler.Scale = 'log';
-    colormap(turbo(5))
-   get(get(cbh, 'Children'))
+    colormap(turbo(10))
+   get(get(cb, 'Children'))
    % AxesH = axes('CLim', [0, 1000]);
     %caxis([0 3000])
    % cbh = colorbar('peer', AxesH, 'v', ...
    %                'XTickLabel',{'0','100','1000'}, ...
    %                'XTick', [0,100,1000])
+
+
+
+   load topo60c
+
+   worldmap('north america')
+contourfm(topo60c,topo60cR,-7000:1000:3000)
+caxis([-8000 4000])
+contourcbar

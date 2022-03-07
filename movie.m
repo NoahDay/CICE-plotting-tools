@@ -2,7 +2,7 @@ close all
 clear all
 addpath functions
 % create video writer object
-user = 'a1724548'; %a1724548, noahday, Noah
+user = 'noahday'; %a1724548, noahday, Noah
 case_name = 'momentum'; %ocnforcing
 grid = 'gx1'; 
 variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
@@ -11,7 +11,7 @@ variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi
 video_name = strcat(variable, '_', case_name, '_', '2022_03_07_storm2', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
-datapoints = 1;
+datapoints = 2;
 %timestep = 7;
 % Prestorm: 28/6
 % Storm: 3/7
@@ -20,10 +20,19 @@ month = 6;
 year = 2009;
 sector = "SA";
 if day < 9
-    date = sprintf('%d-0%d-0%d', year, month, day);
+    if month < 9
+        date = sprintf('%d-0%d-0%d', year, month, day);
+    else
+        date = sprintf('%d-%d-%d', year, month, day);
+    end
 else
-    date = sprintf('%d-0%d-%d', year, month, day);
+    if month < 9
+        date = sprintf('%d-0%d-%d', year, month, day);
+    else
+        date = sprintf('%d-%d-%d', year, month, day);
+    end
 end
+ssd = 0;
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
 set(writerObj,'FrameRate',datapoints/20); % 0.5 = 2 seconds per frame
@@ -31,9 +40,9 @@ set(writerObj,'FrameRate',datapoints/20); % 0.5 = 2 seconds per frame
 open(writerObj);
 ticker = 1;
 SIC = 0.15; 
- ssd = 1;
+
 %Plotting
-%user = 'a1724548'; %a1724548, noahday, Noah
+
 for i = 1:datapoints
    % Get the file name
     if ssd == 1
