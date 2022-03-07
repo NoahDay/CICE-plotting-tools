@@ -254,7 +254,7 @@ fig.all = map_plot(aice_data,"aice",sector);
     legend([q1(1), q2(1), q3(1), q4(1), q5(1)], 'Air', 'Ocean','Coriolis','Sea surface slope','Internal')
     cmocean(pram.colormap,10)
 
-% FSD radius
+%% FSD radius
 fsd_data = data_format_sector(filename,"fsdrad",sector);
 idx = fsd_data < eps;
 fsd_data(idx) = NaN;
@@ -262,11 +262,11 @@ fig_count = fig_count + 1;
 figure(fig_count)
 fig.all = map_plot(fsd_data,"fsdrad",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color','k','LineWidth',2)
-    q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b',scale);
-    q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r',scale);
-    q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g',scale);
-    q4 = quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,'m',scale);
-    q5 = quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,'k',scale);
+%    q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b',scale);
+%    q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r',scale);
+%    q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g',scale);
+%    q4 = quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,'m',scale);
+%    q5 = quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,'k',scale);
     %q6 = quiverm(lat_vec,lon_vec,uvel_vec,vvel_vec,	'k');
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
@@ -274,10 +274,22 @@ fig.all = map_plot(fsd_data,"fsdrad",sector);
     title(strcat("All of ice stress - ",initial_date.char), 'interpreter','latex','FontSize', 14)
     legend([q1(1), q2(1), q3(1), q4(1), q5(1)], 'Air', 'Ocean','Coriolis','Sea surface slope','Internal')
     %cmocean(pram.colormap,30)
-    colormap(summer(20))
+    colormap(summer(10))
     %cmap(parula(20))
-    caxis([0 500])
+    cbh = colorbar('h');
+    get(get(cbh, 'Children'))
+    %caxis([0 3000])
+    AxesH = axes('CLim', [0, 3000]);
+    %cbh = colorbar('peer', AxesH, 'h', ...
+    %               'XTickLabel',{'0','100','1000'}, ...
+    %               'XTick', [0,100,1000])
     %set(gca,'ColorScale','log')
+    %colormap(turbo(20))
+%    a = colorbar;
+%            a.TickLabelInterpreter = 'latex';
+%            a.Label.String = colorlabel(variable);
+           % a.Ruler.Scale = 'log';
+           
 
 %% Stress comparison
 

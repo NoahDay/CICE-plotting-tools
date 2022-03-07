@@ -66,9 +66,10 @@ if isstring(sector)
             pcolorm(lat,lon,data)
             land = shaperead('landareas', 'UseGeoCoords', true);
             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
-            a = colorbar;
-            a.TickLabelInterpreter = 'latex';
-            a.Label.String = colorlabel(variable);
+%             a = colorbar;
+%             a.TickLabelInterpreter = 'latex';
+%             a.Label.String = colorlabel(variable);
+%             a.Ruler.Scale = 'log';
             %colormap turbo
 
             if ~exist('clims', 'var')
