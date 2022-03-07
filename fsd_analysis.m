@@ -13,11 +13,11 @@ user = 'noahday'; %a1724548, noahday, Noah
 case_name = 'ocntest';%'ocnforcing';
 grid = 'gx1'; 
 day = 3;
-month = 7;
+month = 12;
 year = 2009;
 sector = "SA";
 if day < 9
-    date = sprintf('%d-0%d-0%d', year, month, day);
+    date = sprintf('%d-%d-0%d', year, month, day);
 else
     date = sprintf('%d-0%d-%d', year, month, day);
 end
@@ -43,7 +43,7 @@ NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
 Nf = numel(NFSD);
 lon_pos = 28;
-lat_pos = edge(lon_pos)-5;
+lat_pos = edge(lon_pos)-8;
 floe_binwidth = [5.2438,8.9763,14.7711,23.3545,35.4569,51.6493,72.1173,96.4015,123.1658,150.0742,173.8638,190.6718,397.7316,479.1093,649.9598,881.7363];
 thick_binwidth = NCAT - [0;NCAT(1:end-1)];
 

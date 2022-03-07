@@ -48,14 +48,15 @@ pram.colormap = 'ice';
 %set(groot, 'defaultLegendInterpreter','latex'); 
 
 aice_data = data_format_sector(filename,"aice",sector);
-
+idx = aice_data < eps;
+aice_data(idx) = NaN;
 lat_vec = reshape(lat,1,[]);
 lon_vec = reshape(lon,1,[]);
 
 SIC = 0.15;
 [lat_ice_edge, lon_ice_edge] = find_ice_edge(aice_data,SIC,sector,lat,lon);
 
-scale = 1;
+scale = 0;
 %% 1. Ice drift
 % Variables: uvel, vvel
 
@@ -235,15 +236,16 @@ figs.sum = map_plot(aice_data,"aice",sector);
     cmocean(pram.colormap,10)
 
 %% All stresses    
+scale = 0;
 fig_count = fig_count + 1;
 figure(fig_count)
 fig.all = map_plot(aice_data,"aice",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',2)
-    q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b');
-    q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r');
-    q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g');
-    q4 = quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,'m');
-    q5 = quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,'k');
+    q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b',scale);
+    q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r',scale);
+    q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g',scale);
+    q4 = quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,'m',scale);
+    q5 = quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,'k',scale);
     %q6 = quiverm(lat_vec,lon_vec,uvel_vec,vvel_vec,	'k');
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;
@@ -260,11 +262,11 @@ fig_count = fig_count + 1;
 figure(fig_count)
 fig.all = map_plot(fsd_data,"fsdrad",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color','k','LineWidth',2)
-    q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b');
-    q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r');
-    q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g');
-    q4 = quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,'m');
-    q5 = quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,'k');
+    q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b',scale);
+    q2 = quiverm(lat_vec,lon_vec,strocnx_vec,strocny_vec,'r',scale);
+    q3 = quiverm(lat_vec,lon_vec,strcorx_vec,strcory_vec,'g',scale);
+    q4 = quiverm(lat_vec,lon_vec,strtltx_vec,strtlty_vec,'m',scale);
+    q5 = quiverm(lat_vec,lon_vec,strintx_vec,strinty_vec,'k',scale);
     %q6 = quiverm(lat_vec,lon_vec,uvel_vec,vvel_vec,	'k');
     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     t.Color = pram.label_color;

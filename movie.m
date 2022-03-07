@@ -3,20 +3,20 @@ clear all
 addpath functions
 % create video writer object
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'ocnforcing';
+case_name = 'momentum'; %ocnforcing
 grid = 'gx1'; 
-variable = 'aice'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
+variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
 % afsd, dafsd_wave, Tsfc
 
-video_name = strcat(variable, '_', case_name, '_', '2022_03_02_winter_ocn', '.mp4');
+video_name = strcat(variable, '_', case_name, '_', '2022_03_07_storm2', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
-datapoints = 90;
+datapoints = 10;
 %timestep = 7;
 % Prestorm: 28/6
 % Storm: 3/7
-day = 1;
-month = 7;
+day = 28;
+month = 6;
 year = 2009;
 sector = "SA";
 if day < 9
@@ -33,12 +33,11 @@ ticker = 1;
 SIC = 0.15; 
  ssd = 1;
 %Plotting
-user = 'a1724548'; %a1724548, noahday, Noah
+%user = 'a1724548'; %a1724548, noahday, Noah
 for i = 1:datapoints
    % Get the file name
-  
     if ssd == 1
-        filename = strcat('/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.',date,".nc");
+        filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
     else
         filename = strcat('cases/',case_name,"/history/iceh.",date,".nc"); 
     end

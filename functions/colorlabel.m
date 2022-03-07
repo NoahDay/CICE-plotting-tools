@@ -1,7 +1,7 @@
 function label = colorlabel(variable)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-if variable == "aice"
+if variable == "aice" || variable == "stresses"
     label = "Concentration";
 elseif variable == "vatm"
     label = "Wind speed (m/s)";

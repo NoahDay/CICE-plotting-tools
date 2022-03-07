@@ -26,8 +26,8 @@ data_v2 = data_v(:,:,1);
 u_vec = reshape(data_u2,1,[]);
 v_vec = reshape(data_v2,1,[]);
 
-data = sqrt(data_u2.^2 + data_v2.^2);
-
+data2 = data_format(filename,'hblt',row,lat,lon,dim);%sqrt(data_u2.^2 + data_v2.^2);
+data = data2(:,:,1);
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
     setm(w, 'Origin', [-90 0 0]);
@@ -45,4 +45,5 @@ w = worldmap('world');
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
-    quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    caxis([0,100])

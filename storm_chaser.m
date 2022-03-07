@@ -189,6 +189,7 @@ xline(5,'--')
 txt = 'Start of storm';
 h = text(4.8,10,txt);
  set(h,'Rotation',90);
+ ylim([0,35])
 
 txt = 'Start of pre-storm';
 h = text(0.2,10,txt);
@@ -219,6 +220,7 @@ ts2.TimeInfo.Format = 'mmm dd, yy';       % Set format for display on x-axis.
 line_width = 3;
 plot(ts2,'LineWidth',line_width)
 grid on
+ylim([0,35])
 yline(storm_threshold,'--')
 yline(cyclone_threshold,'--')
 xline(5,'--')
@@ -254,6 +256,7 @@ ts2.TimeInfo.Format = 'mmm dd, yy';       % Set format for display on x-axis.
 
 line_width = 3;
 plot(ts2,'LineWidth',line_width)
+ ylim([0,35])
 grid on
 yline(storm_threshold,'--')
 yline(cyclone_threshold,'--')
