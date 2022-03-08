@@ -97,6 +97,9 @@ for nc = 1:Nc
     afsdn_norm(:,nc) = afsdn(:,nc).*floe_binwidth';
 end
 
+
+[converted] = fsd_converter(filename,"afsdn","afsd")
+
 %% Plotting
 
 % FSD histogram
