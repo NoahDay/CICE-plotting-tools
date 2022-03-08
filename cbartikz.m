@@ -9,8 +9,8 @@ clc
 % Parameters
 sector = "SA";
 grid = 'gx1';
-case_name = 'ocntest';
-filedir = 'cases/ocntest/history/iceh.';%'/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.';
+case_name = 'momentum';
+filedir = 'cases/momentum/history/iceh.';%'/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
 [lat,lon,row] = grid_read(grid);
 user = "noahday";
@@ -24,10 +24,10 @@ coords = sector_coords(sector);
 sector = "SA";%struct('coords',sector_coords(sector),'centre_lon',(coords(1,1)+coords(2,1))/2,'north_lat',[],'south_lat',[]);
 clear coords
 
-initial_date.day = 2;
-initial_date.month = 1;
+initial_date.day = 28;
+initial_date.month = 6;
 initial_date.year = 2009; % 2005 is a spin-up year
-initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
+initial_date.char = sprintf('%d-0%d-%d', initial_date.year, initial_date.month, initial_date.day);
 
 filename = strcat(filedir,initial_date.char,'.nc');
 
@@ -85,33 +85,33 @@ figure(1)
         max_lat = max(coords(:,1));
         min_lon = min(coords(:,2));
         max_lon = max(coords(:,2));
-        w = worldmap('world');
-            axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
-            setm(w, 'Origin', [0 0 0]);
-            setm(w, 'maplatlimit', [min_lat,max_lat]);
-            setm(w, 'maplonlimit', [min_lon,max_lon]);
-            setm(w, 'meridianlabel', 'on')
-            setm(w, 'parallellabel', 'on')
-            setm(w, 'mlabellocation', 10);
-            setm(w, 'plabellocation', 10);
-            setm(w, 'mlabelparallel', 0);
-            setm(w, 'mlabelParallel', 'south');
-            setm(w, 'grid', 'on');
-            setm(w, 'frame', 'on');
-            setm(w, 'labelrotation', 'on')
-            pcolorm(lat,lon,fsd_data)
-            land = shaperead('landareas', 'UseGeoCoords', true);
-            geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
-    t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
-    t.Color = pram.label_color;
-    set(gcf,'Position',[1500 1000 500 600])
-    cb = contourcbar('peer', w, 'v', ...
-                       'XTickLabel',num2cell(c_tick'), ...
-                       'XTick', c_tick, ...
-                       'Location','eastoutside');
-    cb.Ruler.Scale = 'log';
-    colormap(turbo(10))
-   get(get(cb, 'Children'))
+%         w = worldmap('world');
+%             axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+%             setm(w, 'Origin', [0 0 0]);
+%             setm(w, 'maplatlimit', [min_lat,max_lat]);
+%             setm(w, 'maplonlimit', [min_lon,max_lon]);
+%             setm(w, 'meridianlabel', 'on')
+%             setm(w, 'parallellabel', 'on')
+%             setm(w, 'mlabellocation', 10);
+%             setm(w, 'plabellocation', 10);
+%             setm(w, 'mlabelparallel', 0);
+%             setm(w, 'mlabelParallel', 'south');
+%             setm(w, 'grid', 'on');
+%             setm(w, 'frame', 'on');
+%             setm(w, 'labelrotation', 'on')
+%             pcolorm(lat,lon,fsd_data)
+%             land = shaperead('landareas', 'UseGeoCoords', true);
+%             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5]);
+%     t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+%     t.Color = pram.label_color;
+%     set(gcf,'Position',[1500 1000 500 600])
+%     cb = contourcbar('peer', w, 'v', ...
+%                        'XTickLabel',num2cell(c_tick'), ...
+%                        'XTick', c_tick, ...
+%                        'Location','eastoutside');
+%     cb.Ruler.Scale = 'log';
+%     colormap(turbo(10))
+%    get(get(cb, 'Children'))
    % AxesH = axes('CLim', [0, 1000]);
     %caxis([0 3000])
    % cbh = colorbar('peer', AxesH, 'v', ...
@@ -119,10 +119,32 @@ figure(1)
    %                'XTick', [0,100,1000])
 
 
-
    load topo60c
 
-   worldmap('north america')
-contourfm(topo60c,topo60cR,-7000:1000:3000)
-caxis([-8000 4000])
-contourcbar
+w2 = worldmap('world');
+contourfm(lat,lon,fsd_data)
+    %contourfm(topo60c,topo60cR,-7000:1000:3000)
+    %caxis([-8000 4000])
+    cb = contourcbar('peer', w2, 'v', ...
+                       'XTickLabel',num2cell(c_tick'), ...
+                       'XTick', c_tick, ...
+                       'Location','eastoutside');
+    setm(w2, 'Origin', [0 0 0]);
+    setm(w2, 'maplatlimit', [min_lat,max_lat]);
+    setm(w2, 'maplonlimit', [min_lon,max_lon]);
+    setm(w2, 'meridianlabel', 'on')
+    setm(w2, 'parallellabel', 'on')
+    setm(w2, 'mlabellocation', 10);
+    setm(w2, 'plabellocation', 10);
+    setm(w2, 'mlabelparallel', 0);
+    setm(w2, 'mlabelParallel', 'south');
+    setm(w2, 'grid', 'on');
+    setm(w2, 'frame', 'on');
+    setm(w2, 'labelrotation', 'on')
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w2, land, 'FaceColor', [0.5 0.7 0.5]);
+    cb.Ruler.Scale = 'log';
+    colormap(turbo(16))
+    t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+    t.Color = pram.label_color;
+    set(gcf,'Position',[1000 1000 500 600])
