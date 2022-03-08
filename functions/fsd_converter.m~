@@ -1,7 +1,7 @@
-function [processed_data] = fsd_converter(filename,input,output,raw_data)
+function [processed_data] = fsd_converter(filename,input,output)
 %FSD_CONVERTER will convert AFSDN, AFSD, FSDRAD as specified by the
 %input/output arguments
-cd .. % Move up one directory
+
 % Get the dimensions
 if input == "afsdn"
     dim = 4;
@@ -29,18 +29,14 @@ floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
 floe_binwidth = floe_rad_h - floe_rad_l;
 floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 
-if ~exist('data', 'var')
-    raw_data = data_format_sector(filename,input,sector,dim);
-end
 
-% Grab the concentration data
+raw_data = data_format_sector(filename,input,sector,dim);
 aice = data_format_sector(filename,"aice",sector,dim);
 aicen = data_format_sector(filename,"aicen",sector,dim);
 
-% Get the grid dimensions
 [nx,ny] = size(aice);
 
-% Convert the data
+% Convert
 if input == "afsdn"
    if output == "afsdn"
        % Do nothing
@@ -73,11 +69,11 @@ if input == "afsdn"
                end
            end
        end
+
        processed_data = work;
         
    elseif output == "fsd"
        % Convert from afsdn to areal FSD
-       % First convert to afsd
        for j = 1:ny
            for i = 1:nx
                work = zeros(Nf,Nc);
@@ -86,9 +82,10 @@ if input == "afsdn"
                         work(k,n) = raw_data(i,j,k,n);
                    end
                end
-               processed_data(i,j,:) = sum(work').*floe_binwidth;
+               processed_data(i,j,:) = sum(work');
            end
-       end 
+       end % Convert to afsd
+       processed_data = temp.*floe_binwidth;
 
    end
 
@@ -103,17 +100,7 @@ elseif input == "afsd"
 
    elseif output == "fsdrad"
         % Convert from afsd to fsdrad
-        for j = 1:ny
-            for i = 1:nx
-                work(i,j) = 0;
-                for k = 1:Nf
-                     work(i,j) = work(i,j) + ...
-                           raw_data(i,j,k)*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
-                end
-            end
-        end
-        processed_data = work;
-                
+
    elseif output == "fsd"
        % Convert from afsd to areal FSD
        processed_data = input.*floe_binwidth;
@@ -122,7 +109,7 @@ elseif input == "afsd"
 elseif input == "fsdrad"
     if output == "fsd"
         % Convert from fsdrad to areal FSD
-         error("Cannot convert from fsdrad to fsd.")
+
     end
 else
     error("Input argument not specified.")

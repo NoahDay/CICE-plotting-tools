@@ -1,6 +1,7 @@
 clear all
 close all
 addpath functions
+cd .. % Move up one directory
 day = 6;
 month = 1;
 year = 2009;

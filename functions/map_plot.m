@@ -73,6 +73,8 @@ if isstring(sector)
                        'XTick', c_tick, ...
                        'Location','eastoutside');
                  a.Ruler.Scale = 'log';
+                 a.Label.String = colorlabel(variable);
+                 caxis([0,3100]);
             else
                 a = colorbar;
                 a.TickLabelInterpreter = 'latex';

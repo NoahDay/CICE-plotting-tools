@@ -9,7 +9,7 @@ clear all
 clc
 addpath functions
 
-user = 'noahday'; %a1724548, noahday, Noah
+user = 'a1724548'; %a1724548, noahday, Noah
 case_name = 'ocntest';%'ocnforcing';
 grid = 'gx1'; 
 day = 3;
@@ -79,6 +79,7 @@ fsd = afsd.*floe_binwidth/conc;
 
 %% AFSDN
 % Sum_{Nc} Sum_{Nf} a_{in} F_{in,k} = 1
+clc
 dim = 4;
 afsdn_data = data_format_sector(filename,"afsdn",sector,dim);
 
@@ -96,9 +97,14 @@ afsd_cal.*floe_binwidth; % = fsd
 for nc = 1:Nc
     afsdn_norm(:,nc) = afsdn(:,nc).*floe_binwidth';
 end
-
-
-[converted] = fsd_converter(filename,"afsdn","afsd")
+%% Testing
+clc
+fsdrad_data = data_format_sector(filename,"fsdrad",sector,2);
+[converted] = fsd_converter(filename,"afsdn","fsdrad");
+converted(lon_pos,lat_pos,:)
+[converted] = fsd_converter(filename,"afsd","fsdrad");
+converted(lon_pos,lat_pos,:)
+fsdrad_data(lon_pos,lat_pos,:)
 
 %% Plotting
 

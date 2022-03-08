@@ -150,7 +150,6 @@ elseif sector == "SA"
         plotm(lat_ice_edge,lon_ice_edge,'-','color',0.7*[0.4660 0.6740 0.1880],'LineWidth',2) % Dark green
         cmocean('ice',10)
     elseif variable == "stresses"
-
         scale = 0;
         plotm(lat_ice_edge,lon_ice_edge,'-','color',0.7*[0.4660 0.6740 0.1880],'LineWidth',2)
         q1 = quiverm(lat_vec,lon_vec,strairx_vec,strairy_vec,'b',scale);
@@ -163,7 +162,7 @@ elseif sector == "SA"
         %pos = get(h,'Position');
         posx = 0.35;
         posy = 0.75;
-     cmocean('ice',10)  
+        cmocean('ice',10)  
         %set(h,'Position',[posx posy pos(3) pos(4)]);
     else
         plotm(lat_ice_edge,lon_ice_edge,'-','color',[0.99 0.99 0.99],'LineWidth',2)

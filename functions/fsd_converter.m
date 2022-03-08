@@ -1,7 +1,7 @@
 function [processed_data] = fsd_converter(filename,input,output,raw_data)
 %FSD_CONVERTER will convert AFSDN, AFSD, FSDRAD as specified by the
 %input/output arguments
-cd .. % Move up one directory
+
 % Get the dimensions
 if input == "afsdn"
     dim = 4;

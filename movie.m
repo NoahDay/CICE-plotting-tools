@@ -2,8 +2,8 @@ close all
 clear all
 addpath functions
 % create video writer object
-user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'momentum'; %ocnforcing
+user = 'a1724548'; %a1724548, noahday, Noah
+case_name = 'ocnforcing'; %ocnforcing
 grid = 'gx1'; 
 variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
 % afsd, dafsd_wave, Tsfc
@@ -11,7 +11,7 @@ variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi
 video_name = strcat(variable, '_', case_name, '_', '2022_03_07_storm2', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
-datapoints = 2;
+datapoints = 10;
 %timestep = 7;
 % Prestorm: 28/6
 % Storm: 3/7
@@ -32,7 +32,7 @@ else
         date = sprintf('%d-%d-%d', year, month, day);
     end
 end
-ssd = 0;
+ssd = 1;
 map_type = 'eqaazim'; %cassini
 % set the frame rate to one frame per second
 set(writerObj,'FrameRate',datapoints/20); % 0.5 = 2 seconds per frame

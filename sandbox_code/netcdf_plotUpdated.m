@@ -1,6 +1,7 @@
 clear all
 close all
 addpath functions
+cd .. % Move up one directory
 filename = 'cases/init/history/iceh_inst.2005-01-01-03600.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 latit = 1;
 % Read the header

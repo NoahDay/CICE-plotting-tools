@@ -9,15 +9,15 @@ clear all
 clc
 addpath functions
 
-user = 'noahday'; %a1724548, noahday, Noah
+user = 'a1724548'; %a1724548, noahday, Noah
 case_name = 'ocntest';%'ocnforcing';
 grid = 'gx1'; 
 day = 3;
-month = 7;
+month = 12;
 year = 2009;
 sector = "SA";
 if day < 9
-    date = sprintf('%d-0%d-0%d', year, month, day);
+    date = sprintf('%d-%d-0%d', year, month, day);
 else
     date = sprintf('%d-0%d-%d', year, month, day);
 end
@@ -43,7 +43,7 @@ NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
 Nf = numel(NFSD);
 lon_pos = 28;
-lat_pos = edge(lon_pos)-11;
+lat_pos = edge(lon_pos)-8;
 floe_binwidth = [5.2438,8.9763,14.7711,23.3545,35.4569,51.6493,72.1173,96.4015,123.1658,150.0742,173.8638,190.6718,397.7316,479.1093,649.9598,881.7363];
 thick_binwidth = NCAT - [0;NCAT(1:end-1)];
 
@@ -79,6 +79,7 @@ fsd = afsd.*floe_binwidth/conc;
 
 %% AFSDN
 % Sum_{Nc} Sum_{Nf} a_{in} F_{in,k} = 1
+clc
 dim = 4;
 afsdn_data = data_format_sector(filename,"afsdn",sector,dim);
 
@@ -94,8 +95,12 @@ afsd_cal = sum(afsdn');
 afsd_cal.*floe_binwidth; % = fsd
 
 for nc = 1:Nc
-    afsd_norm(:,nc) = afsdn(:,nc).*floe_binwidth';
+    afsdn_norm(:,nc) = afsdn(:,nc).*floe_binwidth';
 end
+
+
+[converted] = fsd_converter(filename,"afsdn","afsd");
+
 
 %% Plotting
 
@@ -119,8 +124,12 @@ end
     xtickangle(45)
     
         
+ncat_vec = [0; NCAT(1:Nc-1)];  
+r_NCAT = round(round(NCAT,2),2);
+r1_NCAT = round(round(ncat_vec,2),2);
 for i = 1:Nc
-    lab2{i} = sprintf('%g',NCAT(i));
+    %lab2{i} = sprintf('> %g',ncat_vec(i));
+    lab2{i} = sprintf('[%g, %g]',r1_NCAT(i),r_NCAT(i));
 end
 % FSTD
 % figure(2)
@@ -145,14 +154,15 @@ bar3(afsdn_norm)
     set(gcf,'Position',[1300 1000 600 600])
     
 figure(4)
-    bar(afsdn,'stacked')
+    bar(afsdn_norm,'stacked')
     set(gcf,'Position',[1300 1000 800 400])
     [hleg,icons,plots] = legend('show');
-    [leg,att] = legendflex(gca, lab2, 'title', 'ITD (cat. centre)');
-    set(findall(leg, 'string', 'ITD (cat. centre)'), 'fontweight', 'bold');
+    [leg,att] = legendflex(gca, lab2, 'title', 'ITD (m)');
+    set(findall(leg, 'string', 'ITD (m)'), 'fontweight', 'bold');
     leg.Title.Visible = 'on';
-    %legend(lab2)
     xlabel('FSD radius (m)')
     xticks(1:Nf)
-    title(sprintf("FSTD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
+    xticklabels(lab)
+    xtickangle(45)
+    title(sprintf("FSTD at (%g S, %g E) %g cells south of the ice edge", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos), edge(lon_pos) - lat_pos -1))
     ylabel('Fraction of sea ice area')

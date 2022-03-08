@@ -1,6 +1,7 @@
 clear all
 close all
 addpath functions
+cd .. % Move up one directory
 filename = 'ocean_forcing_clim_2D_gx1.20210330.nc';
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';

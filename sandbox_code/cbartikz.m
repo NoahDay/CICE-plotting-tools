@@ -9,8 +9,8 @@ clc
 % Parameters
 sector = "SA";
 grid = 'gx1';
-case_name = 'momentum';
-filedir = 'cases/momentum/history/iceh.';%'/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.';
+case_name = 'ocnforcing';
+filedir = '/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
 [lat,lon,row] = grid_read(grid);
 user = "noahday";
@@ -117,9 +117,12 @@ figure(1)
    % cbh = colorbar('peer', AxesH, 'v', ...
    %                'XTickLabel',{'0','100','1000'}, ...
    %                'XTick', [0,100,1000])
+Nf = 16;
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+f_bin_width = floe_rad_h - floe_rad_l;
 
-
-   load topo60c
 
 w2 = worldmap('world');
 contourfm(lat,lon,fsd_data)
