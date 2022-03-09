@@ -74,7 +74,7 @@ if isstring(sector)
                        'Location','eastoutside');
                  a.Ruler.Scale = 'log';
                  a.Label.String = colorlabel(variable);
-                 caxis([0,3100]);
+                 caxis(colorlims(variable));
             else
                 a = colorbar;
                 a.TickLabelInterpreter = 'latex';

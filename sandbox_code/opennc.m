@@ -14,13 +14,20 @@ end
 case_name = 'ocntest';
 ticker = 1;
 SIC = 0.15; 
-filename = strcat('cases/',case_name,"/history/iceh.",date,".nc");
+filename = "prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
+%strcat('cases/',case_name,"/history/iceh.",date,".nc");
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
 % Read the header
 ncdisp(filename)
 % 
 grid = 'gx1';
+
+
+cd /Users/a1724548/Github/CICE-plotting-tools
+
+
+%%
 %lat = ncread('grid/gx1/global_gx1.bathy.nc','TLAT');
 %lon = ncread('grid/gx1/global_gx1.bathy.nc','TLON');
 %[lat,lon,row] = grid_read(grid);

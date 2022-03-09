@@ -44,6 +44,7 @@ SIC = 0.15;
 %Plotting
 
 for i = 1:datapoints
+    close all
    % Get the file name
     if ssd == 1
         filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
