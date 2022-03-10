@@ -48,6 +48,8 @@ if input == "afsdn"
 
    elseif output == "afsd"
        % Convert from afsdn to afsd
+       % Integrate the joint floe size and thickness distribution to obtain
+       % the FSD, F(r)
        for j = 1:ny
            for i = 1:nx
                work = zeros(Nf,Nc);
@@ -74,10 +76,9 @@ if input == "afsdn"
            end
        end
        processed_data = work;
-        
    elseif output == "fsd"
-       % Convert from afsdn to areal FSD
-       % First convert to afsd
+       % Convert from afsdn to areal FSD, F(r)
+       % Integrate f(r,h) wrt ice thickness
        for j = 1:ny
            for i = 1:nx
                work = zeros(Nf,Nc);
@@ -89,9 +90,44 @@ if input == "afsdn"
                processed_data(i,j,:) = sum(work').*floe_binwidth;
            end
        end 
-
+   elseif output == "number_fstd"
+       % Calculate the number fstd
+       alpha = 0.66; % Rothrock and Thorndike (1984)
+              disp(alpha)
+       for i = 1:nx
+           for j = 1:ny
+               for k = 1:Nf
+                   for n = 1:Nc
+                       fstd_N(i,j,k,n) = raw_data(i,j,k,n)./(4*alpha*NFSD(k));
+                   end
+               end
+           end
+       end
+       processed_data = fstd_N;
+   elseif output == "number_fsd"
+      % Calculate the number fsd
+       alpha = 0.66; % Rothrock and Thorndike (1984)
+       disp(alpha)
+       for i = 1:nx
+           for j = 1:ny
+               for k = 1:Nf
+                   work = 0;
+                   for n = 1:Nc
+                       work = work + raw_data(i,j,k,n)./(4*alpha*NFSD(k));
+                   end
+                   processed_data(i,j,k) = work;
+               end
+           end
+       end
+       %processed_data = fsd_N;
+   elseif output == "ITD"
+        % Integrate w.r.t. floe size to obtain the ITD g(h)
+   else
+       error("No output specified")
    end
 
+   
+   % AFSD input
 elseif input == "afsd"
     if output == "afsdn"
        % Not possible
@@ -119,6 +155,9 @@ elseif input == "afsd"
        processed_data = input.*floe_binwidth;
 
     end
+    
+    
+    % FSDRAD input
 elseif input == "fsdrad"
     if output == "fsd"
         % Convert from fsdrad to areal FSD

@@ -1,4 +1,4 @@
-function [processed_data] = fsd_converter(filename,input,output)
+function [processed_data] = fsd_converter(filename,input,output,raw_data)
 %FSD_CONVERTER will convert AFSDN, AFSD, FSDRAD as specified by the
 %input/output arguments
 
@@ -29,14 +29,18 @@ floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
 floe_binwidth = floe_rad_h - floe_rad_l;
 floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 
+if ~exist('data', 'var')
+    raw_data = data_format_sector(filename,input,sector,dim);
+end
 
-raw_data = data_format_sector(filename,input,sector,dim);
+% Grab the concentration data
 aice = data_format_sector(filename,"aice",sector,dim);
 aicen = data_format_sector(filename,"aicen",sector,dim);
 
+% Get the grid dimensions
 [nx,ny] = size(aice);
 
-% Convert
+% Convert the data
 if input == "afsdn"
    if output == "afsdn"
        % Do nothing
@@ -44,6 +48,8 @@ if input == "afsdn"
 
    elseif output == "afsd"
        % Convert from afsdn to afsd
+       % Integrate the joint floe size and thickness distribution to obtain
+       % the 
        for j = 1:ny
            for i = 1:nx
                work = zeros(Nf,Nc);
@@ -69,11 +75,10 @@ if input == "afsdn"
                end
            end
        end
-
        processed_data = work;
-        
    elseif output == "fsd"
-       % Convert from afsdn to areal FSD
+       % Convert from afsdn to areal FSD, F(r)
+       % Integrate f(r,h) wrt ice thickness
        for j = 1:ny
            for i = 1:nx
                work = zeros(Nf,Nc);
@@ -82,11 +87,38 @@ if input == "afsdn"
                         work(k,n) = raw_data(i,j,k,n);
                    end
                end
-               processed_data(i,j,:) = sum(work');
+               processed_data(i,j,:) = sum(work').*floe_binwidth;
            end
-       end % Convert to afsd
-       processed_data = temp.*floe_binwidth;
-
+       end 
+   elseif output == "number_fstd"
+       % Calculate the number fstd
+       alpha = 0.66; % Rothrock and Thorndike (1984)
+       for i = 1:nx
+           for j = 1:ny
+               for k = 1:Nf
+                   for n = 1:Nc
+                       fstd_N(i,j,k,n) = raw_data(i,j,k,n)./(4*alpha*NFSD(k));
+                   end
+               end
+           end
+       end
+   elseif output == "number_fsd"
+              % Calculate the number fsd
+       alpha = 0.66; % Rothrock and Thorndike (1984)
+       for i = 1:nx
+           for j = 1:ny
+               for k = 1:Nf
+                   work = 0;
+                   for n = 1:Nc
+                       work = work + raw_data(i,j,k,n)./(4*alpha*NFSD(k));
+                   end
+                   fsd_N(i,j,k) = workj;
+               end
+           end
+       end
+       
+   elseif output == "ITD"
+        % Integrate w.r.t. floe size to obtain the ITD g(h)
    end
 
 elseif input == "afsd"
@@ -100,7 +132,17 @@ elseif input == "afsd"
 
    elseif output == "fsdrad"
         % Convert from afsd to fsdrad
-
+        for j = 1:ny
+            for i = 1:nx
+                work(i,j) = 0;
+                for k = 1:Nf
+                     work(i,j) = work(i,j) + ...
+                           raw_data(i,j,k)*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
+                end
+            end
+        end
+        processed_data = work;
+                
    elseif output == "fsd"
        % Convert from afsd to areal FSD
        processed_data = input.*floe_binwidth;
@@ -109,7 +151,7 @@ elseif input == "afsd"
 elseif input == "fsdrad"
     if output == "fsd"
         % Convert from fsdrad to areal FSD
-
+         error("Cannot convert from fsdrad to fsd.")
     end
 else
     error("Input argument not specified.")

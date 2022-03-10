@@ -107,16 +107,19 @@ for i = 1:Nf
     fsd_cell(i) = fsd_conv(lon_pos,lat_pos,i);
 end
 norm_fsd_cell = fsd_cell./aice_data(lon_pos,lat_pos);
-scaled = norm_fsd_cell.*(NFSD)'
-mode(scaled)
+scaled = norm_fsd_cell.*(NFSD)';
+mode(scaled);
 fsdrad = data_format_sector(filename,"fsdrad",sector,2);
 fsdrad(lon_pos,lat_pos)
 
-for i = 1:nx
-    for j = 1:ny
-        for k = 1:Nf
-            for n = 1:Nc
-                afsd_scaled_thickness(i,j,k) = afsdn_data(i,j,k,n)*
+N_fsd = fsd_converter(filename,"afsdn","number_fstd");
+N_fsd(lon_pos,lat_pos,:)
+% 
+% for i = 1:nx
+%     for j = 1:ny
+%         for k = 1:Nf
+%             for n = 1:Nc
+%                 afsd_scaled_thickness(i,j,k) = afsdn_data(i,j,k,n)*
 %% Plotting
 
 % FSD histogram
