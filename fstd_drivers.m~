@@ -158,11 +158,7 @@ plot(ts_wave,'-', 'LineWidth',2)
     set(gcf,'Position',[1200 1000 500 200])
     ylabel('Change in L(r,h)dr')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northwest')
-    ylim([-5,5])
-    
-% Make averaged plot (monthly)    
-
-% Get these plots compatible with Jack's plotting code
+    ylim([-2,1])
 %% Functions
 function map = plot_map_fsd(filename,variable,cat,sector)
     % Define ice edge 

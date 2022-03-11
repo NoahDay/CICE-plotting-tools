@@ -43,7 +43,7 @@ NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
 Nf = numel(NFSD);
 lon_pos = 28;
-lat_pos = edge(lon_pos)-8;
+lat_pos = edge(lon_pos)-1;
 floe_binwidth = [5.2438,8.9763,14.7711,23.3545,35.4569,51.6493,72.1173,96.4015,123.1658,150.0742,173.8638,190.6718,397.7316,479.1093,649.9598,881.7363];
 thick_binwidth = NCAT - [0;NCAT(1:end-1)];
 
@@ -112,8 +112,8 @@ mode(scaled);
 fsdrad = data_format_sector(filename,"fsdrad",sector,2);
 fsdrad(lon_pos,lat_pos)
 
-N_fsd = fsd_converter(filename,"afsdn","number_fstd");
-N_fsd(lon_pos,lat_pos,:)
+N_fsd = fsd_converter(filename,"afsdn","n_fsd");
+N_fsd(lon_pos,lat_pos-5,:)
 % 
 % for i = 1:nx
 %     for j = 1:ny

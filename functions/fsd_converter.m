@@ -1,4 +1,4 @@
-function [processed_data] = fsd_converter(filename,input,output,raw_data)
+function processed_data = fsd_converter(filename,input,output,raw_data)
 %FSD_CONVERTER will convert AFSDN, AFSD, FSDRAD as specified by the
 %input/output arguments
 
@@ -77,8 +77,9 @@ if input == "afsdn"
        end
        processed_data = work;
    elseif output == "fsd"
-       % Convert from afsdn to areal FSD, F(r)
-       % Integrate f(r,h) wrt ice thickness
+       % Convert from f(r,h) to the probability mass function L(r,h)dr
+       % where L(r,h)dr is the fraction of ice with lateral floe size
+       % between r and r+dr and satisfies sum(L(r,h)) = 1
        for j = 1:ny
            for i = 1:nx
                work = zeros(Nf,Nc);
@@ -90,7 +91,7 @@ if input == "afsdn"
                processed_data(i,j,:) = sum(work').*floe_binwidth;
            end
        end 
-   elseif output == "number_fstd"
+   elseif output == "n_fstd"
        % Calculate the number fstd
        alpha = 0.66; % Rothrock and Thorndike (1984)
               disp(alpha)
@@ -104,8 +105,8 @@ if input == "afsdn"
            end
        end
        processed_data = fstd_N;
-   elseif output == "number_fsd"
-      % Calculate the number fsd
+   elseif output == "n_fsd"
+      % Calculate the number fsd, units (km^{-2})
        alpha = 0.66; % Rothrock and Thorndike (1984)
        disp(alpha)
        for i = 1:nx
@@ -151,7 +152,9 @@ elseif input == "afsd"
         processed_data = work;
                 
    elseif output == "fsd"
-       % Convert from afsd to areal FSD
+       % Convert from F(r) to the probability mass function L(r,h)dr
+       % where L(r,h)dr is the fraction of ice with lateral floe size
+       % between r and r+dr and satisfies sum(L(r,h)) = 1
        processed_data = input.*floe_binwidth;
 
     end
