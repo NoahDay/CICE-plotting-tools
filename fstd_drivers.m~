@@ -25,7 +25,7 @@ clear coords
 
 initial_date.day = 1;
 initial_date.month = 1;
-initial_date.year = 2007; % 2005 is a spin-up year
+initial_date.year = 2005; % 2005 is a spin-up year
 if initial_date.month < 10
     initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 else
@@ -42,7 +42,7 @@ pram.label_color = 0.7*[0.4660 0.6740 0.1880];
 pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
 pram.colormap = 'ice';
 
-[aice, sector_mask] = data_format_sector(filename,"aice",sector);
+[aice, sector_mask] = data_format_sector(filename,"aice","world");
 [nx,ny] = size(sector_mask);
 Nf = 16;
 Nc = 5;
@@ -110,7 +110,7 @@ end
 % This is to reproduce Figure 3 (a)-(e) in Roach et al. (2018)
 datapoints = 365; % Number of days per month
 date = initial_date.char;
-ticker = 0;
+ticker = 1;
 for i = 1:datapoints
     close all
    % Get the file name
@@ -158,7 +158,156 @@ plot(ts_wave,'-', 'LineWidth',2)
     set(gcf,'Position',[1200 1000 500 200])
     ylabel('Change in L(r,h)dr')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northwest')
-    ylim([-2,1])
+    ylim([-4,4])
+    grid on
+    xtickangle(45)
+    
+% Make averaged plot (monthly)    
+
+% Get these plots compatible with Jack's plotting code
+
+%% Plot the map over a month
+% Reproduce Figure 3(k)-(o)
+sector = "world";
+initial_date.day = 1;
+initial_date.month = 2;
+initial_date.year = 2007; % 2005 is a spin-up year
+if initial_date.month < 10
+    initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
+else
+    initial_date.char = sprintf('%d-%d-0%d', initial_date.year, initial_date.month, initial_date.day);
+end
+filename = strcat(filedir,initial_date.char,'.nc');
+
+datapoints = 31; % Number of days per month
+date = initial_date.char;
+ticker = 1;
+for i = 1:datapoints
+    close all
+   % Get the file name
+   ssd = 1;
+    if ssd == 1
+        filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
+    else
+        filename = strcat('cases/',case_name,"/history/iceh.",date,".nc"); 
+    end
+   % Aggregate data over sector
+    d_melt = data_format_sector(filename,"dafsd_latm",sector,3);
+    work = 0;
+    for j = 1:Nf 
+        work = work + d_melt(:,:,j)*floe_binwidth(j); % Units m^2/day
+    end
+    change_melt_ave(:,:,i) = work;
+    
+    d_growth = data_format_sector(filename,"dafsd_latg",sector,3);
+    work = 0;
+    for j = 1:Nf 
+        work = work + d_growth(:,:,j)*floe_binwidth(j); % Units m^2/day 
+    end
+    change_growth_ave(:,:,i) = work;
+    
+    d_newi = data_format_sector(filename,"dafsd_newi",sector,3);
+    work = 0;
+    for j = 1:Nf 
+        work = work + d_newi(:,:,j)*floe_binwidth(j); % Units m^2/day
+    end
+    change_newi_ave(:,:,i) = work;
+    
+    d_weld = data_format_sector(filename,"dafsd_weld",sector,3);
+    work = 0;
+    for j = 1:Nf 
+        work = work + d_weld(:,:,j)*floe_binwidth(j); % Units m^2/day
+    end
+    change_weld_ave(:,:,i) = work;
+    
+    d_wave = data_format_sector(filename,"dafsd_wave",sector,3);
+    work = 0;
+    for j = 1:Nf 
+        work = work + d_wave(:,:,j)*floe_binwidth(j); % Units m^2/day
+    end
+    change_wave_ave(:,:,i) = work;
+
+    aice_daily(:,:,i) = data_format_sector(filename,"aice",sector,2);
+   % Update date
+   %for j = 1:timestep
+    date = update_date(date);
+   %end
+   if mod(i,floor(datapoints/10)) == 0
+       clc
+       fprintf('%g0%% complete\n',ticker);
+       ticker = ticker + 1;
+   end
+end    
+
+change_melt_ave_time = sum(change_melt_ave,3)/datapoints;
+change_growth_ave_time = sum(change_growth_ave,3)/datapoints;
+change_newi_ave_time = sum(change_newi_ave,3)/datapoints;
+change_weld_ave_time = sum(change_weld_ave,3)/datapoints;
+change_wave_ave_time = sum(change_wave_ave,3)/datapoints;
+mean_aice = sum(aice_daily,3)/datapoints;
+
+%% Plot world maps
+figcount = 1;
+[aice, sector_mask] = data_format_sector(filename,"aice","world");
+SIC = 0.15;
+[lat_ice_edge, lon_ice_edge, edge] = find_ice_edge(aice,SIC,"world",lat,lon);
+%lon_ice_edge(33) = 30
+[cell_lat,cell_lon] = lat_lon_finder(lat_ice_edge(33),lon_ice_edge(33),lat,lon);
+line_width = 1;
+tiled = tiledlayout(1,5);
+nexttile
+figs.lat_m = map_plot(change_melt_ave_time,"dafsd_latm",sector);  
+    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
+    %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+    %t.Color = pram.label_color;
+    %set(gcf,'Position',[1200 1000 300 400])
+    title(strcat("Change in FSD lat melt - ",initial_date.char(1:7)), 'interpreter','latex','FontSize', 14)
+    cmocean('-balance',15)
+    caxis([-1,1])
+
+nexttile
+figs.lat_g = map_plot(change_growth_ave_time,"dafsd_latg",sector);  
+    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
+    %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+    %t.Color = pram.label_color;
+    %set(gcf,'Position',[1200 1000 300 400])
+    title(strcat("Change in FSD lat growth - ",initial_date.char(1:7)), 'interpreter','latex','FontSize', 14)
+    cmocean('-balance',15)
+    caxis([-0.001,0.001])
+
+nexttile    
+figs.newi = map_plot(change_newi_ave_time,"dafsd_newi",sector);  
+    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
+    %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+    %t.Color = pram.label_color;
+    %set(gcf,'Position',[1200 1000 300 400])
+    title(strcat("Change in FSD new ice - ",initial_date.char(1:7)), 'interpreter','latex','FontSize', 14)
+    cmocean('-balance',15)
+    caxis([-4,4])
+   
+nexttile 
+figs.weld = map_plot(change_weld_ave_time,"dafsd_weld",sector);  
+    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
+    %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+    %t.Color = pram.label_color;
+    %set(gcf,'Position',[1200 1000 300 400])
+    title(strcat("Change in FSD welding - ",initial_date.char(1:7)), 'interpreter','latex','FontSize', 14)
+    cmocean('-balance',15)
+    caxis([-1,1])
+    
+    
+nexttile
+figs.wave = map_plot(change_wave_ave_time,"dafsd_wave",sector);  
+    plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
+    %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
+    %t.Color = pram.label_color;
+    %set(gcf,'Position',[1200 1000 300 400])
+    title(strcat("Change in FSD wave - ",initial_date.char(1:7)), 'interpreter','latex','FontSize', 14)
+    cmocean('-balance',15)
+    caxis([-4,4])    
+figcount = figcount + 1;
+figure(figcount)
+figs.wave = map_plot(mean_aice,"aice",sector);  
 %% Functions
 function map = plot_map_fsd(filename,variable,cat,sector)
     % Define ice edge 
