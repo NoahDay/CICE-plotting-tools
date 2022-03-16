@@ -6,11 +6,11 @@ addpath functions
 addpath packages/quiverwcolorbar
 clc
 % Parameters
-sector = "EA";
+sector = "world";
 grid = 'gx1';
-case_name = 'ocnforcnowaves';
-%filedir = '/Volumes/NoahDay5TB/cases/ocnatmo/history/iceh.';
-filedir = 'cases/ocnforcnowaves/history/iceh.';
+case_name = 'ocnatmo';
+filedir = '/Volumes/NoahDay5TB/cases/ocnatmo/history/iceh.';
+%filedir = 'cases/ocnforcnowaves/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
 [lat,lon,row] = grid_read(grid);
 user = "a1724548";
@@ -144,7 +144,7 @@ ticker = 1;
 for i = 1:datapoints
     close all
    % Get the file name
-   ssd = 0;
+   ssd = 1;
     if ssd == 1
         filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
     else
@@ -180,13 +180,13 @@ end_date = date;
 ts.init_date = datetime(initial_date.year,initial_date.month,initial_date.day)-1;
 ts.end_date = datetime(str2num(end_date(1:4)),str2num(end_date(6:7)),str2num(end_date(9:10)))-1;
 ts.dates = datevec(ts.init_date:ts.end_date);
-ts_wave = timeseries_plot(dafsd_perday,strcat("Change on AFSD waves across the ",sector," sector"),'days',char(ts.init_date));
+ts_wave = timeseries_plot(dafsd_perday,strcat("Change on AFSD waves across the ","Southern Hemisphere"),'days',char(ts.init_date));
 
 
 
 plot(ts_wave,'-', 'LineWidth',2)
     set(gcf,'Position',[1200 1000 500 200])
-    ylabel('Change in L(r,h)dr')
+    ylabel('Change in areal FSD')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northeast')
     %ylim([-4,4])
     grid on
@@ -207,7 +207,7 @@ if initial_date.month < 10
 else
     initial_date.char = sprintf('%d-%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 end
-filename = strcat(filedir,initial_date.char,'.nc');
+%filename = strcat(filedir,initial_date.char,'.nc');
 
 datapoints = 1; % Number of days per month
 date = initial_date.char;
@@ -215,7 +215,7 @@ ticker = 1;
 for i = 1:datapoints
     close all
    % Get the file name
-   ssd = 0;
+   ssd = 1;
     if ssd == 1
         filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
     else
