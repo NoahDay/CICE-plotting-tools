@@ -5,7 +5,7 @@ Matlab scripts to plot netcdf output from CICE6 runs
 ## Requirements
 
 ### Software
-Requires MATLAB, with Mapping Toolbox (for pcolorm), Antarctic Mapping Tools (for Antarctica mask), bedmap2, financial tools (for time series) packages.
+Requires MATLAB, with Mapping Toolbox (for pcolorm), Antarctic Mapping Tools (for Antarctica mask), bedmap2, financial tools (for time series), quiverm (for quiver plots on maps) packages.
 
 ### Directory
 The code expects folders named:
