@@ -8,9 +8,9 @@ clc
 % Parameters
 sector = "EA";
 grid = 'gx1';
-case_name = 'ocnforcnowaves';
-%filedir = '/Volumes/NoahDay5TB/cases/ocnatmo/history/iceh.';
-filedir = 'cases/ocnforcnowaves/history/iceh.';
+case_name = 'ocnatmo';
+filedir = '/Volumes/NoahDay5TB/cases/ocnatmo/history/iceh.';
+%filedir = 'cases/ocnatmo/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
 [lat,lon,row] = grid_read(grid);
 user = "a1724548";
@@ -25,7 +25,7 @@ coords = sector_coords(sector);
 clear coords
 
 initial_date.day = 1;
-initial_date.month = 7;
+initial_date.month = 1;
 initial_date.year = 2008; % 2005 is a spin-up year
 if initial_date.month < 10
     initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
@@ -83,7 +83,9 @@ figure(1)
   [w3, a, output_data] = map_plot(afsd2(:,:,2),'afsd',sector,grid);
   figure(4)
 [w4, a, output_data] = map_plot(temp_weld,'dafsd_weld',sector,grid,[-1,10]);
-% %  
+% % Print all the ocean forcing
+
+
  %%
 all_cat = 0;
 
@@ -138,13 +140,13 @@ end
    
 %% Impact of each term over time (integrate over space)
 % This is to reproduce Figure 3 (a)-(e) in Roach et al. (2018)
-datapoints = 31; % Number of days per month
+datapoints = 365; % Number of days per month
 date = initial_date.char;
 ticker = 1;
 for i = 1:datapoints
     close all
    % Get the file name
-   ssd = 0;
+   ssd = 1;
     if ssd == 1
         filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
     else
@@ -209,13 +211,13 @@ else
 end
 filename = strcat(filedir,initial_date.char,'.nc');
 
-datapoints = 1; % Number of days per month
+datapoints = 31; % Number of days per month
 date = initial_date.char;
 ticker = 1;
 for i = 1:datapoints
     close all
    % Get the file name
-   ssd = 0;
+   ssd = 1;
     if ssd == 1
         filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
     else
@@ -390,6 +392,8 @@ function output = aggregate_data(filename,variable,sector)
                 end
                 %aice_tab(count) = aice(i,j);
                 count = count + 1;
+            else
+                dafsd_tab(count,:) = 0;
             end
         end
     end
