@@ -403,7 +403,7 @@ nexttile
 %% Validating dafsd
 
 % Pick a cell
-[lat_out,lon_out] = lat_lon_finder(-60,330,lat,lon);
+[lat_out,lon_out] = lat_lon_finder(-65,330,lat,lon);
 
 % Take the daily difference in afsd for that cell
 
@@ -422,34 +422,17 @@ filename2 = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',day2,
     afsd = afsd2-afsd1;
     
     latm = data_format_sector(filename2,"dafsd_latm",sector,3);
-    latg = data_format_sector(filename2,"dafsd_latg",sector,3);
-    newi = data_format_sector(filename2,"dafsd_newi",sector,3);
-    weld = data_format_sector(filename2,"dafsd_weld",sector,3);
-    wave = data_format_sector(filename2,"dafsd_wave",sector,3);
+    latm = data_format_sector(filename2,"dafsd_latg",sector,3);
+    latm = data_format_sector(filename2,"dafsd_newi",sector,3);
+    latm = data_format_sector(filename2,"dafsd_weld",sector,3);
+    latm = data_format_sector(filename2,"dafsd_wave",sector,3);
     %fsdrad = fsd_converter(filename,"afsd","fsdrad",afsd);
 % Plot them
-tarea =  data_format_sector(filename1,"tarea",sector,2);
-tarea_cell = tarea(lon_out,lat_out);
 for i = 1:Nf
-    afsd_cell(i) = afsd(lon_out,lat_out,i).*tarea_cell;
-    latm_cell(i) = latm(lon_out,lat_out,i).*tarea_cell;
-    latg_cell(i) = latg(lon_out,lat_out,i).*tarea_cell;
-    newi_cell(i) = newi(lon_out,lat_out,i).*tarea_cell;
-    weld_cell(i) = weld(lon_out,lat_out,i).*tarea_cell;
-    wave_cell(i) = wave(lon_out,lat_out,i).*tarea_cell;
+    afsd_cell(i) = afsd(lon_out,lat_out,i);
 end
-
-
-
-
-
-figure(1)
     bar(afsd_cell)
     title('AFSD2 - AFSD1')
-    
-    figure(2)
-    combined = [latm_cell;latg_cell;newi_cell;weld_cell;wave_cell];
-    bar(combined,'stacked')
     
     
     

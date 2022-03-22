@@ -9,10 +9,12 @@ elseif input == "afsd"
     dim = 3;
 elseif input == "fsdrad"
     dim = 2;
+elseif input == "dafsd_newi" || input == "dafsd_latg" || input == "dafsd_latm" || input == "dafsd_wave" || input == "dafsd_weld"
+    dim = 3;
 else
     error("Input argument not specified.")
 end
-sector = "world";
+sector = "SH";
 NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
 floe_rad_c = NCAT;
@@ -166,6 +168,21 @@ elseif input == "fsdrad"
         % Convert from fsdrad to areal FSD
          error("Cannot convert from fsdrad to fsd.")
     end
+    
+    
+elseif input == "dafsd_newi" || input == "dafsd_latg" || input == "dafsd_latm" || input == "dafsd_wave" || input == "dafsd_weld" % dafsd input
+    % Apply same as afsd -> fsdrad
+        for j = 1:ny
+            for i = 1:nx
+                work(i,j) = 0;
+                for k = 1:Nf
+                     work(i,j) = work(i,j) + ...
+                           raw_data(i,j,k)*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
+                end
+            end
+        end
+        processed_data = work;
+    
 else
     error("Input argument not specified.")
 end
