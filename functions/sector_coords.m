@@ -10,7 +10,7 @@ function coords = sector_coords(sector)
         coords = [-45,60;-75,60;-45,120;-75,120]; %(NW;SW,NE,SE) %% Need to verify these points with papers!!
     elseif sector == "WS"
         coords = [];
-    elseif sector == "world"
+    elseif sector == "SH"
         coords = [-45,1;-89,1;-45,365;-89,365]; %(NW;SW,NE,SE)
     end
 end

@@ -17,18 +17,18 @@ end
 
 [lat,lon,row] = grid_read(grid);
 if isstring(sector)
-    if sector == "world"     
+    if sector == "SH"     
         w = worldmap('world');
             axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
             setm(w, 'Origin', [-90 0 0]);
-            setm(w, 'maplatlimit', [-90,-50]);
+            setm(w, 'maplatlimit', [-90,-55]);
             setm(w, 'maplonlimit', [-180,180]);
             setm(w, 'meridianlabel', 'on')
             setm(w, 'parallellabel', 'off')
             setm(w, 'mlabellocation', 60);
             setm(w, 'plabellocation', 10);
             setm(w, 'mlabelparallel', -45);
-            setm(w, 'mlinelimit', [-90 0]);
+            setm(w, 'mlinelimit', [-90 -40]);
             setm(w, 'grid', 'on');
             %setm(w, 'frame', 'on');
             setm(w, 'labelrotation', 'on')
