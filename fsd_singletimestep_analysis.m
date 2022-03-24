@@ -78,6 +78,22 @@ data.on.newi(6,:) = [1.6704638512371752e-003   2.7755575615628914e-017   1.38777
 data.on.weld(6,:) = [-8.9451790931951357e-005  -3.7893617820315603e-004  -1.2479501729756079e-003  -2.6355391773924550e-003  -5.2856066357717876e-003  -9.3949615648875572e-003  -1.4701428307954451e-002  -2.2387535189610973e-002  -2.3473944890987072e-002  -2.3324835530250679e-002  -2.1501668796314939e-002  -1.8415013036312638e-002  -2.8498942610866239e-002  -2.4298350898655452e-002  -2.3599684596765071e-002  0.21923384937788015     ];
 data.on.wave(6,:) = [0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     ]; 
 
+
+filename = 'cases/ocntest/history/iceh.2009-01-02.nc';
+NFSD = ncread(filename,'NFSD');
+Nf = length(NFSD);
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+f_bin_width = floe_rad_h - floe_rad_l;
+
+r_NFSD = round(round(floe_rad_h,1));
+r1_NFSD = round(round(floe_rad_l,1));
+s_NFSD = num2str(r_NFSD);
+for i = 1:Nf
+    lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+end
+
 % Plotting
 f = figure(1);
 % Colors: latg, latm, newi, weld, wave
@@ -100,13 +116,14 @@ for i = 1:16
     if i == 1
         legend({'latg WIM','latg','latm WIM','latm','newi WIM','newi','weld WIM','weld','wave WIM', 'wave'},'Position',[0.94 0.4 0.05 0.3])
         ylim([-0.8,0.8])
-        title(sprintf('FSD cat %d (different y-limits!)',cat))
+        title(strcat(lab(i)));%title(sprintf('FSD cat %d (different y-limits!)',cat))
+        xlabel("(different y-limits!)")
     elseif i == 9
         ylim([-0.3,0.3])
-        title(sprintf('FSD cat %d',cat))
+        title(lab(i));%sprintf('FSD cat %d',cat))
     else
         ylim([-0.3,0.3])
-        title(sprintf('FSD cat %d',cat))
+        title(lab(i));%title(sprintf('FSD cat %d',cat))
     end
 
     if i == 1 || i == 2 || i == 9
@@ -134,3 +151,5 @@ xlabel(t,'time steps','FontSize',14)
 ylabel(t,'dafsd','FontSize',14)
 title(t,'Cell (-62.1255, 2.1875) (LON, LAT)')
 f.Position = [100 100 1200 400];
+
+

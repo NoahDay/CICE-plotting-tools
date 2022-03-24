@@ -1,6 +1,8 @@
-function processed_data = fsd_converter(filename,input,output,raw_data)
-%FSD_CONVERTER will convert AFSDN, AFSD, FSDRAD as specified by the
-%input/output arguments
+function processed_data = fsd_converter(filename,input,output,raw_data,sector)
+%FSD_CONVERTER will convert between AFSDN, AFSD, FSDRAD, and DAFSD as 
+% specified by the input/output arguments.
+% Inputs: (filename, input_var, output_var, raw data, sector)
+% Types: (string, string, string, matrix, string)
 
 % Get the dimensions
 if input == "afsdn"
@@ -14,30 +16,32 @@ elseif input == "dafsd_newi" || input == "dafsd_latg" || input == "dafsd_latm" |
 else
     error("Input argument not specified.")
 end
-sector = "SH";
+
+if ~exist('sector','var')
+    sector = "SH";
+end
+
 NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
 floe_rad_c = NCAT;
 
 Nf = numel(NFSD);
 Nc = numel(NCAT);
+
 % Set up
-    % floe_rad_l = lims(1:nfsd  )
-    % floe_rad_h = lims(2:nfsd+1)
-    % floe_binwidth = floe_rad_h - floe_rad_l
 lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
 floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
 floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
 floe_binwidth = floe_rad_h - floe_rad_l;
 floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 
-if ~exist('data', 'var')
-    raw_data = data_format_sector(filename,input,sector,dim);
+if ~exist('raw_data', 'var')
+    raw_data = data_format_sector(filename,input,sector);
 end
 
 % Grab the concentration data
-aice = data_format_sector(filename,"aice",sector,dim);
-aicen = data_format_sector(filename,"aicen",sector,dim);
+aice = data_format_sector(filename,"aice",sector);
+%aicen = data_format_sector(filename,"aicen",sector,dim);
 
 % Get the grid dimensions
 [nx,ny] = size(aice);
@@ -171,6 +175,7 @@ elseif input == "fsdrad"
     
     
 elseif input == "dafsd_newi" || input == "dafsd_latg" || input == "dafsd_latm" || input == "dafsd_wave" || input == "dafsd_weld" % dafsd input
+    if output == "fsdrad"
     % Apply same as afsd -> fsdrad
         for j = 1:ny
             for i = 1:nx
@@ -182,7 +187,9 @@ elseif input == "dafsd_newi" || input == "dafsd_latg" || input == "dafsd_latm" |
             end
         end
         processed_data = work;
-    
+    else
+        processed_data = raw_data;
+    end
 else
     error("Input argument not specified.")
 end

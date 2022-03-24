@@ -11,6 +11,6 @@ function coords = sector_coords(sector)
     elseif sector == "WS"
         coords = [];
     elseif sector == "SH"
-        coords = [-45,1;-89,1;-45,365;-89,365]; %(NW;SW,NE,SE)
+        coords = [-45,0;-89,0;-45,365;-89,365]; %(NW;SW,NE,SE)
     end
 end

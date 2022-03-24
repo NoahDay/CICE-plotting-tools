@@ -1,5 +1,5 @@
-%% Debug the evolution of the FSD
-%% Read in the data.
+% Debug the evolution of the FSD
+%% 1. Read in the data.
 clear
 close all
 addpath functions
@@ -45,6 +45,7 @@ pram.label_color = 0.7*[0.4660 0.6740 0.1880];
 pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
 pram.colormap = 'ice';
 
+file_ic = '/Users/noahday/Maths1/fsd_debug/withWIM/iceh_ic.2008-07-01-03600.nc';
 filenameday = '/Users/noahday/Maths1/fsd_debug/withWIM/iceh.2008-07-01.nc';
 [aice, sector_mask] = data_format_sector(filenames(i,:),"aice",sector);
 [nx,ny] = size(sector_mask);
@@ -59,38 +60,9 @@ floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 NFSD = ncread(filenameday,"NFSD");
 NCAT = ncread(filenameday,"NCAT");
 %filename = strcat(filedir,'2008-07','.nc');
-%%
-% file = strcat('iceh.','2008-07','.nc');
-% fileday = 'iceh.2006-07-03.nc';
-fileday = filenameday;
-  dim=2;
- aice2 = data_format_sector(fileday,"aice",sector,dim);
- afsdn2 = data_format_sector(fileday,"afsdn",sector,4);
- dafsd_weld2 = data_format_sector(fileday,"dafsd_weld",sector,3);
-frzmlt = data_format_sector(filename,"frzmlt",sector,dim);
- afsd2 = (sum(afsdn2,3) > eps).*1.0;
- temp_weld = 0;
- for i = 1:16
-    temp_weld =  temp_weld + dafsd_weld2(:,:,i).*NFSD(i);
- end
-%sum_dafsd_weld = (sum(dafsd_weld2,3)).*1.0;
-temp_data = (frzmlt>eps).*1.0;
-% aminweld = 0.1;
-% aice_temp = (aice2>aminweld).*1.0;
-figure(1)
-  [w1, a, output_data] = map_plot(temp_data,'frzmlt_m',sector,grid);
-  figure(2)
-  [w2, a, output_data] = map_plot(aice,'aice',sector,grid);
-  figure(3)
-  [w3, a, output_data] = map_plot(afsd2(:,:,2),'afsd',sector,grid);
-  figure(4)
-[w4, a, output_data] = map_plot(temp_weld,'dafsd_weld',sector,grid,[-1,10]);
-% % Print all the ocean forcing
-
-
  %%
 all_cat = 0;
-
+filename = filenames(1,:);
 %  Map by term for all categories
 if all_cat == 1
     close all
@@ -136,11 +108,11 @@ for i = 1:Nf
 end
     xticks(1:Nf)
     xticklabels(lab)
-    title(strcat("FSD across the ",sector," sector - ",initial_date.char))
+    title(strcat("FSD across the ",sector, ", ",filename(end-18:end-3)," without waves"))
     set(gcf,'Position',[1300 1000 800 400])
     xtickangle(45)
    
-%% Impact of each term over time (integrate over space)
+%% 2. Impact of each term over time (integrate over space)
 % This is to reproduce Figure 3 (a)-(e) in Roach et al. (2018)
 datapoints = 23; % Number of days per month
 %date = initial_date.char;
@@ -221,7 +193,7 @@ for i = 1%1:datapoints
     close all
    % Get the file name
    %filename = filenames(23,:);
-   filename = ['/Users/noahday/Maths1/fsd_debug/withoutWIM/iceh_inst.2008-07-03-00000.nc']
+   filename = ['/Users/noahday/Maths1/fsd_debug/withoutWIM/iceh_inst.2008-07-03-00000.nc'];
    % Aggregate data over sector
     d_melt = data_format_sector(filename,"dafsd_latm",sector,3);
     work = 0;
@@ -371,6 +343,63 @@ figs.swh = map_plot(SWH,"wave_sig_ht",sector);
 figcount = figcount + 1;
 figure(figcount)
 figs.wave = map_plot(mean_aice,"aice",sector);  
+
+%% Evolution of the FSD over a single timestep
+file_ic = '/Users/noahday/Maths1/fsd_debug/withWIM/iceh_ic.2008-07-01-03600.nc';
+file_wim = '/Users/noahday/Maths1/fsd_debug/withWIM/iceh.2008-07-01-03600.nc';
+file_nowim = '/Users/noahday/Maths1/fsd_debug/withoutWIM/iceh.2008-07-01-03600.nc';
+
+% FSD of the SA sector
+fsd = fsd_converter(filename,"afsdn","fsd");
+count = 1;
+for i = 1:nx
+    for j = 1:ny
+        if aice(i,j) > eps % Only take the cells where there IS ice
+            for n = 1:Nf
+                fsd_tab(count,n) = fsd(i,j,n)./aice(i,j);
+            end
+            aice_tab(count) = aice(i,j);
+            count = count + 1;
+        end
+    end
+end
+
+%
+cum_fsd = sum(fsd_tab);
+normalised_fsd = cum_fsd./sum(cum_fsd);
+% FSD histogram
+fig_count = fig_count + 1;
+figure(fig_count)
+bar(1:Nf,normalised_fsd,'hist')
+xlabel('FSD radius (m)')
+ylabel('Fraction of sea ice area (normalised)')
+Nf = numel(NFSD);
+format shortg
+r_NFSD = round(round(floe_rad_h,1));
+r1_NFSD = round(round(floe_rad_l,1));
+s_NFSD = num2str(r_NFSD);
+for i = 1:Nf
+    lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+end
+    xticks(1:Nf)
+    xticklabels(lab)
+    title(strcat("FSD across the ",sector, ", ",filename(end-18:end-3)," without waves"))
+    set(gcf,'Position',[1300 1000 800 400])
+    xtickangle(45)
+%% Validate the FSD converter   
+sector = "SH";
+fsdrad_test = fsd_converter(filename,"afsdn","fsdrad");
+fsdrad_actual = data_format_sector(filename,"fsdrad",sector);
+
+[lat_out,lon_out] = lat_lon_finder(-65,30,lat,lon);
+
+
+fsdrad_test(lon_out,lat_out)
+fsdrad_actual(lon_out,lat_out)
+
+dafsd_test = fsd_converter(filename,"dafsd_wel","fsdrad");
+dafsd_test(lon_out,lat_out)/1000;
+
 %% Functions
 function map = plot_map_fsd(filename,variable,cat,sector)
     % Define ice edge 

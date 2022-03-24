@@ -1,14 +1,38 @@
- function data_out = data_format(filedir,variable,row,lat,lon,dim)
+ function data_out = data_format(filedir,variable)
  % Extract the data from a netCDF file.
+ % Input: (filedir, variable)
+ % Type: (string, string)
+ %
  % filedir := file directory
  % variable := variable of data we want to extract
+ % dim := Dimension of variable
  % lat := grid latitude
  % lon := grid longitude
- 
- % set number of dimensions to 2 by default
- if ~exist('dim', 'var')
-    dim = 2; 
- end
+
+info = ncinfo(filedir,variable);
+attributes = info.Attributes;
+coord_att = attributes(3); % Extract coordinate info
+coord_string = coord_att.Value;
+if coord_string(1:9) == 'TLON TLAT'
+    coord_type = "t"; % T-grid
+    lat = ncread(filedir,"TLAT");
+    lon = ncread(filedir,"TLON");
+else
+    coord_type = "u"; % U-grid
+    lat = ncread(filedir,"ULAT");
+    lon = ncread(filedir,"ULON");
+end
+data_size = info.Size;
+dim = length(data_size);
+if data_size(1) == 320 && data_size(2) == 384
+    grid = "gx1";
+    row = 37;
+    lat = rearrange_matrix(lat,row,2);
+    lon = rearrange_matrix(lon,row,2);
+
+    lon = [zeros(1,384);lon];
+    lat = [lat(1,:); lat];
+end
 
  
  if dim == 3

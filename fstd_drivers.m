@@ -7,12 +7,13 @@ addpath packages/quiverwcolorbar
 clc
 % Parameters
 sector = "SH";
-grid = 'gx1';
 case_name = 'ocnatmo';
 filedir = '/Volumes/NoahDay5TB/cases/ocnatmo/history/iceh.';
+
+
 %filedir = 'cases/ocnatmo/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
-[lat,lon,row] = grid_read(grid);
+%[lat,lon,row] = grid_read(grid);
 user = "a1724548";
 % Make sector mask
 %[len,wid] = size(lat);
@@ -55,6 +56,19 @@ floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 
 NFSD = ncread(filename,"NFSD");
 NCAT = ncread(filename,"NCAT");
+info = ncinfo(filename);
+attributes = info.Attributes;
+coord_att = attributes(3); % Extract coordinate info
+coord_string = coord_att.Value;
+if coord_string(1:9) == 'TLON TLAT'
+    coord_type = "t"; % T-grid
+    lat = ncread(filename,"TLAT");
+    lon = ncread(filename,"TLON");
+else
+    coord_type = "u"; % U-grid
+    lat = ncread(filename,"ULAT");
+    lon = ncread(filename,"ULON");
+end
 %filename = strcat(filedir,'2008-07','.nc');
 %%
 % file = strcat('iceh.','2008-07','.nc');
@@ -62,9 +76,9 @@ NCAT = ncread(filename,"NCAT");
 fileday = filename;
 sector = "SH";
   dim=2;
- aice2 = data_format_sector(fileday,"aice",sector,dim);
- afsdn2 = data_format_sector(fileday,"afsdn",sector,4);
- dafsd_weld2 = data_format_sector(fileday,"dafsd_weld",sector,3);
+ aice2 = data_format_sector(fileday,"aice",sector);
+ afsdn2 = data_format_sector(fileday,"afsdn",sector);
+ dafsd_weld2 = data_format_sector(fileday,"dafsd_weld",sector);
 %frzmlt = data_format_sector(filename,"frzmlt",sector,dim);
  afsd2 = (sum(afsdn2,3) > eps).*1.0;
  temp_weld = 0;
@@ -220,9 +234,9 @@ ts.end_date = datetime(str2num(end_date(1:4)),str2num(end_date(6:7)),str2num(end
 ts.dates = datevec(ts.init_date:ts.end_date);
 data_mat(1,:) = dafsd_SH_ave.latm; 
 data_mat(2,:) = dafsd_SH_ave.latg;
-data_mat(3,:) = dafsd_SH_ave.newi;
+data_mat(3,:) = dafsd_SH_ave.newi/1000;
 data_mat(4,:) = dafsd_SH_ave.weld;
-data_mat(5,:) = dafsd_SH_ave.wave;
+data_mat(5,:) = dafsd_SH_ave.wave/1000;
 ts_wave = timeseries_plot(data_mat,strcat("Change on AFSD waves across the ",sector," sector"),'days',char(ts.init_date));
 
 
