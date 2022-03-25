@@ -346,6 +346,8 @@ SIC = 0.15;
 %lon_ice_edge(33) = 30
 [cell_lat,cell_lon] = lat_lon_finder(lat_ice_edge(33),lon_ice_edge(33),lat,lon);
 line_width = 1;
+
+
 tiled = tiledlayout(3,2);
 tiled.Title.String = plot_date;
 
@@ -355,9 +357,13 @@ tiled.Title.String = plot_date;
 
 bounds = 15;
 manual_bounds = 15;
+%set(gca,'ColorScale','log')
 
 nexttile
-[figs.lat_m,a] = map_plot(dafsd_SH.latm(:,:,day),"dafsd_latm",sector);  
+cust_bounds =  max(max(abs(dafsd_SH.latm(:,:,day))));
+[Ticks,TickLabels] = log_ticks(cust_bounds,10,'balance');
+
+[figs.lat_m,a] = map_plot(1/10*(dafsd_SH.latm(:,:,day)),"dafsd_latm",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
     %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
     %t.Color = pram.label_color;
@@ -365,10 +371,14 @@ nexttile
     a.Label.String = 'dr_a/dt (m/day)';
     title(strcat("Change in FSD lat melt"), 'interpreter','latex','FontSize', 14)
     cmocean('-balance',15)
-    caxis(1.5*[-bounds,bounds])
-    
+    a.Ticks = Ticks;
+    a.TickLabels = TickLabels;
+   caxis([-log(cust_bounds) log(cust_bounds)]);
 
 nexttile
+cust_bounds =  max(max(abs(dafsd_SH.latg(:,:,day))));
+%[Ticks,TickLabels] = log_ticks(cust_bounds,10,'balance');
+
 [figs.lat_g,a] = map_plot(dafsd_SH.latg(:,:,day),"dafsd_latg",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
     %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
@@ -377,9 +387,14 @@ nexttile
     a.Label.String = 'dr_a/dt (m/day)';
     title(strcat("Change in FSD lat growth"), 'interpreter','latex','FontSize', 14)
     cmocean('-balance',15)
-    caxis(10^(-3)*[-bounds,bounds])
+    %a.Ticks = Ticks;
+   % a.TickLabels = TickLabels;
+   caxis([-cust_bounds cust_bounds]);
     
 nexttile    
+cust_bounds =  max(max(abs(dafsd_SH.newi(:,:,day))));
+[Ticks,TickLabels] = log_ticks(cust_bounds,10,'balance');
+
 [figs.newi,a] = map_plot(dafsd_SH.newi(:,:,day),"dafsd_newi",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
     %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
@@ -388,10 +403,13 @@ nexttile
     a.Label.String = 'dr_a/dt (m/day)';
     title(strcat("Change in FSD new ice"), 'interpreter','latex','FontSize', 14)
     cmocean('-balance',15)
-    caxis([-manual_bounds,manual_bounds])
+    a.Ticks = Ticks;
+    a.TickLabels = TickLabels;
+   caxis([-log(cust_bounds) log(cust_bounds)]);
 
 
 nexttile 
+cust_bounds =  max(max(abs(dafsd_SH.weld(:,:,day))));
 [figs.weld,a] = map_plot(dafsd_SH.weld(:,:,day),"dafsd_weld",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
     %t = textm(lat_ice_edge(20),lon_ice_edge(18),sprintf('SIC = %g\n ice edge',pram.min_SIC),'HorizontalAlignment','right');
@@ -400,9 +418,13 @@ nexttile
     a.Label.String = 'dr_a/dt (m/day)';
     title(strcat("Change in FSD welding"), 'interpreter','latex','FontSize', 14)
     cmocean('-balance',15)
-    caxis([-bounds,bounds])
+    a.Ticks = Ticks;
+    a.TickLabels = TickLabels;
+   caxis([-log(cust_bounds) log(cust_bounds)]);
     
-% max(max(abs(change_wave_ave_time)));
+cust_bounds =  max(max(abs(dafsd_SH.wave(:,:,day))));
+[Ticks,TickLabels] = log_ticks(cust_bounds,10,'balance');
+
 nexttile
 [figs.wave,a] = map_plot(dafsd_SH.wave(:,:,day),"dafsd_wave",sector);  
     plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
@@ -412,7 +434,9 @@ nexttile
     a.Label.String = 'dr_a/dt (m/day)';
     title(strcat("Change in FSD wave"), 'interpreter','latex','FontSize', 14)
     cmocean('-balance',15)
-    caxis([-manual_bounds,manual_bounds])
+    a.Ticks = Ticks;
+    a.TickLabels = TickLabels;
+   caxis([-log(cust_bounds) log(cust_bounds)]);
     
 %% Validating dafsd
 
@@ -431,18 +455,18 @@ filename2 = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',day2,
 % Compare with the sum of the dafsd's
 
     % Get data
-    afsd1 = data_format_sector(filename1,"afsd",sector,3);
-    afsd2 = data_format_sector(filename2,"afsd",sector,3);
+    afsd1 = data_format_sector(filename1,"afsd",sector);
+    afsd2 = data_format_sector(filename2,"afsd",sector);
     afsd = afsd2-afsd1;
     
-    latm = data_format_sector(filename2,"dafsd_latm",sector,3);
-    latg = data_format_sector(filename2,"dafsd_latg",sector,3);
-    newi = data_format_sector(filename2,"dafsd_newi",sector,3);
-    weld = data_format_sector(filename2,"dafsd_weld",sector,3);
-    wave = data_format_sector(filename2,"dafsd_wave",sector,3);
+    latm = data_format_sector(filename2,"dafsd_latm",sector);
+    latg = data_format_sector(filename2,"dafsd_latg",sector);
+    newi = data_format_sector(filename2,"dafsd_newi",sector);
+    weld = data_format_sector(filename2,"dafsd_weld",sector);
+    wave = data_format_sector(filename2,"dafsd_wave",sector);
     %fsdrad = fsd_converter(filename,"afsd","fsdrad",afsd);
 % Plot them
-tarea =  data_format_sector(filename1,"tarea",sector,2);
+tarea =  data_format_sector(filename1,"tarea",sector);
 tarea_cell = tarea(lon_out,lat_out);
 for i = 1:Nf
     afsd_cell(i) = afsd(lon_out,lat_out,i).*tarea_cell;
