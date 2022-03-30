@@ -7,8 +7,8 @@ addpath packages/quiverwcolorbar
 clc
 % Parameters
 sector = "SH";
-case_name = 'ocnatmo';
-filedir = '/Volumes/NoahDay5TB/cases/ocnatmo/history/iceh.';
+case_name = 'forcingnowaves';
+filedir = '/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.';
 
 
 %filedir = 'cases/ocnatmo/history/iceh.';
@@ -26,10 +26,10 @@ coords = sector_coords(sector);
 clear coords
 
 initial_date.day = 1;
-initial_date.month = 7;
-initial_date.year = 2008; % 2005 is a spin-up year
+initial_date.month = 1;
+initial_date.year = 2005; % 2005 is a spin-up year
 if initial_date.month < 10
-    initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
+    initial_date.char = sprintf('%d-0%d', initial_date.year, initial_date.month);
 else
     initial_date.char = sprintf('%d-%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 end
@@ -44,8 +44,9 @@ pram.label_color = 0.7*[0.4660 0.6740 0.1880];
 pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
 pram.colormap = 'ice';
 
-[aice, sector_mask] = data_format_sector(filename,"aice","SH");
-[nx,ny] = size(sector_mask);
+
+%[aice, sector_mask] = data_format_sector(filename,"aice","SH");
+[nx,ny] = size(aice);
 Nf = 16;
 Nc = 5;
 lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
@@ -56,7 +57,7 @@ floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 
 NFSD = ncread(filename,"NFSD");
 NCAT = ncread(filename,"NCAT");
-info = ncinfo(filename);
+info = ncinfo(filename,"afsdn");
 attributes = info.Attributes;
 coord_att = attributes(3); % Extract coordinate info
 coord_string = coord_att.Value;
@@ -64,10 +65,22 @@ if coord_string(1:9) == 'TLON TLAT'
     coord_type = "t"; % T-grid
     lat = ncread(filename,"TLAT");
     lon = ncread(filename,"TLON");
+    dim_info = ncinfo(filename,"TLAT");
 else
     coord_type = "u"; % U-grid
     lat = ncread(filename,"ULAT");
     lon = ncread(filename,"ULON");
+end
+data_size = dim_info.Size;
+dim = length(data_size);
+if data_size(1) == 320 && data_size(2) == 384
+    grid = "gx1";
+    row = 37;
+    lat = rearrange_matrix(lat,row,2);
+    lon = rearrange_matrix(lon,row,2);
+
+    lon = [zeros(1,384);lon];
+    lat = [lat(1,:); lat];
 end
 %filename = strcat(filedir,'2008-07','.nc');
 %%
@@ -154,96 +167,36 @@ end
    
 %% Impact of each term over time (integrate over space)
 % This is to reproduce Figure 3 (a)-(e) in Roach et al. (2018)
-datapoints = 10; % Number of days per month
+clear temp dafsd dafsd_SH data
+clc
+cases = ["noforcing","forcingnowaves"];%["profile","nowaves"];
+datapoints = 7; % Number of days per month
 date = initial_date.char;
-ticker = 1;
-for i = 1:datapoints
-    close all
-   % Get the file name
-   ssd = 1;
-    if ssd == 1
-        filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
-    else
-        filename = strcat('cases/',case_name,"/history/iceh.",date,".nc"); 
-    end
-%    % Aggregate data over sector - Noah Day 22/03/22 This seems wrong,
-% instead apply afsd -> fsdrad conversion to calculate the change/metre
-%     change_melt = aggregate_data(filename,"dafsd_latm",sector);
-%     dafsd_perday(i,1) = mean(change_melt*floe_binwidth'); % Units m^2/day
-%     change_growth = aggregate_data(filename,"dafsd_latg",sector);
-%     dafsd_perday(i,2) = mean(change_growth*floe_binwidth'); % Units m^2/day
-%     change_newi = aggregate_data(filename,"dafsd_newi",sector);
-%     dafsd_perday(i,3) = mean(change_newi*floe_binwidth'); % Units m^2/day
-%     change_weld = aggregate_data(filename,"dafsd_weld",sector);
-%     dafsd_perday(i,4) = mean(change_weld*floe_binwidth'); % Units m^2/day
-%     change_wave = aggregate_data(filename,"dafsd_wave",sector);
-%     dafsd_perday(i,5) = mean(change_wave*floe_binwidth'); % Units m^2/day
-% 
-%    
-    %change_melt = data_format_sector(filename,"dafsd_weld",sector,3);
-    
-    [aice, sector_mask] = data_format_sector(filename,"aice","SH");
-    % Change in FSD per day (m/day)
-    dafsd.latm(:,:,i) = fsd_converter(filename,"dafsd_latm","fsdrad"); 
-    dafsd.latg(:,:,i) = fsd_converter(filename,"dafsd_latg","fsdrad"); 
-    dafsd.newi(:,:,i) = fsd_converter(filename,"dafsd_newi","fsdrad"); 
-    dafsd.weld(:,:,i) = fsd_converter(filename,"dafsd_weld","fsdrad"); 
-    dafsd.wave(:,:,i) = fsd_converter(filename,"dafsd_wave","fsdrad"); 
-    
-    
-    dafsd_SH.latm(:,:,i) = dafsd.latm(:,:,i)./sector_mask;
-    dafsd_SH.latg(:,:,i) = dafsd.latg(:,:,i)./sector_mask;
-    dafsd_SH.newi(:,:,i) = dafsd.newi(:,:,i)./sector_mask;
-    dafsd_SH.weld(:,:,i) = dafsd.weld(:,:,i)./sector_mask;
-    dafsd_SH.wave(:,:,i) = dafsd.wave(:,:,i)./sector_mask;
-    
-    temp.latm(:,:) = dafsd_SH.latm(:,:,i);
-    temp.latg(:,:) = dafsd_SH.latg(:,:,i);
-    temp.newi(:,:) = dafsd_SH.newi(:,:,i);
-    temp.weld(:,:) = dafsd_SH.weld(:,:,i);
-    temp.wave(:,:) = dafsd_SH.wave(:,:,i);
-    
-    dafsd_SH_ave.latm(i) = mean(temp.latm(~isnan(dafsd_SH.latm(:,:,i))));
-    dafsd_SH_ave.latg(i) = mean(temp.latg(~isnan(dafsd_SH.latg(:,:,i))));
-    dafsd_SH_ave.newi(i) = mean(temp.newi(~isnan(dafsd_SH.newi(:,:,i))));
-    dafsd_SH_ave.weld(i) = mean(temp.weld(~isnan(dafsd_SH.weld(:,:,i))));
-    dafsd_SH_ave.wave(i) = mean(temp.wave(~isnan(dafsd_SH.wave(:,:,i))));
-    
-    % Average across the sector
-
-    
-    
-   % Update date
-   %for j = 1:timestep
-    date = update_date(date);
-   %end
-   if mod(i,floor(datapoints/10)) == 0
-       clc
-       fprintf('%g0%% complete\n',ticker);
-       ticker = ticker + 1;
-   end
-end    
+ssd = 1;
+sector = "SH";
+[data] = read_in_fsd_data(cases,date,datapoints,sector,ssd,"m");
 
 %% Plot time series
 clear data_mat
 close 
 
 end_date = date;
-ts.init_date = datetime(initial_date.year,initial_date.month,initial_date.day)-1;
-ts.end_date = datetime(str2num(end_date(1:4)),str2num(end_date(6:7)),str2num(end_date(9:10)))-1;
+ts.init_date = datetime(initial_date.year,initial_date.month,initial_date.day);
+%ts.end_date = datetime(str2num(end_date(1:4)),str2num(end_date(6:7)),str2num(end_date(9:10)))-1;
+ts.end_date = datetime(2005,08,01);
 ts.dates = datevec(ts.init_date:ts.end_date);
-data_mat(1,:) = dafsd_SH_ave.latm; 
-data_mat(2,:) = dafsd_SH_ave.latg;
-data_mat(3,:) = dafsd_SH_ave.newi/1000;
-data_mat(4,:) = dafsd_SH_ave.weld;
-data_mat(5,:) = dafsd_SH_ave.wave/1000;
-ts_wave = timeseries_plot(data_mat,strcat("Change on AFSD waves across the ",sector," sector"),'days',char(ts.init_date));
+data_mat(1,:) = data.latm.ra(:,1); 
+data_mat(2,:) = data.latg.ra(:,1);
+data_mat(3,:) = data.newi.ra(:,1);
+data_mat(4,:) = data.weld.ra(:,1);
+data_mat(5,:) = data.wave.ra(:,1);
+ts_wave = timeseries_plot(data_mat,strcat("Change on AFSD waves across the ",sector," sector"),'months',char(ts.init_date));
 
 
 
 plot(ts_wave,'-', 'LineWidth',2)
     set(gcf,'Position',[1200 1000 500 200])
-    ylabel('Change in L(r,h)dr')
+    ylabel('Change in r_a','Interpreter','Latex')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northeast')
     %ylim([-4,4])
     grid on
@@ -504,6 +457,368 @@ figure(1)
 figcount = figcount + 1;
 figure(figcount)
 figs.wave = map_plot(mean_aice,"aice",sector);  
+
+%% Plot the changes of each floe size category over time
+%% Plotting unscaled dafsd
+NFSD = ncread(filename,'NFSD');
+Nf = length(NFSD);
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+f_bin_width = floe_rad_h - floe_rad_l;
+
+r_NFSD = round(round(floe_rad_h,1));
+r1_NFSD = round(round(floe_rad_l,1));
+s_NFSD = num2str(r_NFSD);
+for i = 1:Nf
+    lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+end
+
+
+f = figure(1);
+% Colors: latg, latm, newi, weld, wave
+colors = [[0.4660 0.6740 0.1880]; [0.8500 0.3250 0.0980]; [0.3010 0.7450 0.9330]; [0.6350 0.0780 0.1840]; [0 0.4470 0.7410]];
+t = tiledlayout(2,8);
+t.TileSpacing = 'compact';
+for nf = 1:16
+    cat = i;
+    nexttile
+    dafsd_data = [data.latm.ave(nf,:,1); data.latg.ave(nf,:,1); data.newi.ave(nf,:,1); data.weld.ave(nf,:,1); data.wave.ave(nf,:,1)].*f_bin_width(nf);%    dafsd_data2 = [data.latm.ave(nf,:,2); data.latg.ave(nf,:,2); data.newi.ave(nf,:,2); data.weld.ave(nf,:,2); data.wave.ave(nf,:,2)].*f_bin_width(nf);
+    dafsd_data2 = [data.latm.ave(nf,:,2); data.latg.ave(nf,:,2); data.newi.ave(nf,:,2); data.weld.ave(nf,:,2); data.wave.ave(nf,:,2)].*f_bin_width(nf);
+    %dataoff = [data.off.latg(:,cat), data.off.latm(:,cat), data.off.newi(:,cat), data.off.weld(:,cat), data.off.wave(:,cat)];
+    [len,wid] = size(dafsd_data);
+    hold on
+    for j = 1:len
+        p(j) = plot(1:wid, dafsd_data(j,:), '--','LineWidth',2);
+        k(j) = plot(1:wid, dafsd_data2(j,:), ':*','LineWidth',2);
+        set(p(j),'Color',colors(j,:));
+        set(k(j),'Color',colors(j,:));
+    end
+    hold off
+    grid on
+    if nf == 1
+        legend({'lat melt','lat growth','new ice','weld', 'wave'},'Position',[0.94 0.4 0.05 0.3],'FontSize',12)
+        legend boxoff 
+        %ylim([-0.8,0.8])
+        %title(strcat(lab(i)));%title(sprintf('FSD cat %d (different y-limits!)',cat))
+        %xlabel("(different y-limits!)")
+    %elseif i == 9
+        %ylim([-0.3,0.3])
+       % title(lab(i));%sprintf('FSD cat %d',cat))
+    else
+        %ylim([-0.3,0.3])
+        title(lab(i));%title(sprintf('FSD cat %d',cat))
+    end
+    title(lab(nf))
+    maximum = max(max(abs(dafsd_data(:,:))));
+    if nf < 13 
+        ylim([-0.1,0.1])
+    elseif nf < 16
+        ylim([-0.5,0.5])
+    else
+        ylim([-5,5])
+    end%
+    %xlim([1,5])
+%     if isnan(data(j,:)) 
+%         ylim([-0.3,0.3]);
+%     elseif maximum > 1
+%         ylim([-5,5]);
+%     elseif maximum > 0.1
+%         ylim([-0.5,0.5]);
+%     elseif maximum > 0.01
+%         ylim([-0.1,0.1]);
+%     elseif maximum > 0.001
+%         ylim([-0.005,0.005]);
+%     elseif maximum > 0.0001
+%         ylim([-0.0005,0.0005]);
+%     elseif maximum > 0.00001
+%         ylim([-0.00005,0.00005]);
+%     else
+%          ylim([-0.000005,0.000005]);
+%     end
+    %ylim([-0.001,0.001])
+%     if i == 1 || i == 2 || i == 9
+%     else
+%         set(gca,'Yticklabel',[]) 
+%         %set(gca,'Xticklabel',[]) %to just get rid of the numbers but leave the ticks.
+%     end
+%     if sum(i == 1:8) == 1
+%         set(gca,'Xticklabel',[]) 
+%    end
+    %clear data
+end
+xlabel(t,'Months','FontSize',16,'Interpreter','Latex')
+ylabel(t,'df(r)dr/dt (conc/day)','FontSize',16,'Interpreter','Latex')
+title(t,'Change in FSD averaged across all of Antarctica','FontSize',16,'Interpreter','Latex')
+f.Position = [100 100 1200 400];
+
+%% Plotting unscaled dafsd scaled for afsd
+close 
+NFSD = ncread(filename,'NFSD');
+Nf = length(NFSD);
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+f_bin_width = floe_rad_h - floe_rad_l;
+floe_binwidth = f_bin_width;
+r_NFSD = round(round(floe_rad_h,1));
+r1_NFSD = round(round(floe_rad_l,1));
+s_NFSD = num2str(r_NFSD);
+for i = 1:Nf
+    lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+end
+
+
+f = figure(1);
+% Colors: latg, latm, newi, weld, wave
+colors = [[0.4660 0.6740 0.1880]; [0.8500 0.3250 0.0980]; [0.3010 0.7450 0.9330]; [0.6350 0.0780 0.1840]; [0 0.4470 0.7410]];
+t = tiledlayout(2,8);
+t.TileSpacing = 'compact';
+for nf = 1:16
+    cat = i;
+    nexttile
+    dafsd = [data.latm.ave(nf,:,1); data.latg.ave(nf,:,1); data.newi.ave(nf,:,1); data.weld.ave(nf,:,1); data.wave.ave(nf,:,1)]./data.afsd.ave(nf,:,1);
+    %dataoff = [data.off.latg(:,cat), data.off.latm(:,cat), data.off.newi(:,cat), data.off.weld(:,cat), data.off.wave(:,cat)];
+    [len,wid] = size(dafsd);
+    hold on
+    for j = 1:len
+        p(j) = plot(1:wid, dafsd(j,:), '--','LineWidth',2);
+       % k(j) = plot(1:6, dataoff(:,j), '-', 'LineWidth',2);
+        set(p(j),'Color',colors(j,:));
+       % set(k(j),'Color',colors(j,:));
+    end
+    grid on
+    if nf == 1
+        legend({'latm','latg','newi','weld', 'wave'},'Position',[0.94 0.4 0.05 0.3])
+        %ylim([-0.8,0.8])
+        %title(strcat(lab(i)));%title(sprintf('FSD cat %d (different y-limits!)',cat))
+        %xlabel("(different y-limits!)")
+    %elseif i == 9
+        %ylim([-0.3,0.3])
+       % title(lab(i));%sprintf('FSD cat %d',cat))
+    else
+        %ylim([-0.3,0.3])
+        title(lab(i));%title(sprintf('FSD cat %d',cat))
+    end
+    title(lab(nf))
+
+    maximum = max(abs(dafsd(j,:)));
+    %if isnan(dafsd(j,:))
+    %    ylim([-0.3,0.3]);
+    %else
+    %    ylim([-2*maximum,2*maximum]);
+    %end
+    clear maximum
+    %if nf < 13
+    %    ylim([-0.1,0.1])
+    %elseif nf < 16
+    %    ylim([-0.5,0.5])
+    %else
+    %    ylim([-5,5])
+    %end
+%     if i == 1 || i == 2 || i == 9
+%     else
+%         set(gca,'Yticklabel',[]) 
+%         %set(gca,'Xticklabel',[]) %to just get rid of the numbers but leave the ticks.
+%     end
+%     if sum(i == 1:8) == 1
+%         set(gca,'Xticklabel',[]) 
+%    end
+
+end
+xlabel(t,'time steps','FontSize',14)
+ylabel(t,'dafsd/afsd per day (x/day)','FontSize',14)
+title(t,'DAFSD across all of Antarctica scaled for AFSD')
+f.Position = [100 100 1200 400];
+hold off
+
+%% Raw AFSD
+close
+% ax = gca;
+% ax.Title.String = '';
+% ax.Title.Interpreter = 'latex';
+% set(groot,'DefaultAxesTitle', ax.Title);
+
+f2 = figure(2);
+t2 = tiledlayout(2,6);
+t2.TileSpacing = 'compact';
+
+
+for i = 1:datapoints
+    cat = i;
+    nexttile
+    hold on
+    bar_data = [data.afsd.ave(:,i,2)];%,data.afsd.ave(:,i,2),data.afsd.ave(:,i,2)-data.afsd.ave(:,i,1)];
+    bar(bar_data);
+    title(sprintf("Month %d",i))
+    if i == 1
+        legend('Forcing off','case2','Difference')
+    end
+   % Nf = numel(NFSD);
+   % format shortg
+   % r_NFSD = round(round(floe_rad_h,1));
+   % r1_NFSD = round(round(floe_rad_l,1));
+   % s_NFSD = num2str(r_NFSD);
+   % for i = 1:Nf
+   %     lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+   % end
+   % xticks(1:Nf)
+   % xticklabels(lab)
+   % xtickangle(45)
+   clear bar_data
+end
+
+
+   
+xlabel(t2,'FSD cats','FontSize',14)
+ylabel(t2,'afsd','FontSize',14)
+title(t2,'Southern hemisphere FSD - afsd, F(r)')
+f2.Position = [100 100 1200 400];
+hold off
+
+% F(r)dr
+f3 = figure(3);
+t3 = tiledlayout(2,6);
+t3.TileSpacing = 'compact';
+
+
+for i = 1:datapoints
+    cat = i;
+    nexttile
+    %[len,wid] = size(data);
+    hold on
+    bar_data = [data.afsd.ave(:,i,2).*f_bin_width'];%,data.afsd.ave(:,i,2).*floe_binwidth',(data.afsd.ave(:,i,2)-data.afsd.ave(:,i,1)).*floe_binwidth'];
+    bar(bar_data);
+     if i == 1
+        legend('Forcing off','case2','Difference')
+    end
+    title(sprintf("Month %d",i))
+    clear bar_data
+end
+
+xlabel(t3,'FSD cats','FontSize',14)
+ylabel(t3,'FSD','FontSize',14)
+title(t3,'Southern hemisphere FSD, F(r)dr')
+f3.Position = [100 100 1200 400];
+hold off
+
+%% AFSD converted to number FSD
+f4 = figure(4);
+t4 = tiledlayout(2,6);
+t4.TileSpacing = 'compact';
+alpha = 0.66;
+%number_fsd = data_fsd./(4*alpha)
+
+for i = 1:datapoints
+    cat = i;
+    nexttile
+    %[len,wid] = size(data);
+    hold on
+    num_data = [data.afsd.ave(:,i,2).*floe_binwidth'./(4*alpha*NFSD.^2)];%, data.afsd.ave(:,i,2).*floe_binwidth'./(4*alpha*NFSD)];
+    bar(num_data);
+    title(sprintf("Month %d",i))
+     if i == 1
+        legend('Forcing on waves off','case2','Difference')
+    end
+    clear num_data
+end
+
+xlabel(t4,'FSD cats','FontSize',14)
+ylabel(t4,'Number FSD','FontSize',14)
+title4 = title(t4,'Southern hemisphere number FSD, F^N(r)dr');
+%titl4.Interpreter = 'Latex'
+f4.Position = [100 100 1200 400];
+hold off
+
+%% Reproducing Roach et al. (2018) Fig 2. Hemishphere FSD
+close all
+datapoints = 12;
+roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
+f5 = figure(5);
+t5 = tiledlayout(1,1);%(5,2);
+t5.TileSpacing = 'compact';
+alpha = 0.66;
+cust_bounds =  max(NFSD);
+xtick = 10.^(0:4);
+xticklab = cellstr(num2str(round(log10(xtick(:))), '10^{%d}'));
+ytick = 10.^(-30:2:5);
+yticklab = cellstr(num2str(round(log10(ytick(:))), '10^{%d}'));
+
+
+for i = 1
+    cat = i;
+    nexttile
+    %[len,wid] = size(data);
+    hold on
+    % FIX THIS data_fsd = afsd.ave(:,i).*floe_binwidth'./(4*alpha*NFSD);
+    data_number_fsd = [data.afsd.ave(:,7,1).*floe_binwidth'./(4*alpha*NFSD.^2)];
+    p(i) = plot(log10(NFSD),log(data_number_fsd),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+    hold on 
+    data_number_fsd = [data.afsd.ave(:,7,2).*floe_binwidth'./(4*alpha*NFSD.^2)];
+    plot(log10(NFSD),log(data_number_fsd),'-.*','MarkerFaceColor', '#77AC30','LineWidth',1.5);
+    plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
+    if i == 1
+        legend({'Forcing on waves off (July)',"Forcing off (July)",'Roach et al. (2018) Sep results'})
+    end
+    grid on
+    title(sprintf("July",i))
+    xticks(log10(xtick))
+    xticklabels(xticklab)
+    xlabel('Floe radius (m)')
+    yticks(log10(ytick))
+    yticklabels(yticklab)
+    ylim([-30,5])
+    %xlim([0,3*10^3]);
+end
+
+
+%xlabel(t5,'FSD cats','FontSize',14)
+%ylabel(t5,'Number FSD','FontSize',14)
+%title5 = title(t5,strcat(case_name, " Southern hemisphere number FSD, F^N(r)dh"));
+%title5.Interpreter = 'Latex';
+f5.Position = [1200 100 600 2000];
+hold off
+
+%% Figure 2 (h)
+f6 = figure(6);
+t6 = tiledlayout(2,5);
+t6.TileSpacing = 'compact';
+alpha = 0.66;
+cust_bounds =  max(NFSD);
+xtick = 10.^(0:4);
+xticklab = cellstr(num2str(round(log10(xtick(:))), '10^{%d}'));
+ytick = 10.^(-9:5);
+yticklab = cellstr(num2str(round(log10(ytick(:))), '10^{%d}'));
+
+for i = 1:10
+    cat = i;
+    nexttile
+    %[len,wid] = size(data);
+    hold on
+    % FIX THIS data_fsd = afsd.ave(:,i).*floe_binwidth'./(4*alpha*NFSD);
+    p(i) = plot(log10(NFSD),log(data_fsd),'-o','MarkerFaceColor', 'k','Color', 'k');
+    grid on
+    title(sprintf("Day %d",i))
+    xticks(log10(xtick))
+    xticklabels(xticklab)
+    xlabel('Floe radius (m)')
+    yticks(log10(ytick))
+    yticklabels(yticklab)
+    %xlim([0,3*10^3]);
+end
+
+%xlabel(t5,'FSD cats','FontSize',14)
+%ylabel(t5,'Number FSD','FontSize',14)
+%title5 = title(t5,strcat(case_name, " Southern hemisphere number FSD, F^N(r)dh"));
+%title5.Interpreter = 'Latex';
+f5.Position = [1200 100 1200 500];
+hold off
+
+
+
+%% Change in ra
+
+
 %% Functions
 function map = plot_map_fsd(filename,variable,cat,sector)
     % Define ice edge 

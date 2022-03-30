@@ -94,7 +94,7 @@ for i = 1:Nf
     lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
 end
 
-% Plotting
+%% Plotting unscaled dafsd
 f = figure(1);
 % Colors: latg, latm, newi, weld, wave
 colors = [[0.4660 0.6740 0.1880]; [0.8500 0.3250 0.0980]; [0.3010 0.7450 0.9330]; [0.6350 0.0780 0.1840]; [0 0.4470 0.7410]];
@@ -134,17 +134,6 @@ for i = 1:16
     if sum(i == 1:8) == 1
         set(gca,'Xticklabel',[]) 
     end
-    
-    
-    
-    
-    %nexttile
-    
-    %p = plot(1:6, cat1,'LineWidth',2);
-    %legend('latg', 'latm','newi','weld','wave')
-    %xlabel('timesteps')
-    %ylabel('dafsd')
-    %title(sprintf('WIM OFF: FSD cat %d',cat))
 
 end
 xlabel(t,'time steps','FontSize',14)

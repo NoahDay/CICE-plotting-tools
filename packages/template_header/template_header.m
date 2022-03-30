@@ -26,19 +26,12 @@ function [output1,output2] = function_name(input1,input2,input3)
 %
 % See also: OTHER_FUNCTION_NAME1,  OTHER_FUNCTION_NAME2
 
-% Author: FirstName FamilyName
-% Work address
-% email: 
-% Website: http://www.
-% May 2004; Last revision: 12-May-2004
+% Author: Noah Day
+% Email: noah.day@adelaide.edu.au
+% March 2022; Last revision: 12-March-2022
 
 %------------- BEGIN CODE --------------
 
 Enter your executable matlab commands here
 
 %------------- END OF CODE --------------
-%Please send suggestions for improvement of the above template header 
-%to Denis Gilbert at this email address: gilbertd@dfo-mpo.gc.ca.
-%Your contribution towards improving this template will be acknowledged in
-%the "Changes" section of the TEMPLATE_HEADER web page on the Matlab
-%Central File Exchange

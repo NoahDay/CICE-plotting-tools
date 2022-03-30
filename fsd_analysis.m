@@ -15,7 +15,7 @@ grid = 'gx1';
 day = 3;
 month = 12;
 year = 2009;
-sector = "SA";
+sector = "SH";
 if day < 9
     date = sprintf('%d-%d-0%d', year, month, day);
 else
@@ -50,7 +50,7 @@ thick_binwidth = NCAT - [0;NCAT(1:end-1)];
 %% ITD
 % Sum a_{in} = 1
 dim = 3;
-aicen_data = data_format_sector(filename,"aicen",sector,dim);
+aicen_data = data_format_sector(filename,"aicen",sector);
 
 Nc = numel(NCAT);
 
@@ -70,7 +70,7 @@ floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
 f_bin_width = floe_rad_h - floe_rad_l;
 
 dim = 3;
-afsd_data = data_format_sector(filename,"afsd",sector,dim);
+afsd_data = data_format_sector(filename,"afsd",sector);
 
 afsd(1:numel(NFSD)) = afsd_data(lon_pos,lat_pos,:);
 fsd = afsd.*floe_binwidth/conc;
@@ -81,7 +81,7 @@ fsd = afsd.*floe_binwidth/conc;
 % Sum_{Nc} Sum_{Nf} a_{in} F_{in,k} = 1
 clc
 dim = 4;
-afsdn_data = data_format_sector(filename,"afsdn",sector,dim);
+afsdn_data = data_format_sector(filename,"afsdn",sector);
 
 % Take the FSD at the ice edge (15%)
 
@@ -99,7 +99,7 @@ for nc = 1:Nc
 end
 %% Testing
 clc
-fsdrad_data = data_format_sector(filename,"fsdrad",sector,2);
+fsdrad_data = data_format_sector(filename,"fsdrad",sector);
 [converted] = fsd_converter(filename,"afsdn","fsdrad");
 converted(lon_pos,lat_pos,:)
 [converted] = fsd_converter(filename,"afsd","fsdrad");

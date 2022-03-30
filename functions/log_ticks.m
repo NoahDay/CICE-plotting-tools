@@ -35,7 +35,7 @@ function [Ticks,TickLabels] = log_ticks(maximum,num_of_ticks,setting)
 
 %------------- BEGIN CODE --------------
     % get the minimum and maximum value of A
-    if setting == 'balance'
+    if setting == "balance"
         % Let the middle of the cbar be 0
         c1 = 0;
         c2 = maximum;
@@ -54,6 +54,21 @@ function [Ticks,TickLabels] = log_ticks(maximum,num_of_ticks,setting)
         
         Ticks = [Ticks(1:num_of_ticks/2), 0, Ticks(num_of_ticks/2+1:num_of_ticks)];
         TickLabels = [TickLabels(1:num_of_ticks/2), 0, TickLabels(num_of_ticks/2+1:num_of_ticks)];
+    elseif setting == "10"
+        % Log 10
+         % Let the middle of the cbar be 0
+        c1 = 0;
+        c2 = maximum;
+        % preallocate Ticks and TickLabels
+        Ticks      = zeros(1,num_of_ticks);
+        TickLabels = zeros(1,num_of_ticks);
+        % distribute Ticks and TickLabels
+        for n = 1:num_of_ticks
+            Ticks(n)      = log10(c2)*n/(num_of_ticks);
+            TickLabels(n) = round(c2)*n/(num_of_ticks);
+        end
+        %Ticks = [Ticks(1:num_of_ticks/2), 0, Ticks(num_of_ticks/2+1:num_of_ticks)];
+        %TickLabels = [TickLabels(1:num_of_ticks/2), 0, TickLabels(num_of_ticks/2+1:num_of_ticks)];
     end
 
 end

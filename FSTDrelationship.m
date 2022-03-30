@@ -7,11 +7,32 @@ close all
 addpath functions
 addpath packages/joyPlot
 
-filedir = "cases/init/history/iceh.2005-01-01.nc";
-           
-filecase = "iceh.2005-01-01";
+user = 'a1724548'; %a1724548, noahday, Noah
+case_name = 'ocntest';%'ocnforcing';
+grid = 'gx1'; 
+day = 3;
+month = 12;
+year = 2009;
+sector = "SH";
+if day < 9
+    date = sprintf('%d-%d-0%d', year, month, day);
+else
+    date = sprintf('%d-0%d-%d', year, month, day);
+end
 
-ncdisp(filedir)
+dim = 2;
+[lat,lon,row] = grid_read(grid);
+
+
+ssd = 1;
+if ssd == 1
+    filename = strcat('/Volumes/NoahDay5TB/cases/ocnforcing/history/iceh.',date,".nc");
+else
+    filename = strcat('cases/',case_name,"/history/iceh.",date,".nc"); 
+end
+
+filedir = filename;
+ncdisp(filename)
 
 % Parameters
 fstd_switch = 0;
@@ -20,21 +41,23 @@ grid = 'gx1';
 [lat,lon,row] = grid_read(grid);
 
 coords = [-60,20];
-data = data_format(filedir,'aicen_d',row,lat,lon,3); %aicen
+data = data_format(filedir,'aicen'); %aicen
 [lat_out,lon_out] = lat_lon_finder(coords(1),coords(2),lat,lon);
 data(lon_out,lat_out,2)
 
-data = data_format(filedir,'afsdn_d',row,lat,lon,4); %aicen
+data = data_format(filedir,'afsdn'); %aicen
 
 NFSD = ncread(filedir,'NFSD');
 NCAT = ncread(filedir,'NCAT');
+Nf = length(NFSD);
+Nc = length(NCAT);
 % Cell 
 %figure(1)
 t1=tiledlayout(1,5);
 
-for i = 1:5
+for i = 1:Nc
     data_temp = zeros(1,24);
-    for j = 1:24
+    for j = 1:Nf
         norm_FSD(i,j) = data(lon_out,lat_out,j,i);
     end
     %norm_FSD = frac_pdf(data_temp);
@@ -50,14 +73,14 @@ for i = 1:5
 end
 norm_FSD1 = norm_FSD(1,:);
 figure(1)
-area(1:24,norm_FSD1)
+area(1:Nf,norm_FSD1)
 xlabel("FSD categories")
 ylabel("ITD categories")
 title("Cell 1st cat")
 norm_FSD1 = norm_FSD(1,:);
 norm_FSDrest = norm_FSD(2:end,:);
 figure(2)
-joyPlot(norm_FSDrest',1:24,0.005,'FaceColor',[0 0.4470 0.7410],'StrokeColor','w')
+joyPlot(norm_FSDrest',1:Nf,0.005,'FaceColor',[0 0.4470 0.7410],'StrokeColor','w')
 xlabel("FSD categories")
 ylabel("ITD categories")
 title("Cell rest")
