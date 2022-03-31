@@ -16,7 +16,6 @@ filename = 'cases/ocntest/history/iceh.2009-01-01.nc';
 ncdisp(filename)
 % 
 grid = 'gx1';
-ssd = 0;
 sector = "SH";
 
 %% Preamble
@@ -24,7 +23,7 @@ close all
 user = 'noahday'; %a1724548, noahday, Noah
 case_name = 'wimoninit';
 sector = "SH";
-ssd = 1;
+ssd = 0;
 if ssd == 1
     ssd_dir = '/Volumes/NoahDay5TB/cases/';
     filedir = strcat(ssd_dir,case_name);
@@ -59,6 +58,7 @@ thick_binwidth(end) = 15;
 
 
 %% 1. Integrate aicen wrt to ice thickness to get aice
+clear temp
 aicen_data = data_format_sector(filename,"aicen",sector);
 vicen_data = data_format_sector(filename,"vicen",sector);
 aice_data = data_format_sector(filename,"aice",sector);
@@ -314,7 +314,7 @@ nexttile
     a.TickLabelInterpreter = "Latex";
     f1.Position = [800 1000 1000 400];
 
-exportgraphics(f1,'afsdn_aice.pdf','ContentType','vector')
+%exportgraphics(f1,'afsdn_aice.pdf','ContentType','vector')
 
 icemask = aice_data > 0.01;
 aice_vec = aice_data(icemask);
@@ -617,7 +617,7 @@ nexttile
 map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.1,0.1]);
 title("Difference")
 
-%% Number FSD
+%% 7. Number FSD
 % ND: make sure to get the units right, do I divide by TAREA?
 
 % Get the NFSD from AFSDN
@@ -673,28 +673,27 @@ f1 = figure(1);
 t5 = tiledlayout(1,1);%(5,2);
 t5.TileSpacing = 'compact';
 cust_bounds =  max(NFSD);
-xtick = 10.^(0:4);
-xticklab = cellstr(num2str(round(log10(xtick(:))), '10^{%d}'));
-ytick = 10.^(-9:2:10);
-yticklab = cellstr(num2str(round(log10(ytick(:))), '10^{%d}'));
+xtick = 10.^(0:6);
+xticklab = cellstr(num2str(round(log10(xtick(:))), '$10^{%d}$'));
+ytick = 10.^(-9:2:13);
+yticklab = cellstr(num2str(round(log10(ytick(:))), '$10^{%d}$'));
 
 
-    nexttile
-    hold on
-    p = plot(log10(NFSD),log(nfsd_vec),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
-    hold on 
-    plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
-        legend({'Forcing on waves off (July)',"Forcing off (July)",'Roach et al. (2018) Sep results'})
-    grid on
-    title(sprintf("July"))
-    xticks(log10(xtick))
-    xticklabels(xticklab)
-    xlabel('Floe radius (m)')
-    yticks(log10(ytick))
-    yticklabels(yticklab)
-    ylim([-30,5])
-    %xlim([0,3*10^3]);
-
+nexttile
+hold on
+p = plot(log10(NFSD),log(nfsd_vec*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
+    legend({'Mine 2005-07-31','Roach et al. (2018) Sep results'})
+grid on
+title(sprintf("July"))
+xticks(log10(xtick))
+xticklabels(xticklab)
+xlabel('Floe radius (m)')
+yticks(log10(ytick))
+yticklabels(yticklab)
+ylim([-9,13])
+%xlim([0,3*10^3]);
+hold off
 f5.Position = [1200 100 600 2000];
 
 %% Functions
