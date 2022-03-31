@@ -58,8 +58,9 @@ thick_binwidth = thick_rad_h - thick_rad_l;
 thick_binwidth(end) = 15;
 
 
-% 1. Integrate aicen wrt to ice thickness to get aice
+%% 1. Integrate aicen wrt to ice thickness to get aice
 aicen_data = data_format_sector(filename,"aicen",sector);
+vicen_data = data_format_sector(filename,"vicen",sector);
 aice_data = data_format_sector(filename,"aice",sector);
 
 [nx,ny,~] = size(aicen_data);
@@ -67,6 +68,7 @@ aice_data = data_format_sector(filename,"aice",sector);
 for i = 1:nx
     for j = 1:ny
         temp(:) = aicen_data(i,j,:);
+        thick_binwidth = 1;
         aice_transformed(i,j) = sum(temp'.*thick_binwidth);
         clear temp
     end
@@ -79,12 +81,12 @@ nexttile
 map_plot(aice_transformed,"aice",sector,grid,[0,1]);
 title("Transformed data - fix bin width")
 nexttile
-map_plot(aice_data-aice_transformed,"aice",sector,grid,[-1,1]);
+map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.1,0.1]);
 title("Difference")
 
 
 %% 2. Integrate afsd wrt to floe size to get aice
-clear aice_transformed
+clear aice_transformed f1 f2
 close all
 afsd_data = data_format_sector(filename,"afsd",sector);
 aice_data = data_format_sector(filename,"aice",sector);
@@ -102,42 +104,45 @@ for i = 1:nx
         clear temp
     end
 end
-f2 = figure(2);
-t2 = tiledlayout(1,3);
-t2.TileSpacing = 'compact';
+
+
+% Plot comparison
+f1 = figure(1);
+t1 = tiledlayout(1,3);
+t1.TileSpacing = 'compact';
 fontsize = 14;
 
+nexttile
+    [p,a] = map_plot(aice_data,"aice",sector,grid,[0,1]);
+    t = title(" \textbf{\texttt{aice} CICE output}");
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "Latex";
+    cmocean('ice',10) 
 
 nexttile
-[p,a] = map_plot(aice_data,"aice",sector,grid,[0,1]);
-t = title("\textbf{CICE output}");
-t.Interpreter = "latex";
-t.FontSize = fontsize;
-a.FontSize = fontsize;
-a.TickLabelInterpreter = "Latex";
-cmocean('ice') 
+    [p,a] = map_plot(aice_transformed,"aice",sector,grid,[0,1]);
+    t = title("\textbf{\texttt{aice} calculated from \texttt{afsd}}");
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "latex";
+    cmocean('ice',10) 
+    clear a
 
 nexttile
-[p,a] = map_plot(aice_transformed,"aice",sector,grid,[0,1]);
-t = title("\textbf{$\sum_{j=1}^{n_f} F(r_j)\Delta r_j$}");
-t.Interpreter = "latex";
-t.FontSize = fontsize;
-a.FontSize = fontsize;
-a.TickLabelInterpreter = "latex";
-cmocean('ice') 
+    [p,a] = map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.05,0.05]);
+    cmocean('balance',15) 
+    t = title("\textbf{Difference}");
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    a.Label.String = 'Ice concentration';
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "Latex";
+    f1.Position = [800 1000 1000 400];
 
-nexttile
-[p,a] = map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.05,0.05]);
-cmocean('balance') 
-t = title("\textbf{Difference}");
-t.Interpreter = "latex";
-t.FontSize = fontsize;
-a.Label.String = 'Ice concentration';
-a.FontSize = fontsize;
-a.TickLabelInterpreter = "latex";
-f2.Position = [800 1000 1000 400];
-
-%exportgraphics(f2,'aice.pdf','ContentType','vector')
+%exportgraphics(f1,'aice.pdf','ContentType','vector')
 
 icemask = aice_data > 0.01;
 aice_vec = aice_data(icemask);
@@ -145,72 +150,97 @@ aice_transformed_vec = aice_transformed(icemask);
 error_vec = aice_vec-aice_transformed_vec;
 max(abs(error_vec))
 
-
-f3 = figure(3);
+% Plot errors
+f2 = figure(2);
 t = tiledlayout(2,2);
 t.TileSpacing = 'compact';
 
 
 nexttile
-% Correlation plot
-scatter(aice_transformed_vec, aice_vec)
-hold off
-ax = gca;
-ax.FontSize = fontsize; 
-y = ylabel('CICE output $a_i$');
-y.FontSize = fontsize;
-x = xlabel('My calculation of $a_i$');
-x.FontSize = fontsize;
+    % Correlation plot
+    scatter(aice_transformed_vec, aice_vec)
+    hold on
+    plot([0,1],[0,1])
+    hold off
+    ax = gca;
+    ax.FontSize = fontsize; 
+    ax.TickLabelInterpreter='latex';
+    y = ylabel('CICE output $a_i$');
+    y.FontSize = fontsize;
+    x = xlabel('My calculation of $a_i$');
+    x.FontSize = fontsize;
 
 
 nexttile
-% Box plot comparison for error and actual value
-set(groot, 'defaultAxesTickLabelInterpreter','latex');
- boxplot([error_vec,aice_vec],'labels',{'Error','$a_i$'});
-ax = gca;
-ax.FontSize = fontsize; 
-ax.TickLabelInterpreter='latex';
-ylabel("Ice concentration",'Interpreter','latex')
+    % Histogram comparison
+    [h1,edges] = histcounts(aice_vec, 10);
+    [h2,edges] = histcounts(aice_transformed_vec, 10);
+    ctrs = edges(1)+(1:length(edges)-1).*diff(edges);   % Create Centres
+    bar(ctrs, log([h1 ;h2])')
+    ax = gca;
+    ax.FontSize = fontsize; 
+    xlabel("Ice concentration",'Interpreter','latex')
+    ylabel("log(Counts)",'Interpreter','latex')
+    legend("CICE","Calculated",'Location','northwest')
+    
 
 nexttile
-scatter(aice_vec,error_vec)
-set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
-set(0,'defaultTextInterpreter','latex'); %trying to set the default
-ax = gca;
-ax.FontSize = fontsize; 
-xlabel("Ice concentration")
-ylabel("Error (concentration)")
+    % Error vs aice
+    scatter(aice_vec,error_vec)
+    set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
+    set(0,'defaultTextInterpreter','latex'); %trying to set the default
+    yline(0)
+    ax = gca;
+    ax.FontSize = fontsize; 
+    xlabel("Ice concentration")
+    ylabel("Error (concentration)")
 
 nexttile
-scatter(lat(icemask),error_vec)
-ax = gca;
-ax.FontSize = fontsize; 
-xlabel("Latitude",'Interpreter','latex')
-ylabel("Error (concentration)",'Interpreter','latex')
+   % Box plot comparison for error and actual value
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+     boxplot([error_vec,aice_vec],'labels',{'Error','$a_i$'});
+    ax = gca;
+    ax.FontSize = fontsize; 
+    ax.TickLabelInterpreter='latex';
+    ylabel("Ice concentration",'Interpreter','latex')
 
-%exportgraphics(f3,'aice_error.pdf','ContentType','vector')
+%exportgraphics(f2,'aice_error.pdf','ContentType','vector')
 
 % Statistics
 fprintf("Data statistics: \n")
-fprintf("Correlation between methods: %g\n", corr(fsdrad_transformed_vec, fsdrad_vec))
-fprintf('The max fsdrad is: %d\n',max(fsdrad_vec))
-fprintf('The mean fsdrad is: %d\n',mean(fsdrad_vec))
-fprintf('The median fsdrad is: %d\n',median(fsdrad_vec))
-fprintf('The mode fsdrad is: %d\n',mode(fsdrad_vec))
-fprintf('The std fsdrad is: %d\n',std(fsdrad_vec))
+fprintf("Correlation between methods: %g\n", corr(aice_transformed_vec, aice_vec))
+fprintf('The max fsdrad is: %d\n',max(aice_vec))
+fprintf('The mean fsdrad is: %d\n',mean(aice_vec))
+fprintf('The median fsdrad is: %d\n',median(aice_vec))
+fprintf('The mode fsdrad is: %d\n',mode(aice_vec))
+fprintf('The std fsdrad is: %d\n',std(aice_vec))
 fprintf("Error statistics: \n")
 fprintf('The max error is: %d\n',max(error_vec))
 fprintf('The mean error is: %d\n',mean(error_vec))
 fprintf('The median error is: %d\n',median(error_vec))
-fprintf('The mode error is: %d\n',mode(fsdrad_vec))
+fprintf('The mode error is: %d\n',mode(error_vec))
 fprintf('The std error is: %d\n',std(error_vec))
 
 
 
+%% Make latex table
+%variables_names = ['Mean';'Median';'Mode';'Standard deviation';'Maximum'];
+Mean = [mean(aice_vec), mean(error_vec)];
+%patients = table(LastName,Age,Smoker,Height,Weight,BloodPressure)
+data_table = table(Mean);
+err = stat_vec(error_vec);
+%tex_data = [variables_names,vpa(stat_vec(error_vec))];
+%latex([variables_names,vpa(stat_vec(error_vec))])
+
+latex(['Mean',vpa(round(mean(aice_vec),5)), vpa(round(mean(error_vec),5));...
+       'Median',vpa(round(median(aice_vec),5)), vpa(round(median(error_vec),5));...
+       'Mode',vpa(round(mode(aice_vec),5)), vpa(round(mode(error_vec),5));...
+       'STD',vpa(round(std(aice_vec),5)), vpa(round(std(error_vec),5));...
+       'Maximum',vpa(round(max(aice_vec),5)), vpa(round(max(error_vec),5));...
+    ])
 
 
-
-% 3. Integrate afsdn to get aicen
+%% 3. Integrate afsdn to get aicen
 
 
 %% 4. Integrate afsdn to get afsd
@@ -239,6 +269,132 @@ t.Interpreter = "latex";
 t.FontSize = fontsize;
 f4.Position = [800 1000 1200 400];
 %exportgraphics(f4,'afsd.pdf','ContentType','vector')
+
+%% and then integrate "afsd" to get aice
+
+clear aice_transformed f1 f2
+close all
+aice_transformed(:,:) = fsd_converter(filename,"afsdn","aice");
+aice_data = data_format_sector(filename,"aice",sector);
+
+
+% Plot comparison
+f1 = figure(1);
+t1 = tiledlayout(1,3);
+t1.TileSpacing = 'compact';
+fontsize = 14;
+
+nexttile
+    [p,a] = map_plot(aice_data,"aice",sector,grid,[0,1]);
+    t = title(" \textbf{\texttt{aice} CICE output}");
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "Latex";
+    cmocean('ice',10) 
+
+nexttile
+    [p,a] = map_plot(aice_transformed,"aice",sector,grid,[0,1]);
+    t = title("\textbf{\texttt{aice} calculated from \texttt{afsdn}}");
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "latex";
+    cmocean('ice',10) 
+    clear a
+
+nexttile
+    [p,a] = map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.05,0.05]);
+    cmocean('balance',15) 
+    t = title("\textbf{Difference}");
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    a.Label.String = 'Ice concentration';
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "Latex";
+    f1.Position = [800 1000 1000 400];
+
+exportgraphics(f1,'afsdn_aice.pdf','ContentType','vector')
+
+icemask = aice_data > 0.01;
+aice_vec = aice_data(icemask);
+aice_transformed_vec = aice_transformed(icemask);
+error_vec = aice_vec-aice_transformed_vec;
+max(abs(error_vec))
+
+% Plot errors
+f2 = figure(2);
+t = tiledlayout(2,2);
+t.TileSpacing = 'compact';
+
+
+nexttile
+    % Correlation plot
+    scatter(aice_transformed_vec, aice_vec)
+    hold on
+    plot([0,1],[0,1])
+    hold off
+    ax = gca;
+    ax.FontSize = fontsize; 
+    ax.TickLabelInterpreter='latex';
+    y = ylabel('CICE output $a_i$');
+    y.FontSize = fontsize;
+    x = xlabel('My calculation of $a_i$');
+    x.FontSize = fontsize;
+
+
+nexttile
+    % Histogram comparison
+    [h1,edges] = histcounts(aice_vec, 10);
+    [h2,edges] = histcounts(aice_transformed_vec, 10);
+    ctrs = edges(1)+(1:length(edges)-1).*diff(edges);   % Create Centres
+    bar(ctrs, log([h1 ;h2])')
+    ax = gca;
+    ax.FontSize = fontsize; 
+    xlabel("Ice concentration",'Interpreter','latex')
+    ylabel("log(Counts)",'Interpreter','latex')
+    legend("CICE","Calculated",'Location','northwest')
+    
+
+nexttile
+    % Error vs aice
+    scatter(aice_vec,error_vec)
+    set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
+    set(0,'defaultTextInterpreter','latex'); %trying to set the default
+    yline(0)
+    ax = gca;
+    ax.FontSize = fontsize; 
+    xlabel("Ice concentration")
+    ylabel("Error (concentration)")
+
+nexttile
+   % Box plot comparison for error and actual value
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+     boxplot([error_vec,aice_vec],'labels',{'Error','$a_i$'});
+    ax = gca;
+    ax.FontSize = fontsize; 
+    ax.TickLabelInterpreter='latex';
+    ylabel("Ice concentration",'Interpreter','latex')
+
+exportgraphics(f2,'afsdn_aice_error.pdf','ContentType','vector')
+
+% Statistics
+fprintf("Data statistics: \n")
+fprintf("Correlation between methods: %g\n", corr(aice_transformed_vec, aice_vec))
+fprintf('The max fsdrad is: %d\n',max(aice_vec))
+fprintf('The mean fsdrad is: %d\n',mean(aice_vec))
+fprintf('The median fsdrad is: %d\n',median(aice_vec))
+fprintf('The mode fsdrad is: %d\n',mode(aice_vec))
+fprintf('The std fsdrad is: %d\n',std(aice_vec))
+fprintf("Error statistics: \n")
+fprintf('The max error is: %d\n',max(error_vec))
+fprintf('The mean error is: %d\n',mean(error_vec))
+fprintf('The median error is: %d\n',median(error_vec))
+fprintf('The mode error is: %d\n',mode(error_vec))
+fprintf('The std error is: %d\n',std(error_vec))
+
+
+
 %%
 
 icemask = aice_data > 0.01;
@@ -337,53 +493,73 @@ a.TickLabelInterpreter = "latex";
 cmocean('balance') 
 f2.Position = [800 1000 1200 400];
 %exportgraphics(f2,'fsdrad.pdf','ContentType','vector')
-%%
+
 icemask = aice_data > 0.01;
 fsdrad_vec = fsdrad_data(icemask);
 fsdrad_transformed_vec = fsdrad_transformed(icemask);
 error_vec = fsdrad_vec-fsdrad_transformed_vec;
 
 f1 = figure(1);
-t = tiledlayout(2,2);
+t = tiledlayout(2,3);
 t.TileSpacing = 'compact';
 
 
 nexttile
-% Correlation plot
-scatter(fsdrad_transformed_vec, fsdrad_vec)
-hold off
-ax = gca;
-ax.FontSize = fontsize; 
-y = ylabel('CICE output $r_a$ (m)');
-y.FontSize = fontsize;
-x = xlabel('My calculation of $r_a$ (m)');
-x.FontSize = fontsize;
-
-
-nexttile
-% Box plot comparison for error and actual value
-set(groot, 'defaultAxesTickLabelInterpreter','latex');
- boxplot([error_vec,fsdrad_vec],'labels',{'Error','$r_a$'});
-ax = gca;
-ax.FontSize = fontsize; 
-ax.TickLabelInterpreter='latex';
-ylabel("Floe size (m)",'Interpreter','latex')
+    % Correlation plot
+    scatter(fsdrad_transformed_vec, fsdrad_vec)
+    hold on
+    plot([0,1],[0,1])
+    hold off
+    ax = gca;
+    ax.FontSize = fontsize; 
+    y = ylabel('CICE output $r_a$ (m)');
+    y.FontSize = fontsize;
+    x = xlabel('My calculation of $r_a$ (m)');
+    x.FontSize = fontsize;
 
 nexttile
-scatter(aice_vec,error_vec)
-set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
-set(0,'defaultTextInterpreter','latex'); %trying to set the default
-ax = gca;
-ax.FontSize = fontsize; 
-xlabel("Ice concentration")
-ylabel("Error (m)")
-
+ % Histogram comparison
+    [h1,edges] = histcounts(fsdrad_vec, 10);
+    [h2,edges] = histcounts(fsdrad_transformed_vec, 10);
+    ctrs = edges(1)+(1:length(edges)-1).*diff(edges);   % Create Centres
+    bar(ctrs, log([h1 ;h2])')
+    ax = gca;
+    ax.FontSize = fontsize-2; 
+    xtickangle(ax,45)
+    xlabel("Floe size radius (m)",'Interpreter','latex')
+    ylabel("log(Counts)",'Interpreter','latex')
+    legend("CICE","Calculated",'Location','north')
+    
+nexttile([2 1]);
+    % Box plot comparison for error and actual value
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+     boxplot([error_vec,fsdrad_vec],'labels',{'Error','$r_a$'});
+    ax = gca;
+    ax.FontSize = fontsize; 
+    ax.TickLabelInterpreter='latex';
+    ylabel("Floe size (m)",'Interpreter','latex')      
+    
 nexttile
-scatter(lat(icemask),error_vec)
-ax = gca;
-ax.FontSize = fontsize; 
-xlabel("Latitude",'Interpreter','latex')
-ylabel("Error (m)",'Interpreter','latex')
+    scatter(fsdrad_vec,error_vec)
+    set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
+    set(0,'defaultTextInterpreter','latex'); %trying to set the default
+    yline(0)
+    ax = gca;
+    ax.FontSize = fontsize; 
+    xlabel("Floe size (m)")
+    ylabel("Error (m)")
+    
+nexttile
+    scatter(aice_vec,error_vec)
+    set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
+    set(0,'defaultTextInterpreter','latex'); %trying to set the default
+    ax = gca;
+    ax.FontSize = fontsize; 
+    yline(0)
+    xlabel("Ice concentration")
+    ylabel("Error (m)")
+f1.Position = [800 1000 1200 400];
+  
 
 %exportgraphics(f1,'error_fsdrad.pdf','ContentType','vector')
 
@@ -401,10 +577,132 @@ fprintf("Error statistics: \n")
 fprintf('The max error is: %d\n',max(error_vec))
 fprintf('The mean error is: %d\n',mean(error_vec))
 fprintf('The median error is: %d\n',median(error_vec))
-fprintf('The mode error is: %d\n',mode(fsdrad_vec))
+fprintf('The mode error is: %d\n',mode(error_vec))
 fprintf('The std error is: %d\n',std(error_vec))
 
+%% 6. Intergrate FSTD wrt fsd to get aicen
+clear afsd_transformed 
+close all
+afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
 
+[nx,ny,~] = size(afsd_data);
+% a = INT(g(h)dh)
+for i = 1:nx
+    for j = 1:ny
+        for n = 1:Nc
+            temp(:) = afsdn_data(i,j,:,n);
+            if isnan(temp)
+                aicen_transformed(i,j,n) = NaN;
+            else
+                aicen_transformed(i,j,n) = sum(temp.*floe_binwidth);
+            end
+            clear temp
+        end
+        temp(:) = aicen_transformed(i,j,:);
+        thick_binwidth = 1;
+        aice_transformed(i,j) = sum(temp'.*thick_binwidth);
+        clear temp
+    end
+end
+
+
+t1 = tiledlayout(1,3);
+nexttile
+map_plot(aice_data,"aice",sector,grid,[0,1]);
+title("Model data")
+nexttile
+map_plot(aice_transformed,"aice",sector,grid,[0,1]);
+title("aice from afsdn via aicen")
+nexttile
+map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.1,0.1]);
+title("Difference")
+
+%% Number FSD
+% ND: make sure to get the units right, do I divide by TAREA?
+
+% Get the NFSD from AFSDN
+close all
+clear xticks yticks f5
+afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+
+[nx,ny,nf,nc] = size(afsdn_data);
+
+% Get tracer array
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+            for n = 1:nc
+                trcrn(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)/aicen_data(i,j,n); % something x Length: (something m)
+            end
+        end
+    end
+end
+
+% Calculate nfstd
+alpha = 0.66; % Dimensionless
+floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+            for n = 1:nc
+                nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+            end
+        end
+    end
+end
+
+% Intergrate nfstd to get nfsd
+
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+            nfsd(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+        end
+    end
+end
+
+for k = 1:nf
+    temp = nfsd(:,:,k);
+    nfsd_vec(k) = mean(temp(icemask));
+end
+
+roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
+figure(5);
+%t5 = tiledlayout(1,1);%(5,2);
+%t5.TileSpacing = 'compact';
+cust_bounds =  max(NFSD);
+xtick = 10.^(0:4);
+xticklab = cellstr(num2str(round(log10(xtick(:))), '10^{%d}'));
+ytick = 10.^(-9:2:10);
+yticklab = cellstr(num2str(round(log10(ytick(:))), '10^{%d}'));
+
+
+
+%nexttile
+hold on
+    plot(log10(NFSD),log(nfsd_vec*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3); 
+    plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
+
+grid on
+%ax = gca;
+%ax.FontSize = fontsize; 
+%ax.TickLabelInterpreter='latex';
+
+xticks(log10(xtick))
+xticklabels(xticklab')
+
+%ax.XTick = log10(xtick);
+%ax.XTickLabels = xticklab;
+%ax.XLabel = 'Floe radius (m)';
+%ax.YTick = log10(ytick);
+%ax.YTickLabel = yticklab;
+%ylim([-30,5])
+%ylabel('log_10(Number of floes) (km^{-2})','Interpreter','Latex')
+%xlim([0,3*10^3]);
+legend(["Mine","Roach 2018"])
+%hold off
+f5.Position = [1200 100 600 2000];
 
 %% Functions
 function [p] = plot_error(fsdrad_transformed_vec,fsdrad_vec)
@@ -460,3 +758,7 @@ function [p] = plot_error(fsdrad_transformed_vec,fsdrad_vec)
 
 end
 
+function y = stat_vec(data)
+% ["Mean","Median","Mode","Standard deviation","Maximum"];
+    y = [mean(data); median(data); mode(data); std(data); max(data)];
+end

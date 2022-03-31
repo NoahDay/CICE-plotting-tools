@@ -138,6 +138,7 @@ if input == "afsdn"
    elseif output == "ITD"
         % Integrate w.r.t. floe size to obtain the ITD g(h)
    elseif output == "aice"
+       % From AFSDN get AFSD and then aice
        for j = 1:ny
            for i = 1:nx
                work(i,j) = 0;
