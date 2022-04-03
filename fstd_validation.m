@@ -618,12 +618,13 @@ map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.1,0.1]);
 title("Difference")
 
 %% 7. Number FSD
-% ND: make sure to get the units right, do I divide by TAREA?
-
 % Get the NFSD from AFSDN
 close all
-clear xticks yticks f5
+clear xticks yticks f5 icemask
+aice_data = data_format_sector(filename,"aice",sector);
+icemask = aice_data > 0.01;
 afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
+afsd_data(:,:,:) = data_format_sector(filename,"afsd",sector);
 aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
 
 [nx,ny,nf,nc] = size(afsdn_data);
@@ -633,7 +634,11 @@ for i = 1:nx
     for j = 1:ny
         for k = 1:nf
             for n = 1:nc
-                trcrn(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)/aicen_data(i,j,n); % something x Length: (something m)
+                if aicen_data(i,j,n) < eps
+                    trcrn(i,j,k,n) = 0;
+                else
+                    trcrn(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)/aicen_data(i,j,n); % something x Length: (something m)
+                end
             end
         end
     end
@@ -667,6 +672,8 @@ for k = 1:nf
     nfsd_vec(k) = mean(temp(icemask));
 end
 
+num_dafsd = numberfsdconverter(filename,afsd_data);
+
 roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
 f1 = figure(1);
 
@@ -683,19 +690,64 @@ nexttile
 hold on
 p = plot(log10(NFSD),log(nfsd_vec*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
 plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
-    legend({'Mine 2005-07-31','Roach et al. (2018) Sep results'})
+plot(log10(NFSD),log(num_dafsd*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);    
+ legend({'NFSD from AFSDN 2005-07-31','Roach et al. (2018) Sep results', 'NFSD from AFSD 2005-07-31'})
 grid on
-title(sprintf("July"))
+%title(sprintf("July"))
 xticks(log10(xtick))
 xticklabels(xticklab)
 xlabel('Floe radius (m)')
 yticks(log10(ytick))
 yticklabels(yticklab)
-ylim([-9,13])
+%ylim([-9,13])
+ylabel('Number distribution (km$^{-2}$)')
 %xlim([0,3*10^3]);
 hold off
-f5.Position = [1200 100 600 2000];
+f1.Position = [1200 100 600 500];
+%exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
 
+%% 8. Time derivatives
+
+% Get the NFSD from AFSDN
+close all
+clear xticks yticks f5 icemask
+aice_data = data_format_sector(filename,"aice",sector);
+icemask = aice_data > 0.01;
+dafsd_latm_data(:,:,:) = data_format_sector(filename,"dafsd_latm",sector);
+dafsd_latg_data(:,:,:) = data_format_sector(filename,"dafsd_latg",sector);
+dafsd_newi_data(:,:,:) = data_format_sector(filename,"dafsd_newi",sector);
+dafsd_weld_data(:,:,:) = data_format_sector(filename,"dafsd_weld",sector);
+dafsd_wave_data(:,:,:) = data_format_sector(filename,"dafsd_wave",sector);
+
+dafsdrad_latm(:,:) = fsd_converter(filename,"dafsd_latm","fsdrad");
+dafsdrad_latg(:,:) = fsd_converter(filename,"dafsd_latg","fsdrad");
+dafsdrad_newi(:,:) = fsd_converter(filename,"dafsd_newi","fsdrad");
+dafsdrad_weld(:,:) = fsd_converter(filename,"dafsd_weld","fsdrad");
+dafsdrad_wave(:,:) = fsd_converter(filename,"dafsd_wave","fsdrad");
+
+dafsdrad_latm_mean = mean(dafsdrad_latm(icemask));
+dafsdrad_latg_mean = mean(dafsdrad_latg(icemask));
+dafsdrad_newi_mean = mean(dafsdrad_newi(icemask));
+dafsdrad_weld_mean = mean(dafsdrad_weld(icemask));
+dafsdrad_wave_mean = mean(dafsdrad_wave(icemask));
+
+f1 = figure(1);
+bar(1:5,[dafsdrad_latm_mean',dafsdrad_latg_mean',dafsdrad_newi_mean',dafsdrad_weld_mean',dafsdrad_wave_mean'])
+xticks(1:5)
+xticklabels({'latm','latg','newi','weld','wave'})
+ylabel('$dr_a/dt$ (m/day)')
+%legend({'latm','latg','newi','weld','wave'},'Location','north')
+f1.Position = [1200 100 600 500];
+%exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
+
+%%
+num_dafsd_latm = numberfsdconverter(filename,dafsd_latm_data);
+num_dafsd_latg = numberfsdconverter(filename,dafsd_latg_data);
+num_dafsd_newi = numberfsdconverter(filename,dafsd_newi_data);
+num_dafsd_weld = numberfsdconverter(filename,dafsd_weld_data);
+num_dafsd_wave = numberfsdconverter(filename,dafsd_wave_data);
+
+plot(1:16,[num_dafsd_latm',num_dafsd_latg',num_dafsd_newi',num_dafsd_weld',num_dafsd_wave'])
 %% Functions
 function [p] = plot_error(fsdrad_transformed_vec,fsdrad_vec)
     t = tiledlayout(2,2);
@@ -753,4 +805,54 @@ end
 function y = stat_vec(data)
 % ["Mean","Median","Mode","Standard deviation","Maximum"];
     y = [mean(data); median(data); mode(data); std(data); max(data)];
+end
+
+% -------------------------------------------------------------------------
+
+function output = numberfsdconverter(filename,data)
+NFSD = ncread(filename,"NFSD");
+NCAT = ncread(filename,"NCAT");
+Nf = 16;
+Nc = 5;
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+floe_binwidth = floe_rad_h - floe_rad_l;
+floe_rad_c = (floe_rad_l+floe_rad_h)/2;
+aice_data = data_format_sector(filename,"aice","SH");
+icemask = aice_data > 0.01;
+afsdn_data = data;
+[nx,ny,nf] = size(afsdn_data);
+
+% Get tracer array
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+                if aice_data(i,j) < eps
+                    trcrn(i,j,k) = 0;
+                else
+                    trcrn(i,j,k) = afsdn_data(i,j,k)*floe_binwidth(k)/aice_data(i,j); % something x Length: (something m)
+            end
+        end
+    end
+end
+
+% Calculate nfstd
+alpha = 0.66; % Dimensionless
+floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+                nfsd(i,j,k) = trcrn(i,j,k)/floe_area_c(k); % Dimensionless: something / Length
+        end
+    end
+end
+
+% Intergrate nfstd to get nfsd
+
+for k = 1:nf
+    temp = nfsd(:,:,k);
+    nfsd_vec(k) = mean(temp(icemask));
+end
+output = nfsd_vec;
 end
