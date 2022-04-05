@@ -21,9 +21,9 @@ sector = "SH";
 %% Preamble
 close all
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'wimoninit';
+case_name = 'ocnatmo';
 sector = "SH";
-ssd = 0;
+ssd = 1;
 if ssd == 1
     ssd_dir = '/Volumes/NoahDay5TB/cases/';
     filedir = strcat(ssd_dir,case_name);
@@ -32,9 +32,9 @@ else
 end
 grid = 'gx1'; 
 
-day = 31;
-month_init = 7;
-year = 2005;
+day = 30;
+month_init = 9;
+year = 2008;
 date = sprintf('%d-0%d-%d', year, month_init, day);
 
 figcount = 0;
@@ -83,6 +83,29 @@ title("Transformed data - fix bin width")
 nexttile
 map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.1,0.1]);
 title("Difference")
+
+
+icemask = aice_data > 0.01;
+aice_vec = aice_data(icemask);
+aice_transformed_vec = aice_transformed(icemask);
+error_vec = aice_vec-aice_transformed_vec;
+max(abs(error_vec))
+
+% Statistics
+fprintf("Data statistics: \n")
+fprintf("Correlation between methods: %g\n", corr(aice_transformed_vec, aice_vec))
+fprintf('The max aice is: %d\n',max(aice_vec))
+fprintf('The mean aice is: %d\n',mean(aice_vec))
+fprintf('The median aice is: %d\n',median(aice_vec))
+fprintf('The mode aice is: %d\n',mode(aice_vec))
+fprintf('The std aice is: %d\n',std(aice_vec))
+fprintf("Error statistics: \n")
+fprintf('The max error is: %d\n',max(error_vec))
+fprintf('The mean error is: %d\n',mean(error_vec))
+fprintf('The median error is: %d\n',median(error_vec))
+fprintf('The mode error is: %d\n',mode(error_vec))
+fprintf('The std error is: %d\n',std(error_vec))
+
 
 
 %% 2. Integrate afsd wrt to floe size to get aice
@@ -165,9 +188,9 @@ nexttile
     ax = gca;
     ax.FontSize = fontsize; 
     ax.TickLabelInterpreter='latex';
-    y = ylabel('CICE output $a_i$');
+    y = ylabel('CICE output $a_i$','Interpreter','latex');
     y.FontSize = fontsize;
-    x = xlabel('My calculation of $a_i$');
+    x = xlabel('My calculation of $a_i$','Interpreter','latex');
     x.FontSize = fontsize;
 
 
@@ -240,7 +263,86 @@ latex(['Mean',vpa(round(mean(aice_vec),5)), vpa(round(mean(error_vec),5));...
     ])
 
 
-%% 3. Integrate afsdn to get aicen
+%% 3. Integrate afsdn to get aicen - This isnt working
+close all
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
+for i = 1:Nc
+    for j = 1:nx
+        for k = 1:ny
+            aicen_transformed(j,k,i) =  sum(afsdn_data(j,k,:,i));
+        end
+    end
+end
+
+f1 = figure(1);
+t1 = tiledlayout(1,5);
+for i = 1:Nc
+    nexttile
+    lims = max(max(aicen_data(:,:,i) - aicen_transformed(:,:,i)));
+    [p,a] = map_plot(aicen_data(:,:,i) - aicen_transformed(:,:,i),"aice",sector,grid,[-lims,lims]);
+    t = title(sprintf("FSD Cat %d",i));
+    cmocean('balance') 
+    t.Interpreter = "latex";
+    t.FontSize = fontsize;
+    %a.Label.String = 'AFSD';
+    a.FontSize = fontsize;
+    a.TickLabelInterpreter = "latex";
+end
+t= title(t1,"F(r) - $\sum_{i=1}^{n_c} f(r,h) $");
+t.Interpreter = "latex";
+t.FontSize = fontsize;
+f1.Position = [800 1000 1200 400];
+%exportgraphics(f4,'afsd.pdf','ContentType','vector')
+
+
+% Integrate again to get aice
+aice_data = data_format_sector(filename,"aice",sector);
+
+[nx,ny,~] = size(aicen_data);
+% a = INT(g(h)dh)
+for i = 1:nx
+    for j = 1:ny
+        temp(:) = aicen_transformed(i,j,:);
+        thick_binwidth = 1;
+        aice_transformed(i,j) = sum(temp'.*thick_binwidth);
+        clear temp
+    end
+end
+f2 = figure(2);
+t2 = tiledlayout(1,3);
+nexttile
+map_plot(aice_data,"aice",sector,grid,[0,1]);
+title("Model data")
+nexttile
+map_plot(aice_transformed,"aice",sector,grid,[0,1]);
+title("Transformed data - fix bin width")
+nexttile
+map_plot(aice_data-aice_transformed,"aice",sector,grid,[-0.1,0.1]);
+title("Difference")
+
+
+icemask = aice_data > 0.01;
+aice_vec = aice_data(icemask);
+aice_transformed_vec = aice_transformed(icemask);
+error_vec = aice_vec-aice_transformed_vec;
+max(abs(error_vec))
+
+% Statistics
+fprintf("Data statistics: \n")
+fprintf("Correlation between methods: %g\n", corr(aice_transformed_vec, aice_vec))
+fprintf('The max aice is: %d\n',max(aice_vec))
+fprintf('The mean aice is: %d\n',mean(aice_vec))
+fprintf('The median aice is: %d\n',median(aice_vec))
+fprintf('The mode aice is: %d\n',mode(aice_vec))
+fprintf('The std aice is: %d\n',std(aice_vec))
+fprintf("Error statistics: \n")
+fprintf('The max error is: %d\n',max(error_vec))
+fprintf('The mean error is: %d\n',mean(error_vec))
+fprintf('The median error is: %d\n',median(error_vec))
+fprintf('The mode error is: %d\n',mode(error_vec))
+fprintf('The std error is: %d\n',std(error_vec))
+
 
 
 %% 4. Integrate afsdn to get afsd
@@ -619,15 +721,37 @@ title("Difference")
 
 %% 7. Number FSD
 % Get the NFSD from AFSDN
-close all
-clear xticks yticks f5 icemask
+%close all
+clear xticks yticks f5 icemask nfsd trcrn
 aice_data = data_format_sector(filename,"aice",sector);
+icemask0 = aice_data > -eps;
 icemask = aice_data > 0.01;
+icemask90 = aice_data > 0.9;
+%figure(1)
+%map_plot(1.0*icemask,"aice",sector,grid,[0,1]);
+%figure(2)
+%map_plot(1.0*icemask90,"aice",sector,grid,[0,1]);
 afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
 afsd_data(:,:,:) = data_format_sector(filename,"afsd",sector);
 aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+tarea = data_format(filename,"tarea");
 
 [nx,ny,nf,nc] = size(afsdn_data);
+%icemask = icemask0;
+
+
+% Make a mask for the Southern Hemisphere
+% Coordinates
+ocean_mask = data_format(filename,'tmask');
+coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE)
+for i = 1:4
+    [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+end
+sector_mask = false(nx,ny);
+for i = 0:lat_out(1)-lat_out(2) % Cycle through latitudes
+    sector_mask(lon_out(1):lon_out(3), i+1) = true;
+end
+sector_mask = logical(sector_mask.*ocean_mask);
 
 % Get tracer array
 for i = 1:nx
@@ -636,9 +760,17 @@ for i = 1:nx
             for n = 1:nc
                 if aicen_data(i,j,n) < eps
                     trcrn(i,j,k,n) = 0;
+                    trcrn2(i,j,k,n) = 0;
                 else
-                    trcrn(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)/aicen_data(i,j,n); % something x Length: (something m)
+                    trcrn(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)*(10^(-3))/aicen_data(i,j,n); % something x Length: (something m) now oonverted to km
+                    trcrn2(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)*(10^(-3))/aice_data(i,j);
                 end
+            end
+            if aice_data(i,j) < eps
+                afsd_temp(i,j,k) = 0;
+            else
+                temp(i,j,k) =  sum(afsdn_data(i,j,k,:));
+                afsd_temp(i,j,k) =temp(i,j,k)*floe_binwidth(k)*(10^(-3))/aice_data(i,j);
             end
         end
     end
@@ -646,13 +778,17 @@ end
 
 % Calculate nfstd
 alpha = 0.66; % Dimensionless
-floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+floe_area_c = 4*alpha*(floe_rad_c*(10^(-3))).^2; % Area: (m^2)
 for i = 1:nx
     for j = 1:ny
         for k = 1:nf
             for n = 1:nc
-                nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+                % Get the number of floes per cell
+                nfstd(i,j,k,n) = trcrn(i,j,k,n)/(floe_area_c(k)); % Dimensionless: something / Length
+                nfstd2(i,j,k,n) = trcrn2(i,j,k,n)/(floe_area_c(k)); % Dimensionless: something / Length
+                
             end
+            nfstd3(i,j,k) = afsd_temp(i,j,k)/(floe_area_c(k)); % Dimensionless: something / Length
         end
     end
 end
@@ -663,18 +799,26 @@ for i = 1:nx
     for j = 1:ny
         for k = 1:nf
             nfsd(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+            nfsd2(i,j,k) = sum(nfstd2(i,j,k,:)); % number of floes per m^2
+            nfsd3(i,j,k) = nfstd3(i,j,k); % number of floes per m^2
         end
+         nfsd_cell(i,j) = sum(nfsd(i,j,:));
     end
 end
 
 for k = 1:nf
     temp = nfsd(:,:,k);
-    nfsd_vec(k) = mean(temp(icemask));
+    nfsd_vec(k) = mean(temp(sector_mask)); % Take the cells over the sector
+    temp = nfsd2(:,:,k);
+    nfsd_vecai(k) = mean(temp(sector_mask)); % Take the cells over the sector
+    temp = nfsd3(:,:,k);
+    nfsd_vecint(k) = mean(temp(sector_mask)); % Take the cells over the sector
 end
-
+%
 num_dafsd = numberfsdconverter(filename,afsd_data);
 
 roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
+
 f1 = figure(1);
 
 t5 = tiledlayout(1,1);%(5,2);
@@ -685,13 +829,18 @@ xticklab = cellstr(num2str(round(log10(xtick(:))), '$10^{%d}$'));
 ytick = 10.^(-9:2:13);
 yticklab = cellstr(num2str(round(log10(ytick(:))), '$10^{%d}$'));
 
+nfsd_vec2 = nfsd_vec(1:12-1);
+nfsd_vec2(12) = sum(nfsd_vec(12:end));
 
 nexttile
 hold on
-p = plot(log10(NFSD),log(nfsd_vec*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+p = plot(log10(NFSD),log10(nfsd_vec),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
 plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
-plot(log10(NFSD),log(num_dafsd*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);    
- legend({'NFSD from AFSDN 2005-07-31','Roach et al. (2018) Sep results', 'NFSD from AFSD 2005-07-31'})
+plot(log10(NFSD(1:12)),log10(nfsd_vec2),'--s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);  
+plot(log10(NFSD),log10(num_dafsd),'--s','LineWidth',3);  
+%plot(log10(NFSD),log10(nfsd_vecai),':s','MarkerFaceColor', [0 0.4470 0.2],'LineWidth',3);
+%plot(log10(NFSD),log10(nfsd_vecint),':o','MarkerFaceColor', [0 0.8 0.2],'LineWidth',10);
+ legend({'$\int f^N(r,h) / g(h) dh$','Roach et al. (2018) Sep results', '$F^N(r_{12}) = \sum_{j = 12}^{16} F^N(r_j)$','$\int f^N(r,h) dh / \int g(h) dh$','aice','int'})
 grid on
 %title(sprintf("July"))
 xticks(log10(xtick))
@@ -703,8 +852,85 @@ yticklabels(yticklab)
 ylabel('Number distribution (km$^{-2}$)')
 %xlim([0,3*10^3]);
 hold off
-f1.Position = [1200 100 600 500];
+f1.Position = [1500 800 600 500];
 %exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
+
+f2 = figure(2);
+map_plot(nfsd_cell,"aice",sector,grid,[0,600]);
+
+%% Number FSD over time
+sector = "SH";
+grid = 'gx1'; 
+
+case_name = 'wimoninit';
+ssd_dir = '/Volumes/NoahDay5TB/cases/';
+filedir = strcat(ssd_dir,case_name);
+day = 01;
+month_init = 7;
+year = 2005;
+date = sprintf('%d-0%d-0%d', year, month_init, day);
+filename = strcat(filedir,"/history/iceh.",date,".nc");
+
+data_2005jan = afsdn_to_nfsd(filename,sector);
+
+ssd_dir = '/Volumes/NoahDay5TB/cases/';
+filedir = strcat(ssd_dir,case_name);
+day = 5;
+month_init = 7;
+year = 2005;
+date = sprintf('%d-0%d-0%d', year, month_init, day);
+filename = strcat(filedir,"/history/iceh.",date,".nc");
+
+data_2005 = afsdn_to_nfsd(filename,sector);
+
+day = 15;
+month_init = 7;
+year = 2005;
+date = sprintf('%d-0%d-%d', year, month_init, day);
+filename = strcat(filedir,"/history/iceh.",date,".nc");
+
+data_2008 = afsdn_to_nfsd(filename,sector);
+
+date = sprintf('%d-0%d-%d', 2005, 7, 30);
+filename = strcat(filedir,"/history/iceh.",date,".nc");
+
+data_2008dec = afsdn_to_nfsd(filename,sector);
+
+
+roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
+
+f1 = figure(1);
+
+t5 = tiledlayout(1,1);%(5,2);
+t5.TileSpacing = 'compact';
+cust_bounds =  max(NFSD);
+xtick = 10.^(0:6);
+xticklab = cellstr(num2str(round(log10(xtick(:))), '$10^{%d}$'));
+ytick = 10.^(-20:2:13);
+yticklab = cellstr(num2str(round(log10(ytick(:))), '$10^{%d}$'));
+
+nfsd_vec2 = nfsd_vec(1:12-1);
+nfsd_vec2(12) = sum(nfsd_vec(12:end));
+
+nexttile
+hold on
+p = plot(log10(NFSD),log10(data_2005jan),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
+plot(log10(NFSD),log10(data_2005),'--s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);  
+plot(log10(NFSD),log10(data_2008),'--s','LineWidth',3);  
+plot(log10(NFSD),log10(data_2008dec),'--s','LineWidth',3);  
+ legend({'01-07-2005','Roach et al. (2018) Sep results', '5-07-2005','15-07-2005','30-07-2005','int'})
+grid on
+xticks(log10(xtick))
+xticklabels(xticklab)
+xlabel('Floe radius (m)')
+yticks(log10(ytick))
+yticklabels(yticklab)
+ylabel('Number distribution (km$^{-2}$)')
+hold off
+f1.Position = [1500 800 600 500];
+exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
+
 
 %% 8. Time derivatives
 
@@ -812,6 +1038,7 @@ end
 function output = numberfsdconverter(filename,data)
 NFSD = ncread(filename,"NFSD");
 NCAT = ncread(filename,"NCAT");
+[lat, lon, row] = grid_read("gx1");
 Nf = 16;
 Nc = 5;
 lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
@@ -821,17 +1048,28 @@ floe_binwidth = floe_rad_h - floe_rad_l;
 floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 aice_data = data_format_sector(filename,"aice","SH");
 icemask = aice_data > 0.01;
-afsdn_data = data;
-[nx,ny,nf] = size(afsdn_data);
-
+[nx,ny,nf] = size(data);
+% Make a mask for the Southern Hemisphere
+% Coordinates
+sector = "SH";
+ocean_mask = data_format(filename,'tmask');
+coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE)
+for i = 1:4
+    [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+end
+sector_mask = false(nx,ny);
+for i = 0:lat_out(1)-lat_out(2) % Cycle through latitudes
+    sector_mask(lon_out(1):lon_out(3), i+1) = true;
+end
+sector_mask = logical(sector_mask.*ocean_mask);
 % Get tracer array
 for i = 1:nx
     for j = 1:ny
         for k = 1:nf
-                if aice_data(i,j) < eps
-                    trcrn(i,j,k) = 0;
-                else
-                    trcrn(i,j,k) = afsdn_data(i,j,k)*floe_binwidth(k)/aice_data(i,j); % something x Length: (something m)
+            if aice_data(i,j) < eps
+                trcrn(i,j,k) = 0;
+            else
+                trcrn(i,j,k) = data(i,j,k)*floe_binwidth(k)*(10^(-3))/aice_data(i,j); % something x Length: (something m)
             end
         end
     end
@@ -839,7 +1077,7 @@ end
 
 % Calculate nfstd
 alpha = 0.66; % Dimensionless
-floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+floe_area_c = 4*alpha*(floe_rad_c*10^(-3)).^2; % Area: (m^2)
 for i = 1:nx
     for j = 1:ny
         for k = 1:nf
@@ -852,7 +1090,89 @@ end
 
 for k = 1:nf
     temp = nfsd(:,:,k);
-    nfsd_vec(k) = mean(temp(icemask));
+    nfsd_vec(k) = mean(temp(sector_mask));
 end
 output = nfsd_vec;
+end
+
+% -------------------------------------------------------------------------
+function [out_data] = afsdn_to_nfsd(filename,sector)
+NFSD = ncread(filename,"NFSD");
+NCAT = ncread(filename,"NCAT");
+[lat, lon, row] = grid_read("gx1");
+Nf = 16;
+Nc = 5;
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+floe_binwidth = floe_rad_h - floe_rad_l;
+floe_rad_c = (floe_rad_l+floe_rad_h)/2;
+aice_data = data_format_sector(filename,"aice",sector);
+icemask = aice_data > 0.01;9;
+afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
+afsd_data(:,:,:) = data_format_sector(filename,"afsd",sector);
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+tarea = data_format(filename,"tarea");
+
+[nx,ny,nf,nc] = size(afsdn_data);
+
+
+% Make a mask for the Southern Hemisphere
+% Coordinates
+ocean_mask = data_format(filename,'tmask');
+coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE)
+for i = 1:4
+    [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+end
+sector_mask = false(nx,ny);
+for i = 0:lat_out(1)-lat_out(2) % Cycle through latitudes
+    sector_mask(lon_out(1):lon_out(3), i+1) = true;
+end
+sector_mask = logical(sector_mask.*ocean_mask);
+
+% Get tracer array
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+            for n = 1:nc
+                if aicen_data(i,j,n) < eps
+                    trcrn(i,j,k,n) = 0;
+                else
+                    trcrn(i,j,k,n) = afsdn_data(i,j,k,n)*floe_binwidth(k)*(10^(-3))/aicen_data(i,j,n); % something x Length: (something m) now oonverted to km
+                end
+            end
+        end
+    end
+end
+
+% Calculate nfstd
+alpha = 0.66; % Dimensionless
+floe_area_c = 4*alpha*(floe_rad_c*(10^(-3))).^2; % Area: (m^2)
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+            for n = 1:nc
+                % Get the number of floes per cell
+                nfstd(i,j,k,n) = trcrn(i,j,k,n)/(floe_area_c(k)); % Dimensionless: something / Length
+            end
+        end
+    end
+end
+
+% Intergrate nfstd to get nfsd
+
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:nf
+            nfsd(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+        end
+         nfsd_cell(i,j) = sum(nfsd(i,j,:));
+    end
+end
+
+for k = 1:nf
+    temp = nfsd(:,:,k);
+    nfsd_vec(k) = mean(temp(sector_mask)); % Take the cells over the sector
+end
+ out_data = nfsd_vec;
 end
