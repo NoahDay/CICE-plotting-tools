@@ -7,8 +7,8 @@ addpath packages/quiverwcolorbar
 clc
 % Parameters
 sector = "SH";
-case_name = 'forcingnowaves';
-filedir = '/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.';
+case_name = 'wimon';
+filedir = 'cases/wimon/history/iceh.';
 
 
 %filedir = 'cases/ocnatmo/history/iceh.';
@@ -26,10 +26,10 @@ coords = sector_coords(sector);
 clear coords
 
 initial_date.day = 1;
-initial_date.month = 1;
+initial_date.month = 9;
 initial_date.year = 2005; % 2005 is a spin-up year
 if initial_date.month < 10
-    initial_date.char = sprintf('%d-0%d', initial_date.year, initial_date.month);
+    initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 else
     initial_date.char = sprintf('%d-%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 end
@@ -46,7 +46,8 @@ pram.colormap = 'ice';
 
 
 %[aice, sector_mask] = data_format_sector(filename,"aice","SH");
-[nx,ny] = size(aice);
+nx = 321;
+ny = 384;
 Nf = 16;
 Nc = 5;
 lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
@@ -105,7 +106,7 @@ sector = "SH";
 %figure(1)
   %[w1, a, output_data] = map_plot(temp_data,'frzmlt_m',sector,grid);
   figure(2)
-  [w2, a, output_data] = map_plot(aice,'aice',sector,grid);
+  [w2, a, output_data] = map_plot(aice2,'aice',sector,grid);
   figure(3)
   [w3, a, output_data] = map_plot(afsd2(:,:,2),'afsd',sector,grid);
   figure(4)
@@ -169,36 +170,36 @@ end
 % This is to reproduce Figure 3 (a)-(e) in Roach et al. (2018)
 clear temp dafsd dafsd_SH data
 clc
-cases = ["noforcing","forcingnowaves"];%["profile","nowaves"];
-datapoints = 7; % Number of days per month
+cases = ["forcingoff","wimon","wimoff"];%["profile","nowaves"];
+datapoints = 24; % Number of days per month
 date = initial_date.char;
-ssd = 1;
+ssd = 0;
 sector = "SH";
-[data] = read_in_fsd_data(cases,date,datapoints,sector,ssd,"m");
+[data] = read_in_fsd_data(cases,date,datapoints,sector,ssd,"d");
 
 %% Plot time series
 clear data_mat
 close 
 
 end_date = date;
-ts.init_date = datetime(initial_date.year,initial_date.month,initial_date.day);
-%ts.end_date = datetime(str2num(end_date(1:4)),str2num(end_date(6:7)),str2num(end_date(9:10)))-1;
-ts.end_date = datetime(2005,08,01);
+ts.init_date = datetime(initial_date.year,initial_date.month,initial_date.day)-1;
+ts.end_date = datetime(str2num(end_date(1:4)),str2num(end_date(6:7)),str2num(end_date(9:10)))-1;
+%ts.end_date = datetime(2005,08,01);
 ts.dates = datevec(ts.init_date:ts.end_date);
 data_mat(1,:) = data.latm.ra(:,1); 
 data_mat(2,:) = data.latg.ra(:,1);
 data_mat(3,:) = data.newi.ra(:,1);
 data_mat(4,:) = data.weld.ra(:,1);
 data_mat(5,:) = data.wave.ra(:,1);
-ts_wave = timeseries_plot(data_mat,strcat("Change on AFSD waves across the ",sector," sector"),'months',char(ts.init_date));
+ts_wave = timeseries_plot(data_mat,strcat("Wave forcing = 0"),'days',char(ts.init_date));
 
 
 
 plot(ts_wave,'-', 'LineWidth',2)
-    set(gcf,'Position',[1200 1000 500 200])
-    ylabel('Change in r_a','Interpreter','Latex')
+    set(gcf,'Position',[1200 1000 600 300])
+    ylabel('Change in $r_a$ (m/day)','Interpreter','Latex')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northeast')
-    %ylim([-4,4])
+    ylim([-0.6,1.4])
     grid on
     xtickangle(45)
     
@@ -732,6 +733,7 @@ hold off
 
 %% Reproducing Roach et al. (2018) Fig 2. Hemishphere FSD
 close all
+clc
 datapoints = 12;
 roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
 f5 = figure(5);
@@ -744,6 +746,158 @@ xticklab = cellstr(num2str(round(log10(xtick(:))), '10^{%d}'));
 ytick = 10.^(-30:2:5);
 yticklab = cellstr(num2str(round(log10(ytick(:))), '10^{%d}'));
 
+% WIM ON
+filename = 'cases/wimon/history/iceh.2005-09-30.nc';
+case1 = data_format_sector(filename,"afsdn",sector);
+%n_fsd = fsd_converter(filename,"afsdn","fsdrad",sector);
+
+raw_data = case1;
+
+alpha = 0.66; % Rothrock and Thorndike (1984)
+% Get tracer array
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+afsdn = data_format_sector(filename,"afsdn",sector);
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            for n = 1:Nc
+                trcrn(i,j,k,n) = raw_data(i,j,k,n);%.*floe_binwidth(k)./aicen_data(i,j,n); % something x Length: (something m)
+            end
+        end
+    end
+end
+% Calculate nfstd
+alpha = 0.66; % Dimensionless
+floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            for n = 1:Nc
+                nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+            end
+        end
+    end
+end
+% Intergrate nfstd to get nfsd
+
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            processed_data(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+        end
+    end
+end
+
+icemask = aice2 > 0.01;
+data1(:,:,:) = processed_data;
+
+for i = 1:Nf
+    temp = data1(:,:,i);
+    data1_overspace(i) = mean(temp(icemask),'all');
+end
+
+
+% WIM off
+filename = 'cases/wimoff/history/iceh.2005-09-30.nc';
+case1 = data_format_sector(filename,"afsdn",sector);
+%n_fsd = fsd_converter(filename,"afsdn","fsdrad",sector);
+
+raw_data = case1;
+
+alpha = 0.66; % Rothrock and Thorndike (1984)
+% Get tracer array
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+afsdn = data_format_sector(filename,"afsdn",sector);
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            for n = 1:Nc
+                trcrn(i,j,k,n) = raw_data(i,j,k,n);%.*floe_binwidth(k)./aicen_data(i,j,n); % something x Length: (something m)
+            end
+        end
+    end
+end
+% Calculate nfstd
+alpha = 0.66; % Dimensionless
+floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            for n = 1:Nc
+                nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+            end
+        end
+    end
+end
+% Intergrate nfstd to get nfsd
+
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            processed_data(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+        end
+    end
+end
+
+icemask = aice2 > 0.01;
+data2(:,:,:) = processed_data;
+
+for i = 1:Nf
+    temp = data1(:,:,i);
+    data2_overspace(i) = mean(temp(icemask),'all');
+end
+% No forcing
+filename = 'cases/forcingoff/history/iceh.2005-09-30.nc';
+case1 = data_format_sector(filename,"afsdn",sector);
+%n_fsd = fsd_converter(filename,"afsdn","fsdrad",sector);
+
+raw_data = case1;
+
+alpha = 0.66; % Rothrock and Thorndike (1984)
+% Get tracer array
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+afsdn = data_format_sector(filename,"afsdn",sector);
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            for n = 1:Nc
+                trcrn(i,j,k,n) = raw_data(i,j,k,n);%.*floe_binwidth(k)./aicen_data(i,j,n); % something x Length: (something m)
+            end
+        end
+    end
+end
+% Calculate nfstd
+alpha = 0.66; % Dimensionless
+floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            for n = 1:Nc
+                nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+            end
+        end
+    end
+end
+% Intergrate nfstd to get nfsd
+
+for i = 1:nx
+    for j = 1:ny
+        for k = 1:Nf
+            processed_data(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+        end
+    end
+end
+
+icemask = aice2 > 0.01;
+data3(:,:,:) = processed_data;
+
+for i = 1:Nf
+    temp = data1(:,:,i);
+    data3_overspace(i) = mean(temp(icemask),'all');
+end% Data reading done
+
+% Plotting
+
 
 for i = 1
     cat = i;
@@ -751,17 +905,19 @@ for i = 1
     %[len,wid] = size(data);
     hold on
     % FIX THIS data_fsd = afsd.ave(:,i).*floe_binwidth'./(4*alpha*NFSD);
-    data_number_fsd = [data.afsd.ave(:,7,1).*floe_binwidth'./(4*alpha*NFSD.^2)];
-    p(i) = plot(log10(NFSD),log(data_number_fsd),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+    %data_number_fsd = [data.afsd.ave(:,7,1).*floe_binwidth'./(4*alpha*NFSD.^2)];
+    p(i) = plot(log10(NFSD),log(data1_overspace*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
     hold on 
-    data_number_fsd = [data.afsd.ave(:,7,2).*floe_binwidth'./(4*alpha*NFSD.^2)];
-    plot(log10(NFSD),log(data_number_fsd),'-.*','MarkerFaceColor', '#77AC30','LineWidth',1.5);
+    plot(log10(NFSD),log(data2_overspace*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+    plot(log10(NFSD),log(data3_overspace*10^6),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+    %data_number_fsd = [data.afsd.ave(:,7,2).*floe_binwidth'./(4*alpha*NFSD.^2)];
+    %plot(log10(NFSD),log(data_number_fsd),'-.*','MarkerFaceColor', '#77AC30','LineWidth',1.5);
     plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
     if i == 1
-        legend({'Forcing on waves off (July)',"Forcing off (July)",'Roach et al. (2018) Sep results'})
+        legend({'WIM on (Sep)','WIM off (Sep)', "Forcing off (Sep)",'Roach et al. (2018) Sep results'})
     end
     grid on
-    title(sprintf("July",i))
+    %title(sprintf("July",i))
     xticks(log10(xtick))
     xticklabels(xticklab)
     xlabel('Floe radius (m)')

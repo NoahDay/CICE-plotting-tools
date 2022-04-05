@@ -90,6 +90,7 @@ if input == "afsdn"
            end
        end
        processed_data = work;
+
    elseif output == "fsd"
        % Convert from f(r,h) to the probability mass function L(r,h)dr
        % where L(r,h)dr is the fraction of ice with lateral floe size
@@ -105,36 +106,72 @@ if input == "afsdn"
                processed_data(i,j,:) = sum(work').*floe_binwidth;
            end
        end 
+
+
    elseif output == "n_fstd"
-       % Calculate the number fstd
-       alpha = 0.66; % Rothrock and Thorndike (1984)
-              disp(alpha)
-       for i = 1:nx
-           for j = 1:ny
-               for k = 1:Nf
-                   for n = 1:Nc
-                       fstd_N(i,j,k,n) = raw_data(i,j,k,n)./(4*alpha*NFSD(k));
-                   end
-               end
-           end
-       end
-       processed_data = fstd_N;
-   elseif output == "n_fsd"
       % Calculate the number fsd, units (km^{-2})
        alpha = 0.66; % Rothrock and Thorndike (1984)
-       disp(alpha)
-       for i = 1:nx
-           for j = 1:ny
-               for k = 1:Nf
-                   work = 0;
-                   for n = 1:Nc
-                       work = work + raw_data(i,j,k,n)./(4*alpha*NFSD(k));
-                   end
-                   processed_data(i,j,k) = work;
-               end
-           end
-       end
-       %processed_data = fsd_N;
+       % Get tracer array
+       aicen_data = data_format_sector(filename,"aicen",sector);
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:nf
+                    for n = 1:nc
+                        trcrn(i,j,k,n) = raw_data(i,j,k,n)*floe_binwidth(k)/aicen_data(i,j,n); % something x Length: (something m)
+                    end
+                end
+            end
+        end
+        % Calculate nfstd
+        alpha = 0.66; % Dimensionless
+        floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:nf
+                    for n = 1:nc
+                        processed_data(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+                    end
+                end
+            end
+        end
+
+   elseif output == "n_fsd"
+        alpha = 0.66; % Rothrock and Thorndike (1984)
+       % Get tracer array
+       aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+       afsdn = data_format_sector(filename,"afsdn",sector);
+       error(sprintf('%d\n',size(afsdn)))
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:Nf
+                    for n = 1:Nc
+                        trcrn(i,j,k,n) = raw_data(i,j,k,n);%.*floe_binwidth(k)./aicen_data(i,j,n); % something x Length: (something m)
+                    end
+                end
+            end
+        end
+        % Calculate nfstd
+        alpha = 0.66; % Dimensionless
+        floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:Nf
+                    for n = 1:Nc
+                        nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
+                    end
+                end
+            end
+        end
+        % Intergrate nfstd to get nfsd
+
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:nf
+                    processed_data(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
+                end
+            end
+        end
+
    elseif output == "ITD"
         % Integrate w.r.t. floe size to obtain the ITD g(h)
    elseif output == "aice"
