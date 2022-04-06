@@ -96,7 +96,7 @@ for j = 1:numel(cases)
                     if isnan(aice(nx,ny))
                         aice_mask(nx,ny) = 0;
                     else
-                        aice_mask(nx,ny) = 1/aice(nx,ny);
+                        aice_mask(nx,ny) = 1;
                     end
                 end
             end

@@ -179,7 +179,7 @@ sector = "SH";
 
 %% Plot time series
 clear data_mat
-close 
+close all
 
 end_date = date;
 ts.init_date = datetime(initial_date.year,initial_date.month,initial_date.day)-1;
@@ -482,18 +482,18 @@ colors = [[0.4660 0.6740 0.1880]; [0.8500 0.3250 0.0980]; [0.3010 0.7450 0.9330]
 t = tiledlayout(2,8);
 t.TileSpacing = 'compact';
 for nf = 1:16
-    cat = i;
+    cat = 3;
     nexttile
-    dafsd_data = [data.latm.ave(nf,:,1); data.latg.ave(nf,:,1); data.newi.ave(nf,:,1); data.weld.ave(nf,:,1); data.wave.ave(nf,:,1)].*f_bin_width(nf);%    dafsd_data2 = [data.latm.ave(nf,:,2); data.latg.ave(nf,:,2); data.newi.ave(nf,:,2); data.weld.ave(nf,:,2); data.wave.ave(nf,:,2)].*f_bin_width(nf);
-    dafsd_data2 = [data.latm.ave(nf,:,2); data.latg.ave(nf,:,2); data.newi.ave(nf,:,2); data.weld.ave(nf,:,2); data.wave.ave(nf,:,2)].*f_bin_width(nf);
+    dafsd_data = [data.latm.ave(nf,:,cat); data.latg.ave(nf,:,cat); data.newi.ave(nf,:,cat); data.weld.ave(nf,:,cat); data.wave.ave(nf,:,cat)].*f_bin_width(nf);%    dafsd_data2 = [data.latm.ave(nf,:,2); data.latg.ave(nf,:,2); data.newi.ave(nf,:,2); data.weld.ave(nf,:,2); data.wave.ave(nf,:,2)].*f_bin_width(nf);
+    %dafsd_data2 = [data.latm.ave(nf,:,2); data.latg.ave(nf,:,2); data.newi.ave(nf,:,2); data.weld.ave(nf,:,2); data.wave.ave(nf,:,2)].*f_bin_width(nf);
     %dataoff = [data.off.latg(:,cat), data.off.latm(:,cat), data.off.newi(:,cat), data.off.weld(:,cat), data.off.wave(:,cat)];
     [len,wid] = size(dafsd_data);
     hold on
     for j = 1:len
         p(j) = plot(1:wid, dafsd_data(j,:), '--','LineWidth',2);
-        k(j) = plot(1:wid, dafsd_data2(j,:), ':*','LineWidth',2);
+       % k(j) = plot(1:wid, dafsd_data2(j,:), ':*','LineWidth',2);
         set(p(j),'Color',colors(j,:));
-        set(k(j),'Color',colors(j,:));
+       % set(k(j),'Color',colors(j,:));
     end
     hold off
     grid on
