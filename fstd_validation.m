@@ -21,7 +21,7 @@ sector = "SH";
 %% Preamble
 close all
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'ocnatmo';
+case_name = 'wimoninit';
 sector = "SH";
 ssd = 1;
 if ssd == 1
@@ -32,9 +32,9 @@ else
 end
 grid = 'gx1'; 
 
-day = 30;
-month_init = 9;
-year = 2008;
+day = 10;
+month_init = 7;
+year = 2005;
 date = sprintf('%d-0%d-%d', year, month_init, day);
 
 figcount = 0;
