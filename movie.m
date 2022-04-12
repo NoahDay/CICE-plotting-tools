@@ -1,32 +1,31 @@
 close all
 clear all
+clc
 addpath functions
 % create video writer object
 user = 'a1724548'; %a1724548, noahday, Noah
-case_name = 'ocnforcing'; %ocnforcing
+case_name = 'ocnatmo'; %ocnforcing
 grid = 'gx1'; 
-variable = 'fsdrad'; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
+variable = "vatm"; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
 % afsd, dafsd_wave, Tsfc
 
-video_name = strcat(variable, '_', case_name, '_', '2022_03_07_storm2', '.mp4');
+video_name = strcat(variable, '_', case_name, '_', '2022_04_11', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
-datapoints = 10;
+datapoints = 13;
 %timestep = 7;
 % Prestorm: 28/6
 % Storm: 3/7
-day = 28;
-month = 6;
-year = 2009;
+day = 6; month = 9; year = 2005;
 sector = "SA";
 if day < 9
-    if month < 9
+    if month < 10
         date = sprintf('%d-0%d-0%d', year, month, day);
     else
         date = sprintf('%d-%d-%d', year, month, day);
     end
 else
-    if month < 9
+    if month < 10
         date = sprintf('%d-0%d-%d', year, month, day);
     else
         date = sprintf('%d-%d-%d', year, month, day);

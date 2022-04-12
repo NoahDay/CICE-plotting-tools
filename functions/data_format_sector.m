@@ -56,9 +56,9 @@ addpath functions
             sector_data = zeros(len,wid);
             sector_mask = false(len,wid);
             sector_data = ~ocean_mask*NaN;
-            for i = 0:lat_out(1)-lat_out(2) % Cycle through latitudes
-                sector_mask(lon_out(1):lon_out(3), i+1) = true;
-                sector_data(lon_out(1):lon_out(3), i+1) = data(lon_out(1):lon_out(3), i+1);
+            for i = 0:lat_out(1)-lat_out(2)
+                sector_mask(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3)) = true;
+                sector_data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3),:) = data(lon_out(1):lon_out(3), lat_out(1)-i:lat_out(3));
             end
             
         else % Transect

@@ -7,14 +7,14 @@ addpath functions
 addpath packages/quiverwcolorbar
 
 
-user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'momentum';
+user = 'a1724548'; %a1724548, noahday, Noah
+case_name = 'ocnatmo';
 grid = 'gx1'; 
 time_period = 'd'; %'1','d','m','y'
-datapoints = 10;
-day = 28;
-month = 6;
-year = 2009;
+datapoints = 365;
+day = 1;
+month = 1;
+year = 2005;
 sector = "SA";
 if day > 9
     date = sprintf('%d-0%d-%d', year, month, day);
@@ -27,15 +27,21 @@ fig_count = 1;
 
 %% Read in data
 %ssd_dir = '/Volumes/Noah_SSD/run_data';
-filedir = strcat('cases/',case_name);%strcat('/Volumes/NoahDay5TB/','cases/',case_name);
+filedir = strcat('/Volumes/NoahDay5TB/','cases/',case_name);
 
 for i = 1:datapoints
    % Get the file name
    filename = strcat(filedir,"/history/iceh.",date(i,:),".nc");
    % Find the maximum wind speed in that sector
    [wind_max(i) wind_mean(i) wind_min(i)] = storm_finder(filename, sector);
+   
    % Update date
    date(i+1,:) = update_date(date(i,:));
+    if mod(i,floor(datapoints/10)) == 0
+       clc
+       fprintf('%g0%% complete\n',ticker);
+       ticker = ticker + 1;
+    end
 end    
         
 storm_threshold = 24.6933;
@@ -56,7 +62,7 @@ cyclone_dates = date(idx_cyclone,:);
 
 dim = 2;
 
-[~, sector_mask] = data_format_sector(filename,"uatm",sector,dim);
+[~, sector_mask] = data_format_sector(filename,"uatm",sector);
 lat_sector = lat(sector_mask);
 lon_sector = lon(sector_mask);
         
@@ -76,8 +82,13 @@ for k=1:len
     xlabel(t,'Longitude')
     ylabel(t,'Latitude')
         filename = strcat(filedir,"/history/iceh.",storm_dates(k,:),".nc");
-        atm_data_x = data_format_sector(filename,atm_var1,sector,dim);
-        atm_data_y = data_format_sector(filename,atm_var2,sector,dim);
+        
+        aice = data_format_sector(filename,"aice",sector);
+        SIC = 0.15;
+        [lat_ice_edge_new, lon_ice_edge_new, edge] = find_ice_edge(aice,SIC,sector,lat,lon);
+        
+        atm_data_x = data_format_sector(filename,atm_var1,sector);
+        atm_data_y = data_format_sector(filename,atm_var2,sector);
         atm_data_x = atm_data_x(sector_mask);
         atm_data_y = atm_data_y(sector_mask);
 
@@ -96,8 +107,8 @@ for k=1:len
             ylabel('Latitude (degrees South)');
             title(strcat("Wind velocities on ",convertCharsToStrings(storm_dates(k,:))))
 
-        ice_data_x = data_format_sector(filename,ice_var1,sector,dim);
-        ice_data_y = data_format_sector(filename,ice_var2,sector,dim);
+        ice_data_x = data_format_sector(filename,ice_var1,sector);
+        ice_data_y = data_format_sector(filename,ice_var2,sector);
         ice_data_x = ice_data_x(sector_mask);
         ice_data_y = ice_data_y(sector_mask);
 
@@ -280,7 +291,7 @@ text(0,cyclone_threshold+1,txt)
 %% Investigate the stormiest day
 
 % What day has the greatest winds
-find(wind_max = max(wind_max));
+find(wind_max == max(wind_max));
 
 
 % Calculate the ice edge

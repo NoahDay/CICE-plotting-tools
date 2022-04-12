@@ -1,7 +1,7 @@
 clear all
 close all
 addpath functions
-cd .. % Move up one directory
+%cd .. % Move up one directory
 day = 6;
 month = 1;
 year = 2009;
@@ -14,7 +14,7 @@ end
 case_name = 'ocntest';
 ticker = 1;
 SIC = 0.15; 
-filename = "cases/iceh.2009-01-02.nc"%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
+filename = "/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
 %strcat('cases/',case_name,"/history/iceh.",date,".nc");
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
@@ -24,9 +24,14 @@ ncdisp(filename)
 grid = 'gx1';
 
 
-cd /Users/a1724548/Github/CICE-plotting-tools
-
-
+%cd /Users/a1724548/Github/CICE-plotting-tools
+f3 = figure
+fsddata = data_format(filename,"fsdrad");
+[p,a] = map_plot(fsddata,"fsdrad","SH")
+a.Label.String = "$r_a$ (m)";
+a.Label.Interpreter = "latex";
+ exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
+colormap parula
 %%
 %lat = ncread('grid/gx1/global_gx1.bathy.nc','TLAT');
 %lon = ncread('grid/gx1/global_gx1.bathy.nc','TLON');

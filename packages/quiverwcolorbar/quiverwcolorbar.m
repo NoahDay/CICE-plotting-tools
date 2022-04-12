@@ -196,7 +196,7 @@ colorbar('EastOutside','ytick',B,'yticklabel',C,...
 % Takes longer but I'm more confident that the colors are correct. Note:
 % much of this overhaul was inspired by DS's vfield_color.
 hold on;
-cmap = turbo(64);     %toggle type of colormap
+cmap = cmocean('ice',64);     %toggle type of colormap
 CC = colormap(cmap);
 cm_stepsize = (colormax-colormin)/length(CC);
 for it=1:size(xyuvvrNNs,1)  %takes ~13 seconds for a 8730-point dataset

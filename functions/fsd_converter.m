@@ -140,19 +140,19 @@ if input == "afsdn"
        % Get tracer array
        aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
        afsdn = data_format_sector(filename,"afsdn",sector);
-       error(sprintf('%d\n',size(afsdn)))
+%       error(sprintf('%d\n',size(afsdn)))
         for i = 1:nx
             for j = 1:ny
                 for k = 1:Nf
                     for n = 1:Nc
-                        trcrn(i,j,k,n) = raw_data(i,j,k,n);%.*floe_binwidth(k)./aicen_data(i,j,n); % something x Length: (something m)
+                        trcrn(i,j,k,n) = raw_data(i,j,k,n).*floe_binwidth(k)*(10^(-3))./aicen_data(i,j,n); % something x Length: (something m)
                     end
                 end
             end
         end
         % Calculate nfstd
         alpha = 0.66; % Dimensionless
-        floe_area_c = 4*alpha*floe_rad_c.^2; % Area: (m^2)
+        floe_area_c = 4*alpha*(floe_rad_c*(10^(-3))).^2; % Area: (m^2)
         for i = 1:nx
             for j = 1:ny
                 for k = 1:Nf
@@ -166,7 +166,7 @@ if input == "afsdn"
 
         for i = 1:nx
             for j = 1:ny
-                for k = 1:nf
+                for k = 1:Nf
                     processed_data(i,j,k) = sum(nfstd(i,j,k,:)); % number of floes per m^2
                 end
             end

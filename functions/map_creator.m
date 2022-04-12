@@ -23,19 +23,19 @@ dim = 2;
 %filename = strcat('cases/',filename);
 if variable == "vvel"
     dim = 2;
-    data_x = data_format(filename,"uvel",row,lat,lon,dim);
-    data_y = data_format(filename,"vvel",row,lat,lon,dim);
+    data_x = data_format(filename,"uvel");
+    data_y = data_format(filename,"vvel");
     data = sqrt(data_x.^2 + data_y.^2);
 elseif variable == "vatm" 
     dim = 2;
-    data_x = data_format(filename,"uatm",row,lat,lon,dim);
-    data_y = data_format(filename,"vatm",row,lat,lon,dim);
+    data_x = data_format(filename,"uatm");
+    data_y = data_format(filename,"vatm");
     data = sqrt(data_x.^2 + data_y.^2);
 elseif variable == "Tsfc" || variable == "Tair" || variable == "sst"
     dim = 2;
-    data_x = data_format(filename,"uatm",row,lat,lon,dim);
-    data_y = data_format(filename,"vatm",row,lat,lon,dim);
-    data = data_format(filename,variable,row,lat,lon,dim);
+    data_x = data_format(filename,"uatm");
+    data_y = data_format(filename,"vatm");
+    data = data_format(filename,variable);
 elseif variable == "stresses"
     lat_vec = reshape(lat,1,[]);
     lon_vec = reshape(lon,1,[]);
@@ -71,7 +71,7 @@ elseif variable == "stresses"
     strintx_vec = reshape(strintx_data,1,[]);
     strinty_vec = reshape(strinty_data,1,[]);
 
-    data = data_format(filename,"aice",row,lat,lon,dim);
+    data = data_format(filename,"aice");
     idx = data < 0.01;
     data(idx) = NaN;
 else
@@ -79,7 +79,7 @@ else
         data3d = ncread(filename, variable);
         data(:,:) = data3d(:,:,1);
     else
-        data = data_format(filename,variable,row,lat,lon,dim);%ncread(filename, variable);
+        data = data_format(filename,variable);%ncread(filename, variable);
     end
 end
 
@@ -110,14 +110,14 @@ if sector == "world"
         colormap("cool")
 elseif sector == "SA"
     if variable == "fsdrad"
-        data = data_format(filename,"fsdrad",row,lat,lon,2);
+        data = data_format(filename,"fsdrad");
         idx = data < 0.01;
         data(idx) = NaN;% = data.*idx;
     end
     [w,a] = map_plot(data,variable,sector);
     
     if SIC > eps
-        aice = data_format(filename,"aice",row,lat,lon,2);
+        aice = data_format(filename,"aice");
         idx = aice < 0.01;
         aice(idx) = NaN;
         [lat_ice_edge, lon_ice_edge] = find_ice_edge(aice,SIC,sector,lat,lon);

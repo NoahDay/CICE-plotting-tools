@@ -3,29 +3,30 @@
 % height, and the change in FSD due to waves.
 clear all
 close all
+clc
 addpath functions
 addpath packages/bedmap2_toolbox_v4
 % Switches
-sic_miz_switch = 0;
-swh_miz_switch = 0;
-fsd_miz_switch = 0;
+sic_miz_switch = 1;
+swh_miz_switch = 1;
+fsd_miz_switch = 1;
 miz_width_switch = 1;
 iceedge = 0;
 
-plotting = 0;
+plotting = 1;
 plotting_mean = 1;
 printing = 0;
-sector = [-65, 360-132.2];
-ssd = 0; % ssd or local data
+sector = "SA";%[-65, 360-132.2];
+ssd = 1; % ssd or local data
 SIC = [0.15, 0.8];
 SWH = 0.0001;
 fsd_max = 10; % Maximum size of pancake ice
 ymax = 1200;
 %% Preamble
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'fixedwaves';
+case_name = 'ocnatmo';
 if ssd == 1
-    ssd_dir = '/Volumes/Noah_SSD/run_data';
+    ssd_dir = '/Volumes/NoahDay5TB/cases/';
     filedir = strcat(ssd_dir,case_name);
 else
     filedir = strcat('cases/',case_name);
@@ -35,10 +36,10 @@ time_period = 'd'; %'1','d','m','y'
 season = "winter";
 
 day = 1;
-month_init = 1;
-year = 2006;
-date = sprintf('%d-0%d-0%d', year, month_init, day);
-months = [2,5,9,12];
+month_init = 9;
+year = 2008;
+date = sprintf('%d-0%d-%d', year, month_init, day);
+months = [9];
 dim = 2;
 % Load the grid, ice shelf, and MIZ statistics.
 % Grid
@@ -51,9 +52,12 @@ dim = 2;
 % [latshelf,lonshelf] = bedmap2_data('latlon');
 figcount = 0;
 
-
+conFigure(11);
 %% 1. SIC defintion
 % The SIC MIZ is defined between 0.15 and 0.8 SIC
+clear p p2
+close 
+figcount = 0;
 if sic_miz_switch == 1
     date = sprintf('%d-0%d-0%d', year, month_init, day);
     filename = strcat(filedir,"/history/iceh.",date,".nc");
@@ -61,106 +65,145 @@ if sic_miz_switch == 1
     dim = 2;
     variable = "aice";
     sic_data = data_format_sector(filename,variable,"SA");
+    aice = data_format_sector(filename,variable,"SH");
     idx = sic_data < SIC(1); 
     sic_miz = sic_data;
-    sic_miz(idx) = 0.0;
+    sic_miz(idx) = NaN;
     idx = sic_data > SIC(2); 
-    sic_miz(idx) = 0.0;
+    sic_miz(idx) = NaN;
     figcount = figcount + 1;
-    figure(figcount)
-    map_plot(sic_data,variable,"SA",grid);
+    f1 = figure(figcount);
+    [p,a] = map_plot(aice,variable,"SA",grid);
+    a.Limits = [0,1];
+    cmocean('ice',10)
+    title('Ice concentration')
+    
+    figcount = figcount + 1;
+    f2 = figure(figcount);
+    [p2,a] = map_plot(sic_miz,variable,"SA",grid);
+    cmocean('ice',10)
+    a.Limits = [0,1];
+    title('SIC defined MIZ')
+    
+    exportgraphics(f1,'aice.pdf','ContentType','vector')
+    exportgraphics(f2,'sicMiz.pdf','ContentType','vector')
 end
-
+%%
+%close all
+%f3 = figure
+%swh_data = data_format_sector(filename,"fsdrad","SH");
+%[p,a] = map_plot(swh_data,"fsdrad","SH");
+%a.Label.String = "$r_a$ (m)";
+%a.Label.Interpreter = "latex";
+% exportgraphics(f3,'fsdrad.pdf','ContentType','vector')
+%colormap parula
 %% 2. SWH definition
 if swh_miz_switch == 1
-    date = sprintf('%d-0%d-0%d', year, month_init, day);
-    filename = strcat(filedir,"/history/iceh.",date,".nc");
+    %date = sprintf('%d-0%d-0%d', year, month_init, day);
+    %filename = strcat(filedir,"/history/iceh.",date,".nc");
     [len, wid] = size(lat);
-    dim = 2;
     variable = "wave_sig_ht";
     swh_data = data_format_sector(filename,variable,sector);
-    idx = swh_data < eps; 
+    idx = aice < 0.1; 
     swh_miz = swh_data;
-    swh_miz(idx) = 0.0;
+    swh_miz(idx) = NaN;
+    idx = swh_miz < eps; 
+    swh_miz(idx) = NaN;
     figcount = figcount + 1;
-    figure(figcount)
-    map_plot(swh_miz,variable,sector,grid);
+    f3 = figure(figcount);
+    [p3,a] = map_plot(swh_miz,variable,sector,grid);
+    cmocean('ice')
+    title('SWH defined MIZ')
+    exportgraphics(f3,'swhMiz.pdf','ContentType','vector')
 end
 
 %% 3. FSD definition
+close all
+clear fsd_miz
 figcount = 0;
+sector = "SA";
 if fsd_miz_switch == 1
     date = sprintf('%d-0%d-0%d', year, month_init, day);
     filename = strcat(filedir,"/history/iceh.",date,".nc");
     [len, wid] = size(lat);
-    dim = 3;
-    variable = "afsd";
+    variable = "afsdn";
     NFSD = ncread(filename,"NFSD");
-    fsd_data = data_format_sector(filename,variable,sector,dim);
-%     idx = fsd_data > 10; 
-%     fsd_miz = fsd_data;
-%     fsd_miz(idx) = 0.0;
-    for i = 1:len
-        for j = 1:wid
-            fsd_pdf = zeros(1,length(NFSD));
-            for k = 1:length(NFSD)
-                fsd_pdf(k) = fsd_data(i,j,k);
-            end
-            fsd_miz(i,j) = fsd_pdf*(NFSD.^2*pi); % Fraction x Area
-            %if ~isnan(fsd_pdf*(NFSD.^2*pi))
-            %    temp = fsd_pdf.*(NFSD.^2*pi);
-            %end
-        end
-    end
-    figcount = figcount + 1;
-    figure(figcount)
-    map_plot(fsd_miz,variable,sector,grid,[0,1000]);
+    afsdn_data = data_format_sector(filename,variable,sector);
+    afsd_data = data_format_sector(filename,"afsd",sector);
+
+    nfsd_data = fsd_converter(filename,"afsdn","n_fsd",afsdn_data,sector);
+    %figcount = figcount + 1;
+    %figure(figcount)
+    %map_plot(fsd_miz,variable,sector,grid,[0,1000]);
 
     % Normalize FSD per cell
     variable = "afsd";
     NFSD = ncread(filename,"NFSD");
     NCAT = ncread(filename,"NCAT");
-    dim = 3;
-    fstd_data = data_format_sector(filename,variable,sector,dim); % (x,y,fsd,itd)
+
+    fsd_miz = zeros(len,wid);
+    %fstd_data = data_format_sector(filename,variable,sector); % (x,y,fsd,itd)
     for i = 1:len
         for j = 1:wid
-            fsd_pdf = zeros(1,length(NFSD));
-            for k = 1:length(NFSD)
-%                 % Normalize ITD
-%                 for l = 1:length(NCAT)
-%                     itd_pdf(l) = fstd_data(i,j,k,l)/sum(fstd_data(i,j,k,:));
-%                 end
-%                 % Integrate the ITD
-%                 Int_itd = itd_pdf*NCAT;
-%                 fsd_data = fstd_data(:,:,:,1);
-                % Intergrate w.r.t. FSD
-                fsd_pdf(k) = fsd_data(i,j,k)/sum(fsd_data(i,j,:));
+            number_of_floes(i,j) = sum(nfsd_data(i,j,:));
+            for k = 1:16
+                if aice(i,j) > eps %sum(nfsd_data(i,j,:)) > eps
+                    nfsd_data_normalised(i,j,k) = nfsd_data(i,j,k)/sum(nfsd_data(i,j,:));
+                else
+                    nfsd_data_normalised(i,j,k) = 0.0;
+                end
             end
-            fsd_miz(i,j) = fsd_pdf*NFSD; % Weighted Average
+            pancake_conc(i,j) = nfsd_data_normalised(i,j,1) + nfsd_data_normalised(i,j,2);
+            if pancake_conc(i,j) > 0.9
+                fsd_miz(i,j) = 1.0; % Dominated by ice
+            else
+                fsd_miz(i,j) = 2.0;
+            end
         end
     end
-    figcount = figcount + 1;
-    figure(figcount)
-    map_plot(fsd_miz,variable,sector,grid,[0,1000]);
-    
-    
-    % FSDrad 
-    variable = "fsdrad";
-    fsdrad_data = data_format_sector(filename,variable,sector,2);
-    figcount = figcount + 1;
-    figure(figcount)
-    map_plot(fsdrad_data,variable,sector,grid,[0,1000]);
 
-    % AICE 
-    variable = "aice";
-    aice_data = data_format_sector(filename,variable,sector,2);
-    figcount = figcount + 1;
-    figure(figcount)
-    map_plot(aice_data,variable,sector,grid,[0,1]);
+    f1 = figure;
+    [p4,a] = map_plot(pancake_conc,"aice",sector);
+    title('Pancake number concentration')
+    a.Limits = [0,1];
+    %exportgraphics(f1,'panMiz1.pdf','ContentType','vector')
+    
 
-    figcount = figcount + 1;
-    figure(figcount)
-    map_plot(fsdrad_data-fsd_miz,variable,sector,grid,[0,1000]);
+    for i = 1:len
+    for j = 1:wid
+        number_of_floes(i,j) = sum(nfsd_data(i,j,:));
+            for k = 1:16
+               afsd_area(i,j,k) = afsd_data(i,j,k)*NFSD(k);
+            end
+            pancake_conc(i,j) = afsd_area(i,j,1) + afsd_area(i,j,2);
+            if pancake_conc(i,j) > 0.9
+                fsd_miz(i,j) = 1.0; % Dominated by ice
+            else
+                fsd_miz(i,j) = 2.0;
+            end
+        end
+    end
+    
+    f2 = figure;
+    [p5,a] = map_plot(pancake_conc,"aice",sector);
+    title('Pancake areal concentration')
+    a.Limits = [0,1];
+    cmocean('ice',10)
+    %exportgraphics(f2,'panMiz2.pdf','ContentType','vector')
+    
+    f3 = figure;
+    [p5,a] = map_plot(1.0*(pancake_conc>0.4),"aice",sector);
+    title('Pancake areal concentration $> 0.4$')
+    a.Limits = [0,1];
+    cmocean('ice',10)
+    %exportgraphics(f3,'panMiz3.pdf','ContentType','vector')
+    
+    f4 = figure;
+    [p5,a] = map_plot(1.0*(pancake_conc>0.48),"aice",sector);
+    title('Pancake areal concentration $> 0.48$')
+    a.Limits = [0,1];
+    cmocean('ice',10)
+    exportgraphics(f4,'panMiz48.pdf','ContentType','vector')
 end
 %% 4. MIZ widths
 if miz_width_switch == 1
@@ -195,7 +238,7 @@ if miz_width_switch == 1
             
             % 4. a) SIC
             variable = "aice";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable,row,lat,lon);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -228,7 +271,7 @@ if miz_width_switch == 1
             
             % 4.b SWH
             variable = "wave_sig_ht";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable,row,lat,lon);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -260,7 +303,7 @@ if miz_width_switch == 1
     
             % 4.c FSD
             variable = "fsdrad";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable,row,lat,lon);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -323,7 +366,7 @@ if miz_width_switch == 1
             % 4. a) SIC
             [~,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
             variable = "aice";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -354,7 +397,7 @@ if miz_width_switch == 1
             % 4.b SWH
             [~,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
             variable = "wave_sig_ht";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -382,7 +425,7 @@ if miz_width_switch == 1
             
             [lat_out,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
             variable = "fsdrad";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -452,7 +495,7 @@ if miz_width_switch == 1
                 
                 % 4. a) SIC
                 variable = "aice";
-                data = data_format(filename,variable,row,lat,lon,dim);
+                data = data_format(filename,variable);
                 if plotting == 1
                     figcount = figcount + 1;
                     figure(figcount)
@@ -485,7 +528,7 @@ if miz_width_switch == 1
                 
                 % 4.b SWH
                 variable = "wave_sig_ht";
-                data = data_format(filename,variable,row,lat,lon,dim);
+                data = data_format(filename,variable);
                 if plotting == 1
                     figcount = figcount + 1;
                     figure(figcount)
@@ -517,7 +560,7 @@ if miz_width_switch == 1
         
                 % 4.c FSD
                 variable = "fsdrad";
-                data = data_format(filename,variable,row,lat,lon,dim);
+                data = data_format(filename,variable);
                 if plotting == 1
                     figcount = figcount + 1;
                     figure(figcount)
@@ -577,7 +620,7 @@ if miz_width_switch == 1
             % 4. a) SIC
             [~,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
             variable = "aice";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -608,7 +651,7 @@ if miz_width_switch == 1
             % 4.b SWH
             [~,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
             variable = "wave_sig_ht";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
@@ -640,7 +683,7 @@ if miz_width_switch == 1
             
             [lat_out,lon_out] = lat_lon_finder(sector(1),sector(2),lat,lon);
             variable = "fsdrad";
-            data = data_format(filename,variable,row,lat,lon,dim);
+            data = data_format(filename,variable);
             if plotting == 1
                 figcount = figcount + 1;
                 figure(figcount)
