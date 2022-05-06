@@ -14,7 +14,7 @@ end
 case_name = 'ocntest';
 ticker = 1;
 SIC = 0.15; 
-filename = "/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
+filename = "cases/wimon/history/iceh.2005-09-01.nc";%/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
 %strcat('cases/',case_name,"/history/iceh.",date,".nc");
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
@@ -26,12 +26,93 @@ grid = 'gx1';
 
 %cd /Users/a1724548/Github/CICE-plotting-tools
 f3 = figure
-fsddata = data_format(filename,"fsdrad");
-[p,a] = map_plot(fsddata,"fsdrad","SH")
-a.Label.String = "$r_a$ (m)";
+ppddata = data_format(filename,"peak_period");
+[p,a] = map_plot(ppddata,"peak_period","SH")
+a.Label.String = "Peak period, $s$";
 a.Label.Interpreter = "latex";
- exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
+ %exportgraphics(f3,'peakperiod.pdf','ContentType','vector')
 colormap parula
+
+idx = ppddata > eps;
+f = figure;
+hist(ppddata(idx))
+xlabel('Peak period, $s$','Interpreter','latex')
+ylabel('Count','Interpreter','latex')
+%exportgraphics(f,'hist.pdf','ContentType','vector')
+% SWH
+f3 = figure
+swhdata = data_format(filename,"wave_sig_ht");
+[p,a] = map_plot(swhdata,"wave_sig_ht","SH")
+a.Label.String = "SWH, $m$";
+a.Label.Interpreter = "latex";
+exportgraphics(f3,'swh.pdf','ContentType','vector')
+colormap parula
+
+idx = swhdata > eps;
+f = figure;
+hist(swhdata(idx))
+xlabel('Significant wave height, $m$','Interpreter','latex')
+ylabel('Count','Interpreter','latex')
+%exportgraphics(f,'histswh.pdf','ContentType','vector')
+
+
+%% 
+nbins = 50;
+f = figure;
+hist3([swhdata(idx), ppddata(idx)],'Nbins',[nbins,nbins],'CdataMode','auto')
+xlabel('Significant wave height, $H_s$ (m)','Interpreter','latex')
+    xlim([0,max(swhdata(idx))])
+    ylim([0,max(ppddata(idx))])
+    ylabel('Peak period, $T_p$ (s)','Interpreter','latex')
+    zlabel('$r_{max}$','Interpreter','latex')
+    s.EdgeColor = 'none';
+    a = colorbar;
+    a.Label.String = 'Counts';
+    a.Label.Interpreter = 'latex';
+    a.TickLabelInterpreter = 'latex';
+    C=jet(15);
+    
+    colormap(C)
+    view(0,90)
+    
+exportgraphics(f,'countswhppd.pdf','ContentType','image')
+%%
+surf(swhdata(idx), ppddata(idx))
+
+%% change in new ice
+close all
+f = figure;
+dafsd3d = data_format(filename,"dafsd_newi");
+t = tiledlayout(4,4);
+t.TileSpacing = 'compact';
+for i = 1:16
+    nexttile
+    dafsd = dafsd3d(:,:,i);
+    idx = dafsd < eps;
+    dafsd(idx) = NaN;
+    if isnan(max(max(dafsd)))
+        maxi = 1;
+    else
+        maxi = max(max(dafsd));
+    end
+    [p,a] = map_plot(dafsd,"dafsd_newi","SH","gx1",[0,maxi]);
+    if isnan(max(max(dafsd)))
+        title('No Change')
+    else
+        maxi = max(max(dafsd));
+    end
+    %a.Label.String = "Change in FSD";
+    a.Label.Interpreter = "latex";
+   % exportgraphics(f,'dafsd.pdf','ContentType','vector')
+    colormap parula
+end
+%%
+idx = fsddata > eps;
+f = figure;
+hist(fsddata(idx))
+xlabel('Significant wave height, $m$','Interpreter','latex')
+ylabel('Count','Interpreter','latex')
+exportgraphics(f,'histswh.pdf','ContentType','vector')
 %%
 %lat = ncread('grid/gx1/global_gx1.bathy.nc','TLAT');
 %lon = ncread('grid/gx1/global_gx1.bathy.nc','TLON');

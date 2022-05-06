@@ -11,7 +11,7 @@ clear all
 close all
 addpath functions
 addpath packages/bedmap2_toolbox_v4
-filename = 'cases/ocntest/history/iceh.2009-01-01.nc';
+filename = 'cases/momentum/history/iceh.2009-09-30.nc';
 % Read the header
 ncdisp(filename)
 % 
@@ -21,9 +21,9 @@ sector = "SH";
 %% Preamble
 close all
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'wimoninit';
+case_name = 'momentum';
 sector = "SH";
-ssd = 1;
+ssd = 0;
 if ssd == 1
     ssd_dir = '/Volumes/NoahDay5TB/cases/';
     filedir = strcat(ssd_dir,case_name);
@@ -34,7 +34,7 @@ grid = 'gx1';
 
 day = 10;
 month_init = 7;
-year = 2005;
+year = 2009;
 date = sprintf('%d-0%d-%d', year, month_init, day);
 
 figcount = 0;
