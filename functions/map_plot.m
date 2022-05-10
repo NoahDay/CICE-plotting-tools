@@ -18,24 +18,30 @@ end
 [lat,lon,row] = grid_read(grid);
 if isstring(sector)
     if sector == "SH"     
-        w = worldmap('world');
-            axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+        latlim = [-90,-20];
+        lonlim = [-180,180];
+        %w = worldmap('world');
+        w = worldmap(latlim, lonlim);
+            axesm eqaazim; %, eqaazim wetch eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
             setm(w, 'Origin', [-90 0 0]);
             setm(w, 'maplatlimit', [-90,-55]);
-            setm(w, 'maplonlimit', [-180,180]);
+            setm(w, 'maplonlimit', [-180,-55]);
             setm(w, 'meridianlabel', 'on')
             setm(w, 'parallellabel', 'off')
             setm(w, 'mlabellocation', 60);
             setm(w, 'plabellocation', 10);
             setm(w, 'mlabelparallel', -45);
-            setm(w, 'mlinelimit', [-90 -40]);
+            setm(w, 'mlinelimit', [-75 -55]);
+            setm(w, 'plinelimit', [-75 -55]);
             setm(w, 'grid', 'on');
-            %setm(w, 'frame', 'on');
+            setm(w, 'frame', 'on');
             setm(w, 'labelrotation', 'on')
             pcolorm(lat,lon,data)
             land = shaperead('landareas', 'UseGeoCoords', true);
             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
             a = colorbar;
+            a.TickLabelInterpreter = 'latex';
+            a.Label.Interpreter = 'latex';
             if ~exist('clims', 'var')
                 % Set sector to world by default
                 caxis(colorlims(variable));

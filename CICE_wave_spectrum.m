@@ -59,31 +59,52 @@ f = figure;
 [p,a] = map_plot(hs,"wave_sig_ht","SH","gx1",[0,max(max(hs))]);
 a.Label.String = "$H_s$ (m)";
 a.Label.Interpreter = "latex";
+title('Reimann integral')
  %exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
 colormap parula
 
 wave_sig_ht = data_format(filename,"wave_sig_ht");
 f = figure;
-[p,a] = map_plot(wave_sig_ht,"wave_sig_ht","SH","gx1",[0,max(max(hs))]);
+[p,a] = map_plot(wave_sig_ht,"wave_sig_ht","SH","gx1",[0,max(max(wave_sig_ht))]);
 a.Label.String = "$H_s$ (m)";
 a.Label.Interpreter = "latex";
+title('CICE output')
  %exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
 colormap parula
 
 f = figure;
+hm0 = hm0/(2*pi);
 [p,a] = map_plot(hm0,"wave_sig_ht","SH","gx1",[0,max(max(hm0))]);
 a.Label.String = "$H_s$ (m)";
 a.Label.Interpreter = "latex";
+title("Simpson's integral")
  %exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
 colormap parula
 
-ran = 1;
+ran = 2;
+f = figure;
+[p,a] = map_plot(hs-wave_sig_ht,"wave_sig_ht","SH","gx1",[-ran,ran]);
+a.Label.String = "$H_s$ difference (m)";
+a.Label.Interpreter = "latex";
+title("Difference ($\sum S(f) \Delta S(f)$ - CICE output)",'Interpreter','latex')
+ %exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
+cmocean('balance',11)
+
 f = figure;
 [p,a] = map_plot(hs-hm0,"wave_sig_ht","SH","gx1",[-ran,ran]);
 a.Label.String = "$H_s$ difference (m)";
 a.Label.Interpreter = "latex";
+title("Difference ($\sum S(f) \Delta S(f) - \texttt{simp}$)",'Interpreter','latex')
  %exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
-cmocean('balance')
+cmocean('balance',11)
+
+f = figure;
+[p,a] = map_plot(hm0-wave_sig_ht,"wave_sig_ht","SH","gx1",[-ran,ran]);
+a.Label.String = "$H_s$ difference (m)";
+a.Label.Interpreter = "latex";
+title("Difference ($\texttt{simp}$ - CICE output)",'Interpreter','latex')
+ %exportgraphics(f3,'fsdrad2.pdf','ContentType','vector')
+cmocean('balance',11)
 
 %% Spectral moment
 clc
@@ -94,6 +115,8 @@ mom = 0;
 om_in = om;
 nw_in = nw;
 
+
+domega = omega - [0,omega(1:15)];
 (dum_S*2*pi)*(domega*2*pi)'
 
 smom0 = simpson_integrate(dum_S, mom, om_in, nw_in);
