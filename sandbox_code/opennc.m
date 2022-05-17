@@ -2,19 +2,19 @@ clear all
 close all
 addpath functions
 %cd .. % Move up one directory
-day = 6;
+day = 9;
 month = 1;
-year = 2009;
+year = 2005;
 sector = "SA";
 if day < 9
     date = sprintf('%d-0%d-0%d', year, month, day);
 else
     date = sprintf('%d-0%d-%d', year, month, day);
 end
-case_name = 'ocntest';
+case_name = '31freq';
 ticker = 1;
 SIC = 0.15; 
-filename = "cases/wimon/history/iceh.2005-09-01.nc";%/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
+filename = "cases/31freq/history/iceh.2008-07-05.nc";%/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
 %strcat('cases/',case_name,"/history/iceh.",date,".nc");
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
@@ -23,7 +23,7 @@ ncdisp(filename)
 % 
 grid = 'gx1';
 
-
+%%
 %cd /Users/a1724548/Github/CICE-plotting-tools
 f3 = figure
 ppddata = data_format(filename,"peak_period");
@@ -40,12 +40,12 @@ xlabel('Peak period, $s$','Interpreter','latex')
 ylabel('Count','Interpreter','latex')
 %exportgraphics(f,'hist.pdf','ContentType','vector')
 % SWH
-f3 = figure
+f3 = figure;
 swhdata = data_format(filename,"wave_sig_ht");
-[p,a] = map_plot(swhdata,"wave_sig_ht","SH")
+[p,a] = map_plot(swhdata,"wave_sig_ht","SH");
 a.Label.String = "SWH, $m$";
 a.Label.Interpreter = "latex";
-exportgraphics(f3,'swh.pdf','ContentType','vector')
+%exportgraphics(f3,'swh.pdf','ContentType','vector')
 colormap parula
 
 idx = swhdata > eps;
@@ -57,25 +57,50 @@ ylabel('Count','Interpreter','latex')
 
 
 %% 
+close all
+conFigure(11,1.2)
 nbins = 50;
 f = figure;
-hist3([swhdata(idx), ppddata(idx)],'Nbins',[nbins,nbins],'CdataMode','auto')
+historydir = '/Users/noahday/GitHub/CICE-plotting-tools/cases/31freq/history/';%'/Volumes/NoahDay5TB/cases/wimoninit/history/';
+
+a = dir([historydir '/*.nc']);
+n_files = numel(a);
+swhdata_vec = [];
+ppddata_vec = [];
+for i = 1:n_files
+    clear swhtemp ppdtemp
+   filenames(i,:) = strcat(historydir,a(i).name);
+   dirdates(i,:) = a(i).name(6:end-3);
+   swhdata_mat(:,:,i) = data_format(filenames(i,:),"wave_sig_ht");
+   ppddata_mat(:,:,i) = data_format(filenames(i,:),"peak_period");
+   swhtemp(:,:) = swhdata_mat(:,:,i);
+   swhdata_vec = [swhdata_vec; swhtemp(idx)];
+   ppdtemp(:,:) = ppddata_mat(:,:,i);
+   ppddata_vec = [ppddata_vec; ppdtemp(idx)];
+end
+
+
+
+
+hist3([swhdata_vec, ppddata_vec],'Nbins',[nbins,nbins],'CdataMode','auto')
+
 xlabel('Significant wave height, $H_s$ (m)','Interpreter','latex')
     xlim([0,max(swhdata(idx))])
     ylim([0,max(ppddata(idx))])
     ylabel('Peak period, $T_p$ (s)','Interpreter','latex')
-    zlabel('$r_{max}$','Interpreter','latex')
+    zlabel('Counts','Interpreter','latex')
     s.EdgeColor = 'none';
     a = colorbar;
     a.Label.String = 'Counts';
     a.Label.Interpreter = 'latex';
     a.TickLabelInterpreter = 'latex';
-    C=jet(15);
-    
+    C=jet;
+    C(1,:) = [1,1,1];
     colormap(C)
+    caxis([eps 1200])
     view(0,90)
     
-exportgraphics(f,'countswhppd.pdf','ContentType','image')
+exportgraphics(f,'countswhppd.pdf','ContentType','vector')
 %%
 surf(swhdata(idx), ppddata(idx))
 

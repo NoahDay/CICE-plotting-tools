@@ -13,16 +13,16 @@ addpath functions
    set(0,'defaulttextinterpreter','latex')
 
 user = 'a1724548'; %a1724548, noahday, Noah
-case_name = '31freq';
+case_name = '31freq';%'ocnforcing';
 grid = 'gx1'; 
-day = 31;
-month = 12;
-year = 2006;
+day = 1;
+month = 1;
+year = 2008;
 sector = "SH";
 if day < 9
-    date = sprintf('%d-%d-0%d', year, month, day);
+    date = sprintf('%d-0%d-0%d', year, month, day);
 else
-    date = sprintf('%d-%d-%d', year, month, day);
+    date = sprintf('%d-0%d-%d', year, month, day);
 end
 
 dim = 2;
@@ -46,7 +46,7 @@ NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
 Nf = numel(NFSD);
 lon_pos = 180;
-lat_pos = edge(lon_pos)-1;
+lat_pos = edge(lon_pos)-8;
 floe_binwidth = [5.2438,8.9763,14.7711,23.3545,35.4569,51.6493,72.1173,96.4015,123.1658,150.0742,173.8638,190.6718,397.7316,479.1093,649.9598,881.7363];
 thick_binwidth = NCAT - [0;NCAT(1:end-1)];
 
@@ -88,6 +88,7 @@ w = worldmap('world');
 
 %% Get all filenames
 clear filenames
+case_name = '31freq';
 historydir = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/');
 
 a = dir([historydir '/*.nc']);
@@ -98,20 +99,24 @@ for i = 1:n_files
    dirdates(i,:) = a(i).name(6:end-3);
 end
 %% Average data over a month
-clear data_dec data_dec_mean
+clear data_dec data_dec_mean raw_data change_fsd
 variable = "fsdrad";
 data_dec_mean(:,:) = zeros(size(lat));
+change_fsd_mean(:,:) = zeros(size(lat));
 j = 1;
 for i = 1:n_files % for decemeber
     if filenames(i,end-7:end-6) == '12'
         filenames_month(j,:) = filenames(i,:);
         data_dec(:,:,j) = data_format_sector(filenames(i,:),variable,sector);
+        raw_data(:,:,:,:) = data_format_sector(filenames(i,:),"dafsd_wave",sector);
+        change_fsd(:,:,j) = fsd_converter(filenames(i,:),"dafsd","fsdrad",raw_data,sector);
         j = j + 1;
     end
 end
 
 for i = 1:j-1
     data_dec_mean(:,:) = data_dec_mean(:,:) + (1/(j-1))*data_dec(:,:,i);
+    change_fsd_mean(:,:) = change_fsd_mean(:,:) + (1/(j-1))*change_fsd(:,:,i);
 end
 
 %% Plot aice map
@@ -149,6 +154,75 @@ cmocean('ice')
 %exportgraphics(f,'aice.pdf','ContentType','vector')
 %%
 
+clear w fsdraddata raw_data
+close all
+conFigure(10,1.5)
+f = figure;
+%fsdraddata = data_format_sector(filename,"fsdrad",sector);
+%fsdraddata = data_dec_mean;
+%idx = fsdraddata < eps;
+%fsdraddata(idx) = NaN;
+raw_data(:,:,:) = data_format_sector(filenames(end,:),"dafsd_weld",sector);
+aice(:,:) = data_format_sector(filenames(end,:),"aice",sector);
+raw_data2(:,:,:) = data_format_sector(filenames(end-1,:),"dafsd_weld",sector);
+for i = 1:321
+    for j = 1:384
+        temp(:) = raw_data(i,j,:);
+        fsdchangedata(i,j) = sum(temp.*floe_binwidth.*NFSD');
+        temp(:) = raw_data2(i,j,:);
+        fsdchangedata2(i,j) = sum(temp.*floe_binwidth.*NFSD');
+    end
+end
+%fsdchangedata(:,:) = raw_data(:,:,2);%change_fsd(:,:,1);%change_fsd_mean;
+idx = abs(fsdchangedata) < eps;
+fsdchangedata(idx) = NaN;
+fsdchangedata = (fsdchangedata - fsdchangedata2)./aice;
+
+raw_data(:,:,:) = data_format_sector(filenames(end,:),"dafsd_newi",sector);
+for i = 1:321
+    for j = 1:384
+        temp(:) = raw_data(i,j,:);
+        fsdchangedata(i,j) = raw_data(i,j,1);
+    end
+end
+%[p,a] = map_plot(fsdraddata,"fsdrad",sector);
+w = worldmap('world');
+            axesm eqaazim; %, wetch
+            setm(w, 'Origin', [-90 0 0]);
+            setm(w, 'maplatlimit', [-90,-55]);
+            setm(w, 'maplonlimit', [-180,-55]);
+            setm(w, 'meridianlabel', 'on')
+            setm(w, 'parallellabel', 'off')
+            setm(w, 'mlabellocation', 60);
+            setm(w, 'plabellocation', 10);
+            setm(w, 'mlabelparallel', -45);
+            setm(w, 'mlinelimit', [-75 -55]);
+            setm(w, 'plinelimit', [-75 -55]);
+            setm(w, 'grid', 'off');
+            %setm(w, 'frame', 'on');
+            setm(w, 'labelrotation', 'on')
+            pcolorm(lat,lon,fsdchangedata)
+            land = shaperead('landareas', 'UseGeoCoords', true);
+            geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+            a = colorbar;
+            %a.Limits = [-2,2];
+
+a.TickLabelInterpreter = 'latex';
+a.Label.Interpreter = 'latex';
+a.Label.String = 'Change in $F(r)dr$';
+
+w.ZTickLabel = 'test';
+%w.ColorScale = 'log';
+w.FontName = 'CMU Serif';
+
+c = cmocean('balance',10);
+
+
+%colormap parula
+%exportgraphics(f,'fsdradnov.pdf','ContentType','vector')
+
+%% Change in FSD
+
 
 close all
 conFigure(10,1.5)
@@ -157,7 +231,7 @@ fsdraddata = data_format_sector(filename,"fsdrad",sector);
 %fsdraddata = data_dec_mean;
 idx = fsdraddata < eps;
 fsdraddata(idx) = NaN;
-fsdraddata = fsdraddata.*aicedata;
+fsdraddata = fsdraddata;
 %[p,a] = map_plot(fsdraddata,"fsdrad",sector);
 w = worldmap('world');
             axesm eqaazim; %, wetch
@@ -188,7 +262,7 @@ w.ColorScale = 'log';
 w.FontName = 'CMU Serif';
 cmocean('matter');
 %colormap parula
-%exportgraphics(f,'fsdradnov.pdf','ContentType','vector')
+exportgraphics(f,'fsdradjan.pdf','ContentType','vector')
 %% ITD
 % Sum a_{in} = 1
 dim = 3;
@@ -210,7 +284,7 @@ lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.
 floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
 floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
 f_bin_width = floe_rad_h - floe_rad_l;
-
+floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 dim = 3;
 afsd_data = data_format_sector(filename,"afsd",sector);
 
@@ -249,34 +323,41 @@ converted(lon_pos,lat_pos,:)
 fsdrad_data(lon_pos,lat_pos,:)
 
 %% Plotting
-
+conFigure(10,1.5)
 % FSD histogram
 figure(1)
 bar(1:Nf,fsd,'hist')
 xlabel('FSD radius (m)')
 ylabel('Fraction of sea ice area')
+
+%%
+clear lab
+close all
 Nf = numel(NFSD);
 format shortg
 r_NFSD = round(round(floe_rad_h,1));
 r1_NFSD = round(round(floe_rad_l,1));
 s_NFSD = num2str(r_NFSD);
-for i = 1:Nf
-    lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+for i = 1:3:Nf
+    %lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+    lab{i} = sprintf('%g',round(NFSD(i)));
 end
-    xticks(1:Nf)
-    xticklabels(lab)
-    title(sprintf("FSD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
-    set(gcf,'Position',[1300 1000 800 400])
-    xtickangle(45)
+%     xticks(1:Nf)
+%     xticklabels(lab)
+%     %title(sprintf("FSD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
+%     set(gcf,'Position',[1300 1000 800 400])
+%     xtickangle(45)
     
         
 ncat_vec = [0; NCAT(1:Nc-1)];  
 r_NCAT = round(round(NCAT,2),2);
 r1_NCAT = round(round(ncat_vec,2),2);
-for i = 1:Nc
+for i = 1:Nc-1
     %lab2{i} = sprintf('> %g',ncat_vec(i));
-    lab2{i} = sprintf('[%g, %g]',r1_NCAT(i),r_NCAT(i));
+    %lab2{i} = sprintf('[%g, %g]',r1_NCAT(i),r_NCAT(i));
+    lab2{i} = sprintf('%g',round(NCAT(i),2));
 end
+lab2{Nc} = '$> 5$';
 % FSTD
 % figure(2)
 % surf(afsdn)
@@ -288,27 +369,117 @@ end
 %     yticklabels(lab)
 %     title(sprintf("FSTD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
 
-figure(3)
+conFigure(10,1.1)
+f = figure;
 bar3(afsdn_norm)
     xlabel('Ice thickness (m)')
     xticks(1:Nc)
     xticklabels(lab2)
-    ylabel('FSD radius (m)')
+    ylabel('Floe radius (m)')
     yticks(1:Nf)
     yticklabels(lab)
-    title(sprintf("FSTD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
-    set(gcf,'Position',[1300 1000 600 600])
-    
-figure(4)
+    xlh = get(gca,'xlabel');
+    gyl = get(xlh);                                                         % Object Information
+    xlp = get(xlh, 'Position');
+   set(xlh, 'Rotation',10, 'Position',xlp, 'VerticalAlignment','bottom', 'HorizontalAlignment','right')
+   ylh = get(gca,'ylabel');
+    gyl = get(ylh);                                                         % Object Information
+    ylp = get(ylh, 'Position');
+   set(ylh, 'Rotation',-5)%, 'Position',ylp, 'VerticalAlignment','middle', 'HorizontalAlignment','right')
+    zlabel('Fraction of sea ice area')
+    view([310,10]) 
+    %title(sprintf("FSTD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
+    %set(gcf,'Position',[1300 1000 600 600])
+    %exportgraphics(f,'fstd.pdf','ContentType','vector')
+    %%
+    conFigure(10,1.5)
+    for i = 1:Nf
+    %lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+    lab{i} = sprintf('%g',round(NFSD(i)));
+    end
+     work = 0;
+for k = 1:Nf
+   for n = 1:Nc
+       work = work + ...
+           afsdn(k,n)*floe_binwidth(k)*(floe_rad_c(k)/sum(aicen));
+   end
+end
+
+f = figure;
     bar(afsdn_norm,'stacked')
-    set(gcf,'Position',[1300 1000 800 400])
+    xticks(1:Nf)
+    xticklabels(lab)
+    xlabel('Floe radius (m)')
+    %set(gcf,'Position',[1300 1000 800 400])
     [hleg,icons,plots] = legend('show');
-    [leg,att] = legendflex(gca, lab2, 'title', 'ITD (m)');
-    set(findall(leg, 'string', 'ITD (m)'), 'fontweight', 'bold');
+    [leg,att] = legendflex(gca, lab2, 'title', 'Ice thickness (m)');
+    set(findall(leg, 'string', 'Ice thickness (m)'), 'fontweight', 'bold');
     leg.Title.Visible = 'on';
-    xlabel('FSD radius (m)')
     xticks(1:Nf)
     xticklabels(lab)
     xtickangle(45)
-    title(sprintf("FSTD at (%g S, %g E) %g cells south of the ice edge", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos), edge(lon_pos) - lat_pos -1))
+    %xtip=0.5; ytip=0.05;   % arrow tip coordinates (normalized units)
+    %w=0.25;      %box width
+    %h=0.1;      %box height
+    %offset=0.7;
+    %str=sprintf('r_a = %g',round(work,1));
+    %x = [xtip xtip-offset];     % arrows start and end coordinates
+    %y = [ytip+offset ytip];     % I've just offset by 0.1 in x and y. 
+    %a=annotation('textarrow',x,y,'Color','black');
+    %b=annotation('textbox',[xtip-w+0.1 ytip+0.5 w h],'String',str,'Color','black','EdgeColor','white');
+    %text(8.7,0.07,sprintf('$r_a$ = %g m',work))
+    %ar = annotation('arrow',8,[0.01,0.05]);
+    %title(sprintf("FSTD at (%g S, %g E) %g cells south of the ice edge", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos), edge(lon_pos) - lat_pos -1))
     ylabel('Fraction of sea ice area')
+    %xline(8.5,'--')
+    exportgraphics(f,'fsd.pdf','ContentType','vector')
+
+%% ITD
+close all
+conFigure(10,1.5)
+clear f
+    f = figure;
+    bar(sum(afsdn_norm))
+    xticks(1:Nc)
+    xticklabels(lab2)
+    xlabel('Ice thickness (m)')
+    %set(gcf,'Position',[1300 1000 800 400])
+    %[hleg,icons,plots] = legend('show');
+    %[leg,att] = legendflex(gca, lab, 'title', 'ITD (m)');
+    %set(findall(leg, 'string', 'Floe radius (m)'), 'fontweight', 'bold');
+    %leg.Title.Visible = 'on';
+    xticks(1:Nc)
+    xticklabels(lab2)
+    xtickangle(45)
+    %title(sprintf("FSTD at (%g S, %g E) %g cells south of the ice edge", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos), edge(lon_pos) - lat_pos -1))
+    ylabel('Fraction of sea ice area')
+   % exportgraphics(f,'itd.pdf','ContentType','vector')
+%% FSDRAD
+
+
+
+%% ITD histogram
+    for n = 1:5
+    itd(n) = sum(afsdn_norm(:,n));
+    end
+
+
+
+figure(5)
+bar(1:Nc,itd,'hist')
+xlabel('Ice thickness (m)')
+ylabel('$g(h)$')
+Nf = numel(NFSD);
+format shortg
+r_NFSD = round(round(floe_rad_h,1));
+r1_NFSD = round(round(floe_rad_l,1));
+s_NFSD = num2str(r_NFSD);
+for i = 1:Nc
+    %lab{i} = sprintf('[%g, %g]',r1_NFSD(i),r_NFSD(i));
+    lab{i} = sprintf('%g',round(NCAT(i),2));
+end
+    xticks(1:Nc)
+    xticklabels(lab)
+    %title(sprintf("FSD at (%g S, %g E)", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos)))
+    set(gcf,'Position',[1300 1000 800 400])
+    xtickangle(45)

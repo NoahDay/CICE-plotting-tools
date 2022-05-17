@@ -1,16 +1,17 @@
 %% What drives the changes in the FSTD?
 %% Read in the data.
-clear
+clear all
 close all
 addpath functions
 addpath packages/quiverwcolorbar
 clc
 % Parameters
 sector = "SH";
-case_name = 'wimon';
-filedir = 'cases/wimon/history/iceh.';
+case_name = '31freq';
+filedir = '/Volumes/NoahDay5TB/cases/31freq/history/iceh.';
 
-
+%filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
+%     else
 %filedir = 'cases/ocnatmo/history/iceh.';
 %'cases/momentum/history/iceh.'; %'/Volumes/NoahDay5TB/cases/momentum/history/iceh.2009-09-30.nc';
 %[lat,lon,row] = grid_read(grid);
@@ -26,8 +27,8 @@ coords = sector_coords(sector);
 clear coords
 
 initial_date.day = 1;
-initial_date.month = 9;
-initial_date.year = 2005; % 2005 is a spin-up year
+initial_date.month = 1;
+initial_date.year = 2008; % 2005 is a spin-up year
 if initial_date.month < 10
     initial_date.char = sprintf('%d-0%d-0%d', initial_date.year, initial_date.month, initial_date.day);
 else
@@ -170,10 +171,10 @@ end
 % This is to reproduce Figure 3 (a)-(e) in Roach et al. (2018)
 clear temp dafsd dafsd_SH data
 clc
-cases = ["forcingoff","wimon","wimoff"];%["profile","nowaves"];
-datapoints = 24; % Number of days per month
+cases = "31freq";%["forcingoff","wimon","wimoff"];%["profile","nowaves"];
+datapoints = 31; % Number of days per month
 date = initial_date.char;
-ssd = 0;
+ssd = 1;
 sector = "SH";
 [data] = read_in_fsd_data(cases,date,datapoints,sector,ssd,"d");
 
@@ -191,18 +192,18 @@ data_mat(2,:) = data.latg.ra(:,1);
 data_mat(3,:) = data.newi.ra(:,1);
 data_mat(4,:) = data.weld.ra(:,1);
 data_mat(5,:) = data.wave.ra(:,1);
-ts_wave = timeseries_plot(data_mat,strcat("Wave forcing = 0"),'days',char(ts.init_date));
+ts_wave = timeseries_plot(data_mat,strcat("Wave forcing = 1"),'days',char(ts.init_date));
 
-
-
+conFigure(11,1.2)
+f = figure;
 plot(ts_wave,'-', 'LineWidth',2)
-    set(gcf,'Position',[1200 1000 600 300])
+    %set(gcf,'Position',[1200 1000 600 300])
     ylabel('Change in $r_a$ (m/day)','Interpreter','Latex')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northeast')
     ylim([-0.6,1.4])
     grid on
     xtickangle(45)
-    
+    exportgraphics(f,'dafsdtsjan.pdf','ContentType','vector')
 % Make averaged plot (monthly)    
 
 % Get these plots compatible with Jack's plotting code
@@ -291,7 +292,16 @@ plot(ts_wave,'-', 'LineWidth',2)
 day = 9;
 
 plot_date = strcat(initial_date.char(1:9),sprintf('%d',day));
-filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',plot_date,".nc");
+filename = strcat('/Volumes/NoahDay5TB/cases/','31freq','/history/iceh.',plot_date,".nc");
+lat = ncread(filename,"TLAT");
+lon = ncread(filename,"TLON");
+ grid = "gx1";
+row = 37;
+lat = rearrange_matrix(lat,row,2);
+lon = rearrange_matrix(lon,row,2);
+
+    lon = [zeros(1,384);lon];
+    lat = [lat(1,:); lat];
 close
 figcount = 1;
 [aice, sector_mask] = data_format_sector(filename,"aice","SH");
