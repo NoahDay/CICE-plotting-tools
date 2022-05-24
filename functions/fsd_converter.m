@@ -241,7 +241,18 @@ elseif input == "dafsd_newi" || input == "dafsd_latg" || input == "dafsd_latm" |
                 work(i,j) = 0;
                 for k = 1:Nf
                      work(i,j) = work(i,j) + ...
-                           raw_data(i,j,k)*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
+                           raw_data(i,j,k)*floe_rad_c(k)./aice(i,j);
+                end
+            end
+        end
+        processed_data = work; % normalise by ice concentration
+    elseif output == "m_per_day"
+        for j = 1:ny
+            for i = 1:nx
+                work(i,j) = 0;
+                for k = 1:Nf
+                     work(i,j) = work(i,j) + ...
+                           raw_data(i,j,k)*floe_rad_c(k);%*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
                 end
             end
         end

@@ -16,7 +16,7 @@ user = 'a1724548'; %a1724548, noahday, Noah
 case_name = '31freq';%'ocnforcing';
 grid = 'gx1'; 
 day = 1;
-month = 1;
+month = 7;
 year = 2008;
 sector = "SH";
 if day < 9
@@ -29,7 +29,7 @@ dim = 2;
 [lat,lon,row] = grid_read(grid);
 
 
-ssd = 1;
+ssd = 0;
 if ssd == 1
     filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
 else
@@ -87,9 +87,10 @@ w = worldmap('world');
 
 
 %% Get all filenames
-clear filenames
-case_name = '31freq';
+clear filenames dirdates
+case_name = 'forcingoff';
 historydir = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/');
+historydir = strcat('cases/',case_name,'/history/');
 
 a = dir([historydir '/*.nc']);
 n_files = numel(a);
@@ -152,8 +153,22 @@ a.Label.String = 'Sea ice concentration';
 %w.FontName = 'CMU Serif';
 cmocean('ice')
 %exportgraphics(f,'aice.pdf','ContentType','vector')
-%%
+%% dafsd
+% Set up
+lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+floe_binwidth = floe_rad_h - floe_rad_l;
+floe_rad_c = (floe_rad_l+floe_rad_h)/2;
 
+floeshape = 0.66;
+floe_area_l = 4*floeshape*floe_rad_l.^2;
+floe_area_c = 4*floeshape*floe_rad_c.^2;
+floe_area_h = 4*floeshape*floe_rad_h.^2;
+
+floe_binwidth = floe_rad_h - floe_rad_l;
+
+floe_area_binwidth = floe_area_h - floe_area_l;
 clear w fsdraddata raw_data
 close all
 conFigure(10,1.5)
@@ -168,58 +183,81 @@ raw_data2(:,:,:) = data_format_sector(filenames(end-1,:),"dafsd_weld",sector);
 for i = 1:321
     for j = 1:384
         temp(:) = raw_data(i,j,:);
-        fsdchangedata(i,j) = sum(temp.*floe_binwidth.*NFSD');
-        temp(:) = raw_data2(i,j,:);
-        fsdchangedata2(i,j) = sum(temp.*floe_binwidth.*NFSD');
+        if aice(i,j) > eps
+            fsdchangedata(i,j) = sum(temp.*floe_rad_c)./aice(i,j);
+        else
+            fsdchangedata(i,j) = 0;
+        end
+        %temp(:) = raw_data2(i,j,:);
+        %fsdchangedata2(i,j) = sum(temp.*floe_rad_c)./aice(i,j);
     end
 end
 %fsdchangedata(:,:) = raw_data(:,:,2);%change_fsd(:,:,1);%change_fsd_mean;
 idx = abs(fsdchangedata) < eps;
 fsdchangedata(idx) = NaN;
 fsdchangedata = (fsdchangedata - fsdchangedata2)./aice;
-
-raw_data(:,:,:) = data_format_sector(filenames(end,:),"dafsd_newi",sector);
+%%
+clear f a w fsdchangedata temp
+close all
+variable = "dafsd_latm";
+raw_data(:,:,:) = data_format_sector(filenames(end,:),variable,sector);
 for i = 1:321
     for j = 1:384
         temp(:) = raw_data(i,j,:);
-        fsdchangedata(i,j) = raw_data(i,j,1);
+        if aice(i,j) > eps
+            fsdchangedata(i,j) = sum(temp.*floe_rad_c)./aice(i,j);
+        else
+            fsdchangedata(i,j) = 0;
+        end
     end
 end
 %[p,a] = map_plot(fsdraddata,"fsdrad",sector);
-w = worldmap('world');
-            axesm eqaazim; %, wetch
-            setm(w, 'Origin', [-90 0 0]);
-            setm(w, 'maplatlimit', [-90,-55]);
-            setm(w, 'maplonlimit', [-180,-55]);
-            setm(w, 'meridianlabel', 'on')
-            setm(w, 'parallellabel', 'off')
-            setm(w, 'mlabellocation', 60);
-            setm(w, 'plabellocation', 10);
-            setm(w, 'mlabelparallel', -45);
-            setm(w, 'mlinelimit', [-75 -55]);
-            setm(w, 'plinelimit', [-75 -55]);
-            setm(w, 'grid', 'off');
-            %setm(w, 'frame', 'on');
-            setm(w, 'labelrotation', 'on')
-            pcolorm(lat,lon,fsdchangedata)
-            land = shaperead('landareas', 'UseGeoCoords', true);
-            geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
-            a = colorbar;
-            %a.Limits = [-2,2];
+f = figure;
+max(max(abs(fsdchangedata)))
+ord = 1;
+[w, a, output_data] = map_plot(fsdchangedata,variable,sector,grid,[-10^ord,10^ord]);
+cmocean('balance');
+%exportgraphics(f,'foffdafsdlatm.pdf','ContentType','vector')
+
+
+
+% w = worldmap('world');
+%             axesm eqaazim; %, wetch
+%             setm(w, 'Origin', [-90 0 0]);
+%             setm(w, 'maplatlimit', [-90,-55]);
+%             setm(w, 'maplonlimit', [-180,-55]);
+%             setm(w, 'meridianlabel', 'on')
+%             setm(w, 'parallellabel', 'off')
+%             setm(w, 'mlabellocation', 60);
+%             setm(w, 'plabellocation', 10);
+%             setm(w, 'mlabelparallel', -45);
+%             setm(w, 'mlinelimit', [-75 -55]);
+%             setm(w, 'plinelimit', [-75 -55]);
+%             setm(w, 'grid', 'off');
+%             %setm(w, 'frame', 'on');
+%             setm(w, 'labelrotation', 'on')
+%             pcolorm(lat,lon,fsdchangedata./100)
+%             land = shaperead('landareas', 'UseGeoCoords', true);
+%             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+%             a = colorbar;
+%            % 
+%             a.Limits = ;
+            
+            
 
 a.TickLabelInterpreter = 'latex';
 a.Label.Interpreter = 'latex';
-a.Label.String = 'Change in $F(r)dr$';
+a.Label.String = 'Change in FSD [m/day]';
 
 w.ZTickLabel = 'test';
 %w.ColorScale = 'log';
 w.FontName = 'CMU Serif';
 
-c = cmocean('balance',10);
+
 
 
 %colormap parula
-%exportgraphics(f,'fsdradnov.pdf','ContentType','vector')
+
 
 %% Change in FSD
 

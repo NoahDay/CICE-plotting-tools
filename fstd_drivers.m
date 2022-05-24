@@ -172,7 +172,7 @@ end
 clear temp dafsd dafsd_SH data
 clc
 cases = "31freq";%["forcingoff","wimon","wimoff"];%["profile","nowaves"];
-datapoints = 31; % Number of days per month
+datapoints = 1; % Number of days per month
 date = initial_date.char;
 ssd = 1;
 sector = "SH";
@@ -200,7 +200,7 @@ plot(ts_wave,'-', 'LineWidth',2)
     %set(gcf,'Position',[1200 1000 600 300])
     ylabel('Change in $r_a$ (m/day)','Interpreter','Latex')
     legend({'Lateral melt','Lateral growth','New ice','Welding','Wave induced ice fracture'},'Location','northeast')
-    ylim([-0.6,1.4])
+    ylim([-1,1])
     grid on
     xtickangle(45)
     exportgraphics(f,'dafsdtsjan.pdf','ContentType','vector')

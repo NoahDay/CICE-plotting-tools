@@ -10,8 +10,8 @@ close all
 % Comparing CICE results with and without waves
 %% Preamble
  plot_title = 'Transect';
- cases = "8month";
- date = '2005-07-29';
+ cases = "31freq";
+ date = '2008-07-29';
  datapoints = 1;
  grid = 'gx1';
  timestep = 'd'; % '1', 'd', 'm', 'y'

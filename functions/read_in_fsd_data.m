@@ -128,12 +128,21 @@ for j = 1:numel(cases)
         end
 
         % 3) Changes in r_a
-            dafsd.latm.ra(i,j) = sum(dafsd.latm.ave(:,i,j).*floe_binwidth');
-            dafsd.latg.ra(i,j) = sum(dafsd.latg.ave(:,i,j).*floe_binwidth');
-            dafsd.newi.ra(i,j) = sum(dafsd.newi.ave(:,i,j).*floe_binwidth');
-            dafsd.weld.ra(i,j) = sum(dafsd.weld.ave(:,i,j).*floe_binwidth');
-            dafsd.wave.ra(i,j) = sum(dafsd.wave.ave(:,i,j).*floe_binwidth');
-            dafsd.afsd.ra(i,j) = sum(dafsd.afsd.ave(:,i,j).*floe_binwidth');
+        if aice(i,j) > 0
+            dafsd.latm.ra(i,j) = sum(dafsd.latm.ave(:,i,j).*floe_rad_c')./aice(i,j);
+            dafsd.latg.ra(i,j) = sum(dafsd.latg.ave(:,i,j).*floe_rad_c')./aice(i,j);
+            dafsd.newi.ra(i,j) = sum(dafsd.newi.ave(:,i,j).*floe_rad_c')./aice(i,j);
+            dafsd.weld.ra(i,j) = sum(dafsd.weld.ave(:,i,j).*floe_rad_c')./aice(i,j);
+            dafsd.wave.ra(i,j) = sum(dafsd.wave.ave(:,i,j).*floe_rad_c')./aice(i,j);
+            dafsd.afsd.ra(i,j) = sum(dafsd.afsd.ave(:,i,j).*floe_rad_c')./aice(i,j);
+        else
+            dafsd.latm.ra(i,j) = 0;
+            dafsd.latg.ra(i,j) = 0;
+            dafsd.newi.ra(i,j) = 0;
+            dafsd.weld.ra(i,j) = 0;
+            dafsd.wave.ra(i,j) = 0;
+            dafsd.afsd.ra(i,j) = 0;
+        end
 
        % Update date
         date = update_date(date,timestep);

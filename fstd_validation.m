@@ -11,7 +11,7 @@ clear all
 close all
 addpath functions
 addpath packages/bedmap2_toolbox_v4
-filename = 'cases/momentum/history/iceh.2009-09-30.nc';
+filename = 'cases/forcingoff/history/iceh.2005-09-30.nc';
 % Read the header
 ncdisp(filename)
 % 
@@ -21,7 +21,7 @@ sector = "SH";
 %% Preamble
 close all
 user = 'noahday'; %a1724548, noahday, Noah
-case_name = 'momentum';
+case_name = 'forcingoff';
 sector = "SH";
 ssd = 0;
 if ssd == 1
@@ -33,8 +33,8 @@ end
 grid = 'gx1'; 
 
 day = 10;
-month_init = 7;
-year = 2009;
+month_init = 9;
+year = 2005;
 date = sprintf('%d-0%d-%d', year, month_init, day);
 
 figcount = 0;
@@ -69,7 +69,7 @@ for i = 1:nx
     for j = 1:ny
         temp(:) = aicen_data(i,j,:);
         thick_binwidth = 1;
-        aice_transformed(i,j) = sum(temp'.*thick_binwidth);
+        aice_transformed(i,j) = sum(temp');
         clear temp
     end
 end
@@ -270,18 +270,19 @@ afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
 for i = 1:Nc
     for j = 1:nx
         for k = 1:ny
-            aicen_transformed(j,k,i) =  sum(afsdn_data(j,k,:,i));
+            temp(:) = afsdn_data(j,k,:,i);
+            aicen_transformed(j,k,i) =  sum(temp.*floe_binwidth);
         end
     end
 end
 
-f1 = figure(1);
+f1 = figure;
 t1 = tiledlayout(1,5);
 for i = 1:Nc
     nexttile
     lims = max(max(aicen_data(:,:,i) - aicen_transformed(:,:,i)));
     [p,a] = map_plot(aicen_data(:,:,i) - aicen_transformed(:,:,i),"aice",sector,grid,[-lims,lims]);
-    t = title(sprintf("FSD Cat %d",i));
+    t = title(sprintf("ITD Cat %d",i));
     cmocean('balance') 
     t.Interpreter = "latex";
     t.FontSize = fontsize;
@@ -289,7 +290,7 @@ for i = 1:Nc
     a.FontSize = fontsize;
     a.TickLabelInterpreter = "latex";
 end
-t= title(t1,"F(r) - $\sum_{i=1}^{n_c} f(r,h) $");
+t= title(t1,"g(h) - $\sum_{i=1}^{n_f} f(r_i,h) $");
 t.Interpreter = "latex";
 t.FontSize = fontsize;
 f1.Position = [800 1000 1200 400];
@@ -300,16 +301,17 @@ f1.Position = [800 1000 1200 400];
 aice_data = data_format_sector(filename,"aice",sector);
 
 [nx,ny,~] = size(aicen_data);
+clear temp
 % a = INT(g(h)dh)
 for i = 1:nx
     for j = 1:ny
         temp(:) = aicen_transformed(i,j,:);
         thick_binwidth = 1;
-        aice_transformed(i,j) = sum(temp'.*thick_binwidth);
+        aice_transformed(i,j) = sum(temp');
         clear temp
     end
 end
-f2 = figure(2);
+f2 = figure;
 t2 = tiledlayout(1,3);
 nexttile
 map_plot(aice_data,"aice",sector,grid,[0,1]);
@@ -682,6 +684,132 @@ fprintf('The median error is: %d\n',median(error_vec))
 fprintf('The mode error is: %d\n',mode(error_vec))
 fprintf('The std error is: %d\n',std(error_vec))
 
+%% 5. a) Get FSDrad from AFSD
+clear fsdrad_transformed 
+clc
+close all
+fsdrad_data(:,:) = data_format_sector(filename,"fsdrad",sector);
+fsdrad_transformed(:,:) = fsd_converter(filename,"afsd","fsdrad");
+
+f2 = figure(2);
+t2 = tiledlayout(1,3);
+nexttile
+[p,a] = map_plot(fsdrad_data,"fsdrad",sector);
+t = title("$r_a$");
+t.Interpreter = "latex";
+t.FontSize = fontsize;
+a.FontSize = fontsize;
+a.TickLabelInterpreter = "latex";
+cmocean('ice') 
+nexttile
+[p,a] = map_plot(fsdrad_transformed,"fsdrad",sector);
+t = title("$r_a$ calculated from \texttt{afsd}");
+t.Interpreter = "latex";
+t.FontSize = fontsize;
+
+a.FontSize = fontsize;
+a.TickLabelInterpreter = "latex";
+cmocean('ice') 
+nexttile
+lims = max(max(fsdrad_data-fsdrad_transformed));
+[p,a] = map_plot(fsdrad_data-fsdrad_transformed,"fsdrad",sector,grid,[-lims,lims]);
+t = title("Difference");
+t.Interpreter = "latex";
+t.FontSize = fontsize;
+a.FontSize = fontsize;
+a.Label.String = 'representative radius (m)';
+a.TickLabelInterpreter = "latex";
+cmocean('balance') 
+f2.Position = [800 1000 1200 400];
+%exportgraphics(f2,'fsdrad.pdf','ContentType','vector')
+
+icemask = aice_data > 0.01;
+fsdrad_vec = fsdrad_data(icemask);
+fsdrad_transformed_vec = fsdrad_transformed(icemask);
+error_vec = fsdrad_vec-fsdrad_transformed_vec;
+
+f1 = figure(1);
+t = tiledlayout(2,3);
+t.TileSpacing = 'compact';
+
+
+nexttile
+    % Correlation plot
+    scatter(fsdrad_transformed_vec, fsdrad_vec)
+    hold on
+    plot([0,1],[0,1])
+    hold off
+    ax = gca;
+    ax.FontSize = fontsize; 
+    y = ylabel('CICE output $r_a$ (m)');
+    y.FontSize = fontsize;
+    x = xlabel('My calculation of $r_a$ (m)');
+    x.FontSize = fontsize;
+
+nexttile
+ % Histogram comparison
+    [h1,edges] = histcounts(fsdrad_vec, 10);
+    [h2,edges] = histcounts(fsdrad_transformed_vec, 10);
+    ctrs = edges(1)+(1:length(edges)-1).*diff(edges);   % Create Centres
+    bar(ctrs, log([h1 ;h2])')
+    ax = gca;
+    ax.FontSize = fontsize-2; 
+    xtickangle(ax,45)
+    xlabel("Floe size radius (m)",'Interpreter','latex')
+    ylabel("log(Counts)",'Interpreter','latex')
+    legend("CICE","Calculated",'Location','north')
+    
+nexttile([2 1]);
+    % Box plot comparison for error and actual value
+    set(groot, 'defaultAxesTickLabelInterpreter','latex');
+     boxplot([error_vec,fsdrad_vec],'labels',{'Error','$r_a$'});
+    ax = gca;
+    ax.FontSize = fontsize; 
+    ax.TickLabelInterpreter='latex';
+    ylabel("Floe size (m)",'Interpreter','latex')      
+    
+nexttile
+    scatter(fsdrad_vec,error_vec)
+    set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
+    set(0,'defaultTextInterpreter','latex'); %trying to set the default
+    yline(0)
+    ax = gca;
+    ax.FontSize = fontsize; 
+    xlabel("Floe size (m)")
+    ylabel("Error (m)")
+    
+nexttile
+    scatter(aice_vec,error_vec)
+    set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
+    set(0,'defaultTextInterpreter','latex'); %trying to set the default
+    ax = gca;
+    ax.FontSize = fontsize; 
+    yline(0)
+    xlabel("Ice concentration")
+    ylabel("Error (m)")
+f1.Position = [800 1000 1200 400];
+  
+
+%exportgraphics(f1,'error_fsdrad.pdf','ContentType','vector')
+
+
+
+% Statistics
+fprintf("Data statistics: \n")
+fprintf("Correlation between methods: %g\n", corr(fsdrad_transformed_vec, fsdrad_vec))
+fprintf('The max fsdrad is: %d\n',max(fsdrad_vec))
+fprintf('The mean fsdrad is: %d\n',mean(fsdrad_vec))
+fprintf('The median fsdrad is: %d\n',median(fsdrad_vec))
+fprintf('The mode fsdrad is: %d\n',mode(fsdrad_vec))
+fprintf('The std fsdrad is: %d\n',std(fsdrad_vec))
+fprintf("Error statistics: \n")
+fprintf('The max error is: %d\n',max(error_vec))
+fprintf('The mean error is: %d\n',mean(error_vec))
+fprintf('The median error is: %d\n',median(error_vec))
+fprintf('The mode error is: %d\n',mode(error_vec))
+fprintf('The std error is: %d\n',std(error_vec))
+
+
 %% 6. Intergrate FSTD wrt fsd to get aicen
 clear afsd_transformed 
 close all
@@ -936,8 +1064,9 @@ exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
 
 % Get the NFSD from AFSDN
 close all
-clear xticks yticks f5 icemask
+clear xticks yticks f5 icemask f
 aice_data = data_format_sector(filename,"aice",sector);
+afsd = data_format_sector(filename,"afsd",sector);
 icemask = aice_data > 0.01;
 dafsd_latm_data(:,:,:) = data_format_sector(filename,"dafsd_latm",sector);
 dafsd_latg_data(:,:,:) = data_format_sector(filename,"dafsd_latg",sector);
@@ -945,26 +1074,100 @@ dafsd_newi_data(:,:,:) = data_format_sector(filename,"dafsd_newi",sector);
 dafsd_weld_data(:,:,:) = data_format_sector(filename,"dafsd_weld",sector);
 dafsd_wave_data(:,:,:) = data_format_sector(filename,"dafsd_wave",sector);
 
+% dafsdrad_latm(:,:) = fsd_converter(filename,"dafsd_latm","fsdrad");
+% dafsdrad_latg(:,:) = fsd_converter(filename,"dafsd_latg","fsdrad");
+% dafsdrad_newi(:,:) = fsd_converter(filename,"dafsd_newi","fsdrad");
+% dafsdrad_weld(:,:) = fsd_converter(filename,"dafsd_weld","fsdrad");
+% dafsdrad_wave(:,:) = fsd_converter(filename,"dafsd_wave","fsdrad");
+
 dafsdrad_latm(:,:) = fsd_converter(filename,"dafsd_latm","fsdrad");
 dafsdrad_latg(:,:) = fsd_converter(filename,"dafsd_latg","fsdrad");
 dafsdrad_newi(:,:) = fsd_converter(filename,"dafsd_newi","fsdrad");
 dafsdrad_weld(:,:) = fsd_converter(filename,"dafsd_weld","fsdrad");
 dafsdrad_wave(:,:) = fsd_converter(filename,"dafsd_wave","fsdrad");
 
+
+
+raw_data = dafsd_newi_data(:,:,:);
+for j = 1:384
+    for i = 1:321
+        work(i,j) = 0;
+        for k = 1:Nf
+             work(i,j) = work(i,j) + ...
+                   raw_data(i,j,k);%*afsd(i,j,k);%*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
+        end
+    end
+end
+dafsdrad_newi(:,:) = work;
+
+
 dafsdrad_latm_mean = mean(dafsdrad_latm(icemask));
 dafsdrad_latg_mean = mean(dafsdrad_latg(icemask));
 dafsdrad_newi_mean = mean(dafsdrad_newi(icemask));
 dafsdrad_weld_mean = mean(dafsdrad_weld(icemask));
 dafsdrad_wave_mean = mean(dafsdrad_wave(icemask));
-
-f1 = figure(1);
+conFigure(11,3)
+f1 = figure;
 bar(1:5,[dafsdrad_latm_mean',dafsdrad_latg_mean',dafsdrad_newi_mean',dafsdrad_weld_mean',dafsdrad_wave_mean'])
 xticks(1:5)
 xticklabels({'latm','latg','newi','weld','wave'})
 ylabel('$dr_a/dt$ (m/day)')
 %legend({'latm','latg','newi','weld','wave'},'Location','north')
-f1.Position = [1200 100 600 500];
+%f1.Position = [1200 100 600 500];
 %exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
+
+max_lim = 10;
+f = figure;
+t1 = tiledlayout(1,5);
+nexttile
+max_lim = max(max(dafsdrad_latm));
+if max_lim == 0 
+    max_lim = eps;
+end
+map_plot(dafsdrad_latm,"dafsd_latm",sector,grid,[-max_lim,max_lim]);
+cmocean('balance')
+title("Lat melt")
+nexttile
+max_lim = max(max(dafsdrad_latg));
+map_plot(dafsdrad_latg,"dafsd_latg",sector,grid,[-max_lim,max_lim]);
+cmocean('balance')
+title("Lat growth")
+nexttile
+max_lim = max(max(dafsdrad_newi));
+map_plot(dafsdrad_newi,"dafsd_newi",sector,grid,[-max_lim,max_lim]);
+cmocean('balance')
+title("New ice")
+nexttile
+max_lim = max(max(dafsdrad_weld));
+map_plot(dafsdrad_weld,"dafsd_weld",sector,grid,[-max_lim,max_lim]);
+cmocean('balance')
+title("Weld")
+nexttile
+max_lim = max(max(abs(dafsdrad_wave)))/2;
+if max_lim == 0
+    max_lim = eps;
+end
+map_plot(dafsdrad_wave,"dafsd_wave",sector,grid,[-max_lim,max_lim]);
+cmocean('balance')
+title("Wave")
+nexttile
+%%
+aice = data_format_sector(filename,"aice",sector);
+afsd2 = afsd + dafsd_latm_data + dafsd_latg_data + dafsd_newi_data + dafsd_weld_data + dafsd_wave_data;
+raw_data = afsd2(:,:,:);
+for j = 1:384
+    for i = 1:321
+        work(i,j) = 0;
+        for k = 1:Nf
+             work(i,j) = work(i,j) + ...
+                   raw_data(i,j,k)*floe_binwidth(k)*(floe_rad_c(k)/aice(i,j));
+        end
+    end
+end
+fsdrad_change(:,:) = work;
+f = figure;
+map_plot(fsdrad_change,"fsdrad",sector,grid,[0,10000]);
+
 
 %%
 num_dafsd_latm = numberfsdconverter(filename,dafsd_latm_data);

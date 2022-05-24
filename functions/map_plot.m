@@ -34,7 +34,7 @@ if isstring(sector)
             setm(w, 'mlinelimit', [-75 -55]);
             setm(w, 'plinelimit', [-75 -55]);
             setm(w, 'grid', 'on');
-            setm(w, 'frame', 'on');
+            setm(w, 'frame', 'off');
             setm(w, 'labelrotation', 'on')
             pcolorm(lat,lon,data)
             land = shaperead('landareas', 'UseGeoCoords', true);
@@ -69,7 +69,7 @@ if isstring(sector)
             a = colorbar;
             if ~exist('clims', 'var')
                 % Set sector to world by default
-                caxis(colorlims(variable));
+                %caxis(colorlims(variable));
             else
                 caxis(clims)
             end
@@ -92,7 +92,7 @@ if isstring(sector)
             setm(w, 'mlabelparallel', 0);
             setm(w, 'mlabelParallel', 'south');
             setm(w, 'grid', 'on');
-            setm(w, 'frame', 'on');
+            setm(w, 'frame', 'off');
             setm(w, 'labelrotation', 'on')
             pcolorm(lat,lon,data)
             land = shaperead('landareas', 'UseGeoCoords', true);
