@@ -1,17 +1,17 @@
 %% A comparison between CAWCR data and CICE wave output
-
+clc
 clear
 close
 addpath functions
-filename = 'cases/testing/history/iceh.2005-01-01.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
+filename = 'cases/ocntest/history/iceh.2009-01-01.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
 
 grid = 'gx1';
 [lat,lon,row] = grid_read(grid);
 %data = ncread(filename, 'sst');
-cice_data = data_format(filename,'wave_sig_ht_d',row,lat,lon,1);
-cawcr_filename = '/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/gx1/CAWCR/MONTHLY/2005/ww3_200501.nc';
-cawcr_data = data_format(cawcr_filename,'dir',row,lat,lon,3);
+cice_data = data_format(filename,'wave_sig_ht');
+cawcr_filename = '/Users/a1724548/GitHub/cice-dirs/input/CICE_data/forcing/gx1/CAWCR/MONTHLY/2005/ww3_200501.nc';
+cawcr_data = data_format(cawcr_filename,'dir');
 cawcr_data = cawcr_data(:,:,24);
 ncdisp(cawcr_filename)
 
