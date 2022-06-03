@@ -358,3 +358,5 @@ w = worldmap('world');
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
     %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    
+    
