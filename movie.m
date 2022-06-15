@@ -4,12 +4,12 @@ clc
 addpath functions
 % create video writer object
 user = 'a1724548'; %a1724548, noahday, Noah
-case_name = 'ocnatmo'; %ocnforcing
+case_name = 'monthwim'; %ocnforcing
 grid = 'gx1'; 
-variable = "vatm"; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
+variable = "fsdrad"; % wave_sig_ht, peak_period, fsdrad, aice, mean_wave_dir, hi, uvel, vvel, Tair, frazil, iage
 % afsd, dafsd_wave, Tsfc
 
-video_name = strcat(variable, '_', case_name, '_', '2022_04_11', '.mp4');
+video_name = strcat(variable, '_', case_name, '_', '2022_06_01', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 time_period = 'd'; %'1','d','m','y'
 datapoints = 13;

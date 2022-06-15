@@ -12,8 +12,8 @@ addpath functions
    set(0,'DefaultAxesFontName', 'CMU Serif')
    set(0,'defaulttextinterpreter','latex')
 
-user = 'a1724548'; %a1724548, noahday, Noah
-case_name = '31freq';%'ocnforcing';
+user = 'noahday'; %a1724548, noahday, Noah
+case_name = 'monthwim';%'ocnforcing';
 grid = 'gx1'; 
 day = 1;
 month = 7;
@@ -24,12 +24,13 @@ if day < 9
 else
     date = sprintf('%d-0%d-%d', year, month, day);
 end
+date = "2009-09";
 
 dim = 2;
 [lat,lon,row] = grid_read(grid);
 
 
-ssd = 0;
+ssd = 1;
 if ssd == 1
     filename = strcat('/Volumes/NoahDay5TB/cases/',case_name,'/history/iceh.',date,".nc");
 else
@@ -121,6 +122,8 @@ for i = 1:j-1
 end
 
 %% Plot aice map
+pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
+line_width = 1;
 clear p a
 conFigure(10,1.5)
 close all
@@ -147,6 +150,7 @@ aicedata = data_format_sector(filename,"aice",sector);
 %             land = shaperead('landareas', 'UseGeoCoords', true);
 %             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
 %             a = colorbar;
+plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
 
 
 a.Label.String = 'Sea ice concentration';
@@ -260,8 +264,13 @@ w.FontName = 'CMU Serif';
 
 
 %% Change in FSD
-
-
+lat_pos = 35;
+lon_pos = 180;
+line_width = 1;
+lat_cell_low = lat(lon_pos,lat_pos);
+lon_cell_low = lon(lon_pos,lat_pos);
+lon_cell_high = lon(lon_pos+1,lat_pos);
+lat_cell_high = lat(lon_pos,lat_pos+1);
 close all
 conFigure(10,1.5)
 f = figure;
@@ -270,19 +279,27 @@ fsdraddata = data_format_sector(filename,"fsdrad",sector);
 idx = fsdraddata < eps;
 fsdraddata(idx) = NaN;
 fsdraddata = fsdraddata;
+
+range = 20;
+min_lat = lat(lon_pos,1);
+max_lat = lat(lon_pos,lat_pos+range);
+min_lon = lon(lon_pos-range,lat_pos);
+max_lon = lon(lon_pos+range,lat_pos);
 %[p,a] = map_plot(fsdraddata,"fsdrad",sector);
 w = worldmap('world');
-            axesm eqaazim; %, wetch
-            setm(w, 'Origin', [-90 0 0]);
-            setm(w, 'maplatlimit', [-90,-55]);
-            setm(w, 'maplonlimit', [-180,-55]);
+            axesm miller; %, wetch
+            setm(w, 'Origin', [0 0 0]);
+            setm(w, 'maplatlimit', [min_lat,max_lat]);
+            setm(w, 'maplonlimit', [min_lon,max_lon]);
             setm(w, 'meridianlabel', 'on')
-            setm(w, 'parallellabel', 'off')
-            setm(w, 'mlabellocation', 60);
+            setm(w, 'parallellabel', 'on')
+            setm(w, 'mlabellocation', 10);
             setm(w, 'plabellocation', 10);
-            setm(w, 'mlabelparallel', -45);
-            setm(w, 'mlinelimit', [-75 -55]);
-            setm(w, 'plinelimit', [-75 -55]);
+            setm(w, 'mlabelparallel', 0);
+            setm(w, 'mlabelParallel', 'south');
+            setm(w, 'grid', 'on');
+            setm(w, 'frame', 'off');
+            setm(w, 'labelrotation', 'on')
             setm(w, 'grid', 'off');
             %setm(w, 'frame', 'on');
             setm(w, 'labelrotation', 'on')
@@ -290,7 +307,20 @@ w = worldmap('world');
             land = shaperead('landareas', 'UseGeoCoords', true);
             geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
             a = colorbar;
-
+%             s = scaleruler;
+%             setm(handlem('scaleruler'), ...
+%             'XLoc',0.3, ... '
+%             'YLoc',-0.52, ...
+%             'TickDir','down', ...
+%             'MajorTick',0:1000:1000, ...
+%             'MinorTick',0:500:500, ...
+%             'MajorTickLength',km2nm(150),...
+%             'MinorTickLength',km2nm(150))
+            plotm([lat_cell_low,lat_cell_low,lat_cell_high,lat_cell_high,lat_cell_low],[lon_cell_low,lon_cell_high,lon_cell_high,lon_cell_low,lon_cell_low],'-','color','yellow','LineWidth',line_width)
+            box on
+            %mapzoomps('ne')
+            %hold on
+            %mapzoomps(lat(lon_pos,10),lon(lon_pos,lat_pos),'size',[10*100 13*100],'ne')
 a.TickLabelInterpreter = 'latex';
 a.Label.Interpreter = 'latex';
 a.Label.String = 'Mean floe size radius (m)';
@@ -300,7 +330,209 @@ w.ColorScale = 'log';
 w.FontName = 'CMU Serif';
 cmocean('matter');
 %colormap parula
-exportgraphics(f,'fsdradjan.pdf','ContentType','vector')
+%exportgraphics(f,'zoom1.pdf','ContentType','vector')
+f = figure;
+box on
+mapzoomps(lat(lon_pos,10),lon(lon_pos,lat_pos),'size',[10*100 12*100],'ne')
+%exportgraphics(f,'zoom2.pdf','ContentType','vector')
+%% MIZ from FSD
+swhdata = data_format_sector(filename,"wave_sig_ht",sector);
+fsdraddata = data_format_sector(filename,"fsdrad",sector);
+
+miz = ones(size(fsdraddata)).*100;
+
+idx = swhdata > eps;
+miz(idx) = 10;
+idx = fsdraddata < eps;
+miz(idx) = NaN;
+idx = aice_data < 0.1;
+miz(idx) = NaN;
+
+
+close all
+f = figure;
+
+%[p,a] = map_plot(fsdraddata,"fsdrad",sector);
+w = worldmap('world');
+            axesm eqaazim; %, wetch
+            setm(w, 'Origin', [-90 0 0]);
+            setm(w, 'maplatlimit', [-90,-55]);
+            setm(w, 'maplonlimit', [-180,180]);
+            setm(w, 'meridianlabel', 'off')
+            setm(w, 'parallellabel', 'off')
+            setm(w, 'mlabellocation', 60);
+            setm(w, 'plabellocation', 60);
+            setm(w, 'mlabelparallel', 60);
+            setm(w, 'mlabelParallel', 'south');
+            setm(w, 'frame', 'off');
+            setm(w, 'labelrotation', 'on')
+            setm(w, 'grid', 'off');
+            %setm(w, 'frame', 'on');
+            setm(w, 'labelrotation', 'on')
+            pcolorm(lat,lon,miz)
+            land = shaperead('landareas', 'UseGeoCoords', true);
+            geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+            a = colorbar;
+%             s = scaleruler;
+%             setm(handlem('scaleruler'), ...
+%             'XLoc',0.3, ... '
+%             'YLoc',-0.52, ...
+%             'TickDir','down', ...
+%             'MajorTick',0:1000:1000, ...
+%             'MinorTick',0:500:500, ...
+%             'MajorTickLength',km2nm(150),...
+%             'MinorTickLength',km2nm(150))
+            %plotm([lat_cell_low,lat_cell_low,lat_cell_high,lat_cell_high,lat_cell_low],[lon_cell_low,lon_cell_high,lon_cell_high,lon_cell_low,lon_cell_low],'-','color','yellow','LineWidth',line_width)
+            %box on
+            %mapzoomps('ne')
+            %hold on
+            %mapzoomps(lat(lon_pos,10),lon(lon_pos,lat_pos),'size',[10*100 13*100],'ne')
+a.TickLabelInterpreter = 'latex';
+a.Label.Interpreter = 'latex';
+a.Label.String = 'Mean floe size radius (m)';
+
+w.ZTickLabel = 'test';
+w.ColorScale = 'log';
+w.FontName = 'CMU Serif';
+cmocean('matter');
+%colormap parula
+%exportgraphics(f,'mizfsd.pdf','ContentType','vector')
+
+%% Change in ra
+clear dafsd_ra
+filename = "/Volumes/NoahDay5TB/cases/monthwim/history/iceh.2009-09.nc";
+dafsd_latg(:,:,:) = data_format_sector(filename,"dafsd_latg",sector);
+dafsd_latm(:,:,:) = data_format_sector(filename,"dafsd_latm",sector);
+dafsd_newi(:,:,:) = data_format_sector(filename,"dafsd_newi",sector);
+dafsd_weld(:,:,:) = data_format_sector(filename,"dafsd_weld",sector);
+dafsd_wave(:,:,:) = data_format_sector(filename,"dafsd_wave",sector);
+aice_data(:,:) = data_format_sector(filename,"aice",sector);
+fsdrad_data(:,:) = data_format_sector(filename,"fsdrad",sector);
+swh_data(:,:) = data_format_sector(filename,"wave_sig_ht",sector);
+lon_pos = 180;
+idx = swh_data(lon_pos,:)>eps;
+nums = 1:length(idx);
+swh_idx = nums(idx);
+idx = fsdrad_data(lon_pos,:)>100;
+ra_idx = nums(idx);
+idx = aice_data(lon_pos,:)>0.15;
+aice_idx = nums(idx);
+for i = 1:max(aice_idx)
+    latg_cell(:) = dafsd_latg(lon_pos,i,:);
+    latm_cell(:) = dafsd_latm(lon_pos,i,:);
+    newi_cell(:) = dafsd_newi(lon_pos,i,:);
+    weld_cell(:) = dafsd_weld(lon_pos,i,:);
+    wave_cell(:) = dafsd_wave(lon_pos,i,:);
+    dafsd = [latg_cell; latm_cell; newi_cell; weld_cell; wave_cell].*floe_rad_c./aice_data(lon_pos,i);
+    dafsd_ra(i,:) = sum(dafsd');
+end
+
+close all
+conFigure(11)
+f = figure;
+plot(lat(lon_pos,1:max(aice_idx)),dafsd_ra,'LineWidth',2)
+ylabel('Change in $r_a$ [m/day]')
+xlabel('Latitude [$^\circ$]','Interpreter','latex')
+ylim([-10,10])
+%xline(lat(lon_pos,max(aice_idx)),'-')
+%xline(lat(lon_pos,min(swh_idx)),'--')
+%xline(lat(lon_pos,max(ra_idx)),'--')
+legend(["Lateral growth","Lateral melt","New ice","Welding","Wave break up"],'Location','southwest')
+text(lat(lon_pos,max(ra_idx)+2)+0.5,3.5,0,'MIZ','Rotation',0,'Color','red')
+dim = [.62 .13 .19 .8];
+annotation('rectangle',dim,'FaceColor','red','FaceAlpha',.1,'LineStyle','--')
+text(lat(lon_pos,max(aice_idx))-13,3.5,0,'Continous ice cover','Rotation',0)
+exportgraphics(f,'line_dafsd.pdf','ContentType','vector')
+%%
+f = figure;
+bar(dafsd_ra(lat_pos,:))
+xticklabels(["Lateral growth","Lateral melt","New ice","Welding","Wave break up"])
+ylabel('Change in $r_a$ [m/day]')
+ylim([-5,5])
+%exportgraphics(f,'bar_dafsd.pdf','ContentType','vector')
+
+
+%% Stresses
+clear dafsd_ra
+strairx(:,:) = data_format_sector(filename,"strairx",sector);
+strairy(:,:) = data_format_sector(filename,"strairy",sector);
+strocnx(:,:) = data_format_sector(filename,"strocnx",sector);
+strocny(:,:) = data_format_sector(filename,"strocny",sector);
+strintx(:,:) = data_format_sector(filename,"strintx",sector);
+strinty(:,:) = data_format_sector(filename,"strinty",sector);
+strcorx(:,:) = data_format_sector(filename,"strcorx",sector);
+strcory(:,:) = data_format_sector(filename,"strcory",sector);
+strtltx(:,:) = data_format_sector(filename,"strtltx",sector);
+strtlty(:,:) = data_format_sector(filename,"strtlty",sector);
+
+for i = 1:max(aice_idx)+5
+    strair(i) = sqrt(strairx(lon_pos,i).^2+strairy(lon_pos,i).^2);
+    strocn(i) = sqrt(strocnx(lon_pos,i).^2+strocny(lon_pos,i).^2);
+    strint(i) = sqrt(strintx(lon_pos,i).^2+strinty(lon_pos,i).^2);
+    strcor(i) = sqrt(strcorx(lon_pos,i).^2+strcory(lon_pos,i).^2);
+    strtlt(i) = sqrt(strtltx(lon_pos,i).^2+strtlty(lon_pos,i).^2);
+end
+
+str_data = [strair',strocn',strint',strcor',strtlt'];
+%% Stresses
+close all
+conFigure(11)
+f = figure;
+plot(lat(lon_pos,1:max(aice_idx)+5),str_data,'LineWidth',2)
+ylabel('Change in $r_a$ [m/day]')
+xlabel('Latitude [$^\circ$]','Interpreter','latex')
+ylim([0,0.1])
+%xline(lat(lon_pos,max(aice_idx)),'--')
+%xline(lat(lon_pos,min(swh_idx)),'--')
+%xline(lat(lon_pos,max(ra_idx)),'--')
+legend(["Lateral growth","Lateral melt","New ice","Welding","Wave break up"],'Location','northwest')
+text(lat(lon_pos,max(ra_idx)-2),-3.5,0,'Marginal ice zone','Rotation',0)
+dim = [.64 .13 .16 .8];
+annotation('rectangle',dim,'FaceColor','red','FaceAlpha',.1,'LineStyle','--')
+%text(lat(lon_pos,max(aice_idx))+0.5,-5,0,'Sea ice edge, $0.15$','Rotation',90)
+%exportgraphics(f,'line_dafsd.pdf','ContentType','vector')
+%%
+f = figure;
+bar(dafsd_ra(lat_pos,:))
+xticklabels(["Lateral growth","Lateral melt","New ice","Welding","Wave break up"])
+ylabel('Change in $r_a$ [m/day]')
+ylim([-5,5])
+%exportgraphics(f,'bar_dafsd.pdf','ContentType','vector')
+
+%%
+close all
+f = figure;
+scarloc 'taylor dome'
+[easting,northing] = ll2ps(-77.67,157.67);
+hypot(easting,northing)/1000;
+pathdistps([-90 -77.67],[0 157.67],'km');
+
+plotps(-77.67,157.67,'bo');
+[easting,northing] = ll2ps(-77.67,157.67);
+
+hold on
+plot(easting,northing,'rs')
+
+plotps([-90 -77.67],[0 157.67])
+
+mylat = [-89 -89.5 -88.3 -88 -88.5 -88.7];
+mylon = [-50 -20 64 -85 123 -140];
+myz = [-200 -115 -138 234 261 491];
+scatterps(mylat,mylon,40,myz,'filled')
+
+scarlabel({'South Pole','Taylor Dome'})
+
+box on
+mapzoomps('ne')
+graticuleps(-88:2:-76,-150:30:180)
+scalebarps
+idx = lat < 0;
+lat_south = lat(idx);
+lon_south = lon(idx);
+%[bed,lat,lon] = bedmachine_data('bed',xlim,ylim,'geo');
+pcolorps(lat_south,lon_south,fsdraddata(idx));
+%shadem(3,[225 50])
+%bedmachine('surface','contour',500:500:5000,'r')
 %% ITD
 % Sum a_{in} = 1
 dim = 3;
@@ -363,7 +595,7 @@ fsdrad_data(lon_pos,lat_pos,:)
 %% Plotting
 conFigure(10,1.5)
 % FSD histogram
-figure(1)
+f = figure;
 bar(1:Nf,fsd,'hist')
 xlabel('FSD radius (m)')
 ylabel('Fraction of sea ice area')
@@ -470,7 +702,7 @@ f = figure;
     %title(sprintf("FSTD at (%g S, %g E) %g cells south of the ice edge", lat(lon_pos,lat_pos),lon(lon_pos,lat_pos), edge(lon_pos) - lat_pos -1))
     ylabel('Fraction of sea ice area')
     %xline(8.5,'--')
-    exportgraphics(f,'fsd.pdf','ContentType','vector')
+    %exportgraphics(f,'fsd.pdf','ContentType','vector')
 
 %% ITD
 close all

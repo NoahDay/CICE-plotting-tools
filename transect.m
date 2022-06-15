@@ -66,7 +66,7 @@ lat_edges = 0;
 %nexttile
 for i = 1:length(ice_variable)
  %[lat,lon,row] = grid_read(grid);
- data(:,:,i) = data_format(filedir,ice_variable(i),row,lat,lon);
+ data(:,:,i) = data_format(filedir,ice_variable(i));
  [len,wid] = size(data);
  long_data_ice(i,:) = data(lon_transect,latit:-1:1,i);
  idx = isnan(long_data_ice(i,:));
