@@ -14,7 +14,8 @@ end
 case_name = '31freq';
 ticker = 1;
 SIC = 0.15; 
-filename = "/Users/noahday/github/cice-plotting-tools/cases/31freq/history/iceh.2008-07-30.nc";%/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
+filename = "/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/JRA55-do/1-4-0/JRA55_om2_1deg_03hr_forcing_2017.nc"%"/Users/noahday/GitHub/cice-dirs/input/CICE_data/ic/access-om2_1deg/iced.2019-01-01-00000.nc"%"/Users/noahday/GitHub/cice-dirs/runs/test/history/iceh.2005-01-24.nc";
+%"/Users/noahday/github/cice-plotting-tools/cases/31freq/history/iceh.2008-07-30.nc";%/Volumes/NoahDay5TB/cases/forcingnowaves/history/iceh.2005-07.nc";%"prra_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_196201010130-196212312230.nc";
 %strcat('cases/',case_name,"/history/iceh.",date,".nc");
 % '/Users/noahday/Gadi/2010/JRA55_03hr_forcing_2010.nc';%'grid/gridded_ww3.glob_24m.200501.nc'; 
 %filename = 'DATA/CESM/MONTHLY/ocean_forcing_clim_2D_gx1.20210330.nc';
@@ -22,6 +23,37 @@ filename = "/Users/noahday/github/cice-plotting-tools/cases/31freq/history/iceh.
 ncdisp(filename)
 % 
 grid = 'gx1';
+
+%% SWH
+close all
+conFigure(11,1.5)
+f = figure
+data(:,:,:) = ncread(filename,"spchmd");
+%lat = ncread(filename,"TLAT");
+%lon = ncread(filename,"TLON");
+lat = ncread(filename,"LAT");
+lon = ncread(filename,"LON");
+%data = data_format(filename,"wave_sig_ht");
+%idx = data < eps;
+%data(idx) = NaN;
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,data(:,:,1))
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+%exportgraphics(f,'swhcice.pdf','ContentType','vector')
 
 %% Ice age
 close all
@@ -51,6 +83,7 @@ a.Label.Interpreter = "latex";
 %title("Ice older than 6 months")
 %exportgraphics(f,'iage12monthnoforc.pdf','ContentType','vector')
 %% SWH
+filename = "/Users/noahday/GitHub/CICE-plotting-tools/cases/monthwim/history/iceh.2006-07.nc";
 close all
 conFigure(11,1.5)
 f = figure
@@ -71,7 +104,9 @@ a.Label.String = "Signficant wave height (m)";
 a.Label.Interpreter = "latex";
 %exportgraphics(f,'swhcice.pdf','ContentType','vector')
 
-
+idx = isnan(data);
+mean(data(~idx))
+%%
 f = figure
 data = data_format(filename,"peak_period");
 idx = data < eps;
@@ -89,6 +124,9 @@ setm(handlem('scaleruler'), ...
 a.Label.String = "Peak period (s)";
 a.Label.Interpreter = "latex";
 %exportgraphics(f,'ppdcice.pdf','ContentType','vector')
+
+idx = isnan(data);
+mean(data(~idx))
 %% Concentration of small floes
 close all
 clear data3d

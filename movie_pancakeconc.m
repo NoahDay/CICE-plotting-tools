@@ -3,6 +3,7 @@
 
 % Definition 1: Areal ice concentration in FSD cat 1 and ITD cat 1.
 % Definition 2: Areal ice concentration in FSD cat 1 and ITD cat 1/ aice.
+% Definition 2: Areal ice concentration in FSD cat 16 and ITD cat 5/ aice.
 %% Case info
 clear all
 clc
@@ -33,7 +34,7 @@ pancakeconc(:,:,:)= get_pancakes(pancake_def,n_files,filenames,SIC,plot_type);
 
 % Plotting
 clear writerObj
-video_name = strcat("pancake_def2", '_', "monthwim", '_', '2022_06_15', '.mp4');
+video_name = strcat("pan_def2", '_', "monthwim", '_', '2022_06_17', '.mp4');
 writerObj = VideoWriter(video_name,'MPEG-4');
 set(writerObj,'FrameRate',n_files/20); % 0.5 = 2 seconds per frame
 %writerObj.Quality = 70;
@@ -44,13 +45,12 @@ open(writerObj);
 clear C2
 month_strings = ["Jan. 2005","Feb. 2005","Mar. 2005","Apr. 2005","May 2005","June 2005","July 2005","Aug. 2005","Sep. 2005","Oct. 2005","Nov. 2005","Dec. 2005","Jan. 2006","Feb. 2006","Mar. 2006","Apr. 2006","May 2006","June 2006","July 2006","Aug. 2006","Sep. 2006","Oct. 2006","Nov. 2006","Dec. 2006","Jan. 2007","Feb. 2007","Mar. 2007","Apr. 2007","May 2007","June 2007","July 2007","Aug. 2007","Sep. 2007","Oct. 2007","Nov. 2007","Dec. 2007","Jan. 2008","Feb. 2008","Mar. 2008","Apr. 2008","May 2008","June 2008","July 2008","Aug. 2008","Sep. 2008","Oct. 2008","Nov. 2008","Dec. 2008","Jan. 2009","Feb. 2009","Mar. 2009","Apr. 2009","May 2009","June 2009","July 2009","Aug. 2009","Sep. 2009","Oct. 2009","Nov. 2009","Dec. 2009"];
 for i = 1:n_files
-    close all
+    basicwaitbar(i,n_files,"Plotting and saving")
+    
    % Plot the map
    conFigure(30,1.1)
    %set(gcf, 'Position',  [0, 0, 1782, 1830])
    f = figure;
-
-
    if plot_type == "univariate"
        [p,a] = map_plot(pancakeconc(:,:,i),"aice",sector);
        %C = colormap(cool(20));
@@ -69,12 +69,14 @@ for i = 1:n_files
        C = cmocean('balance',20);
        colormap(C)
    end
-   a.Label.String = "Pancake ice concentration";
+   % INCLUDE IF DEF = x then the label is y
+   a.Label.String = "Pancake ice concentration/aice";
    title(month_strings(i),'Interpreter','latex')
     figname = sprintf('image%d.png', i); 
     filedir = sprintf('/Users/%s/GitHub/CICE-plotting-tools/frames', user);
     %exportgraphics(f,figname,'ContentType','vector')
     saveas(f,fullfile(filedir, figname));
+    close(f)
 end    
        
 % iterate over each image
@@ -206,6 +208,18 @@ function [data] = get_pancakes(definition,n_files,filenames,SIC,plot_type)
                 afsdn(:,:,:,:) = data_format_sector(filenames(i,:),"afsdn",sector);
                 % Define pancakes as the thinnest NCAT and smallest NFSD
                 temp(:,:) =  afsdn(:,:,1,1).*NFSD(1)./aice(:,:);
+                % apply mask
+                temp(~ice_mask) = NaN;
+                data(:,:,i) = temp;
+            end
+        elseif definition == 3 % Largest FSD
+            for i = 1:n_files
+                NFSD = ncread(filenames(1,:),"NFSD");
+                aice = data_format_sector(filenames(i,:),"aice",sector);
+                ice_mask = aice > SIC;
+                afsdn(:,:,:,:) = data_format_sector(filenames(i,:),"afsdn",sector);
+                % Define pancakes as the thinnest NCAT and smallest NFSD
+                temp(:,:) =  afsdn(:,:,end,1).*NFSD(end)./aice(:,:);
                 % apply mask
                 temp(~ice_mask) = NaN;
                 data(:,:,i) = temp;
