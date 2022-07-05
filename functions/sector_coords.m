@@ -30,6 +30,33 @@ function coords = sector_coords(sector)
         coords = [];
     elseif sector == "SH" % Southern hemisphere
         coords = [-45,0;-89,0;-45,365;-89,365]; %(NW;SW,NE,SE)
+    elseif sector == "vichi" % Coords from Vichi et al. (2019) Figure 1.
+        max_lat = -40;
+        min_lon = 365-20;
+        max_lon = 40;
+        min_lat = -65;
+        coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
+    elseif sector == "vichi1" % Coords from Vichi et al. (2019) Figure 1.
+        max_lat = -40;
+        min_lon = 365-20;
+        %max_lon = 40;
+        max_lon = 365;
+        min_lat = -65;
+        coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
+    elseif sector == "vichi2" % Coords from Vichi et al. (2019) Figure 1.
+        max_lat = -40;
+        min_lon = 1;
+        max_lon = 40;
+        min_lat = -65;
+        coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
+    elseif sector == "vichi3" % Coords from Vichi et al. (2019) Figure 3.
+        max_lat = -55;
+        min_lon = 5;
+        max_lon = 40;
+        min_lat = -75;
+        coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
+    else
+        error("ND: no sector specified")
     end
 end
 %------------- END OF CODE --------------
