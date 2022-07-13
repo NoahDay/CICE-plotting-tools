@@ -11,7 +11,7 @@ clear all
 close all
 addpath functions
 addpath packages/bedmap2_toolbox_v4
-filename = 'cases/forcingoff/history/iceh.2005-09-30.nc';
+filename = '/Users/noahday/GitHub/CICE-plotting-tools/cases/pancake_tracer/history/iceh.2005-09.nc';
 % Read the header
 ncdisp(filename)
 % 
@@ -38,7 +38,7 @@ year = 2005;
 date = sprintf('%d-0%d-%d', year, month_init, day);
 
 figcount = 0;
-filename = strcat(filedir,"/history/iceh.",date,".nc");
+%filename = strcat(filedir,"/history/iceh.",date,".nc");
 
 [lat, lon, row] = grid_read(grid);
 
@@ -263,7 +263,7 @@ latex(['Mean',vpa(round(mean(aice_vec),5)), vpa(round(mean(error_vec),5));...
     ])
 
 
-%% 3. Integrate afsdn to get aicen - This isnt working
+%% 3. Integrate afsdn to get aicen 
 close all
 aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
 afsdn_data(:,:,:,:) = data_format_sector(filename,"afsdn",sector);
@@ -1177,6 +1177,99 @@ num_dafsd_weld = numberfsdconverter(filename,dafsd_weld_data);
 num_dafsd_wave = numberfsdconverter(filename,dafsd_wave_data);
 
 plot(1:16,[num_dafsd_latm',num_dafsd_latg',num_dafsd_newi',num_dafsd_weld',num_dafsd_wave'])
+
+%% 9. Perimeter density comparison with Bateson et al. THIS DOESNT WORK, CICE DOESNT OUTPUT THE PERIMETER FSD
+% Get the NFSD from AFSDN
+%close all
+clear xticks yticks f5 icemask nfsd trcrn
+aice_data = data_format_sector(filename,"aice",sector);
+icemask0 = aice_data > -eps;
+icemask = aice_data > 0.01;
+icemask90 = aice_data > 0.9;
+fsdperim_data(:,:,:,:) = data_format_sector(filename,"fsdperim",sector);
+afsd_data(:,:,:) = data_format_sector(filename,"afsd",sector);
+aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
+tarea = data_format(filename,"tarea");
+
+[nx,ny,nf,nc] = size(afsdn_data);
+%icemask = icemask0;
+
+
+% Make a mask for the Southern Hemisphere
+% Coordinates
+ocean_mask = data_format(filename,'tmask');
+coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE)
+for i = 1:4
+    [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+end
+sector_mask = false(nx,ny);
+for i = 0:lat_out(1)-lat_out(2) % Cycle through latitudes
+    sector_mask(lon_out(1):lon_out(3), i+1) = true;
+end
+sector_mask = logical(sector_mask.*ocean_mask);
+
+
+
+
+% for k = 1:nf
+%     temp = fsdperim_data(:,:,k);
+%     nfsd_vec(k) = mean(temp(sector_mask)); % Take the cells over the sector
+%     temp = nfsd2(:,:,k);
+%     nfsd_vecai(k) = mean(temp(sector_mask)); % Take the cells over the sector
+%     temp = nfsd3(:,:,k);
+%     nfsd_vecint(k) = mean(temp(sector_mask)); % Take the cells over the sector
+% end
+%
+[N,edges] = histcounts(fsdperim_data);
+%num_dafsd = numberfsdconverter(filename,afsd_data);
+
+%roach_data_sep = [0.3*10^4, 3*10^1, 10^0, 0.8*10^(-1), 0.9*10^(-2), 1.2*10^(-3), 0.5*10^(-4), 0.7*10^(-5), 10^(-6), 1.3*10^(-7), 10^(-7), 10^(-4)];
+
+f1 = figure(1);
+
+t5 = tiledlayout(1,1);%(5,2);
+t5.TileSpacing = 'compact';
+cust_bounds =  max(NFSD);
+xtick = 10.^(0:6);
+xticklab = cellstr(num2str(round(log10(xtick(:))), '$10^{%d}$'));
+ytick = 10.^(-9:2:13);
+yticklab = cellstr(num2str(round(log10(ytick(:))), '$10^{%d}$'));
+
+conFigure(11)
+p = plot(log10(edges(2:end)),log10(N.*10^3),'-s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);
+%p = bar(log10(edges(2:end)),log10(N.*10^3))
+%plot(log10(NFSD(1:12)),log10(roach_data_sep),'-o','MarkerFaceColor', 'k','Color', 'k','LineWidth',3)
+%plot(log10(NFSD(1:12)),log10(nfsd_vec2),'--s','MarkerFaceColor', [0 0.4470 0.7410],'LineWidth',3);  
+%plot(log10(NFSD),log10(num_dafsd),'--s','LineWidth',3);  
+%plot(log10(NFSD),log10(nfsd_vecai),':s','MarkerFaceColor', [0 0.4470 0.2],'LineWidth',3);
+%plot(log10(NFSD),log10(nfsd_vecint),':o','MarkerFaceColor', [0 0.8 0.2],'LineWidth',10);
+ legend({'September','aice','int'})
+grid on
+%title(sprintf("July"))
+xticks(log10(xtick))
+xticklabels(xticklab)
+xlabel('Floe radius (m)')
+yticks(log10(ytick))
+yticklabels(yticklab)
+%ylim([-9,13])
+ylabel('Perimenter density (m$^{-1}$)')
+%xlim([0,3*10^3]);
+hold off
+%f1.Position = [1500 800 600 500];
+%exportgraphics(f1,'numdistlog.pdf','ContentType','vector')
+
+
+
+
+
+
+
+
+
+
+
+
+
 %% Functions
 function [p] = plot_error(fsdrad_transformed_vec,fsdrad_vec)
     t = tiledlayout(2,2);

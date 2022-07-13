@@ -73,6 +73,31 @@ if isstring(sector)
             else
                 caxis(clims)
             end
+    elseif sector == "SHplainnocbar"     
+        w = worldmap('world');
+            axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+            setm(w, 'Origin', [-90 0 0]);
+            setm(w, 'maplatlimit', [-90,-55]);
+            setm(w, 'maplonlimit', [-180,180]);
+            setm(w, 'meridianlabel', 'off')
+            setm(w, 'parallellabel', 'off')
+            setm(w, 'mlabellocation', 60);
+            setm(w, 'plabellocation', 10);
+            setm(w, 'mlabelparallel', -45);
+            setm(w, 'mlinelimit', [-90 -40]);
+            setm(w, 'grid', 'off');
+            %setm(w, 'frame', 'on');
+            setm(w, 'labelrotation', 'on')
+            pcolorm(lat,lon,data)
+            land = shaperead('landareas', 'UseGeoCoords', true);
+            geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+            a = [];
+            if ~exist('clims', 'var')
+                % Set sector to world by default
+                %caxis(colorlims(variable));
+            else
+                caxis(clims)
+            end
     elseif sector == "vichi"     
         coords = sector_coords(sector);
         w = worldmap('world');
