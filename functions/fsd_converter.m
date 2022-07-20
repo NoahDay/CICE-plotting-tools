@@ -222,6 +222,18 @@ elseif input == "afsd"
        % between r and r+dr and satisfies sum(L(r,h)) = 1
        processed_data = input.*floe_binwidth;
 
+   elseif output == "aice"
+    % Convert from afsd to aice
+    for j = 1:ny
+        for i = 1:nx
+            work(i,j) = 0;
+            for k = 1:Nf
+                 work(i,j) = work(i,j) + ...
+                       raw_data(i,j,k)*floe_binwidth(k);
+            end
+        end
+    end
+    processed_data = work;
     end
     
     
