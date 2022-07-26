@@ -470,4 +470,36 @@ w = worldmap('world');
     colorbar
     %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
     
+  %%
+close all
+filename = '/Users/noahday/Maths1/iceh.2005-01-01.nc';
+
+lat = ncread(filename,"ULAT");
+lon = ncread(filename,"ULAT"); 
+[lat,lon,row] = grid_read("gx1");
+swh = data_format(filename,"wave_sig_ht");
+aice = data_format(filename,"aice");
+idx = aice > 0.01;
+swh(~idx) = 0;
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,swh)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    cmocean('balance',31)
+    caxis([-5,5])
+
+
+    %%
     
