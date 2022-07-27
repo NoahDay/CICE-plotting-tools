@@ -1,4 +1,4 @@
-function [floe_binwidth, floe_rad_l, floe_rad_h] = cice_parameters(NFSD)
+function [floe_binwidth, floe_rad_l, floe_rad_h, floe_area_binwidth] = cice_parameters(NFSD)
 %CICE_PARAMETERS - Given a FSD bins centres vector will return the binwidth
 %
 % Syntax:  [floe_binwidth, floe_rad_l, floe_rad_h] = cice_parameters(NFSD)
@@ -31,11 +31,19 @@ min_floe = 6.65000000e-02;
 fsd_lims(1) = min_floe;
 for i = 1:numel(NFSD)
     fsd_lims(i+1) = 2*NFSD(i)-fsd_lims(i);
+    floe_rad_c(i) = NFSD(i);
 end
 
 floe_rad_l = fsd_lims(1:end-1);
 floe_rad_h = fsd_lims(2:end);
 floe_binwidth = floe_rad_h - floe_rad_l;
+
+floeshape = 0.66;
+floe_area_l = 4*floeshape*floe_rad_l.^2;
+floe_area_c = 4*floeshape*floe_rad_c.^2;
+floe_area_h = 4*floeshape*floe_rad_h.^2;
+
+floe_area_binwidth = floe_area_h - floe_area_l;
 %------------- END OF CODE --------------
 
 end

@@ -477,7 +477,7 @@ filename = '/Users/noahday/Maths1/iceh.2005-01-01.nc';
 lat = ncread(filename,"ULAT");
 lon = ncread(filename,"ULAT"); 
 [lat,lon,row] = grid_read("gx1");
-swh = data_format(filename,"wave_sig_ht");
+swh = data_format_sector(filename,"wave_sig_ht","SH");
 aice = data_format(filename,"aice");
 idx = aice > 0.01;
 swh(~idx) = 0;
@@ -498,7 +498,7 @@ w = worldmap('world');
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
     cmocean('balance',31)
-    caxis([-5,5])
+    caxis([-3,3])
 
 
     %%
