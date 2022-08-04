@@ -1,6 +1,6 @@
  function [lat,lon,row] = grid_read(grid)
  dim = 2;
-    if grid == 'gx3'
+    if grid == "gx3"
         row = 11;
 
         ulat = ncread('grid/gx3/grid_gx3.nc','ulat');
@@ -13,10 +13,10 @@
         lat = rearrange_matrix(lat,row,dim);
         lon = rearrange_matrix(lon,row,dim);
 
-    elseif grid == "om2_1deg"
+    elseif grid == "om2"
     % Grid type from COSIMA
-        lat = ncread('grid/om2_1deg/om2_1deg_basinmask_yt_xt.nc','yt_ocean');
-        lon = ncread('grid/om2_1deg/om2_1deg_basinmask_yt_xt.nc','xt_ocean');
+        lat = ncread('grid/om2/icegrid.nc','tlat')*180/pi;
+        lon = mod(ncread('grid/om2/icegrid.nc','tlon')*180/pi,360);
         row = 1;
     else
         row = 37;

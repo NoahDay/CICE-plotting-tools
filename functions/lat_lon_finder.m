@@ -13,6 +13,8 @@ function [lat_out,lon_out] = lat_lon_finder(latit,longi,lat,lon)
     lat_out = find(dummy_lat(1,:));
     lon_vec = lon(:,lat_out);
     val2 = min(abs(lon_vec - longi));
-    lon_out = find(abs(lon_vec - longi) == val2);     
+    lon_out = find(abs(lon_vec - longi) == val2);  
+
+    lon_out = lon_out(1);
 end
 

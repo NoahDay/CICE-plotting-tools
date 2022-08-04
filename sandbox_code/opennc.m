@@ -472,15 +472,15 @@ w = worldmap('world');
     
   %%
 close all
-filename = '/Users/noahday/Maths1/iceh.2005-01-01.nc';
+filename = '/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh_inst.2005-01-01-07200.nc';
 
 lat = ncread(filename,"ULAT");
-lon = ncread(filename,"ULAT"); 
-[lat,lon,row] = grid_read("gx1");
-swh = data_format_sector(filename,"wave_sig_ht","SH");
+lon = ncread(filename,"ULON"); 
+[latgx1,longx1,row] = grid_read("gx1");
+swh = data_format(filename,"wave_sig_ht"); %data_format_sector(filename,"wave_sig_ht","SH");
 aice = data_format(filename,"aice");
 idx = aice > 0.01;
-swh(~idx) = 0;
+%swh(~idx) = 0;
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
     setm(w, 'Origin', [-90 0 0]);
@@ -502,4 +502,144 @@ w = worldmap('world');
 
 
     %%
-    
+close all
+conFigure(30,3)
+figure
+subplot(1,3,1)
+filename = '/Users/noahday/GitHub/CICE-plotting-tools/cases/pancake_tracer/history/iceh.2005-09.nc';
+[lat,lon,row] = grid_read("gx1");
+swh2 = data_format(filename,"wave_sig_ht"); %data_format_sector(filename,"wave_sig_ht","SH");
+aice = data_format(filename,"aice");
+idx = aice > 0.01;
+swh2(~idx) = 0;
+
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,swh2)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    cmocean('balance',31)
+    caxis([-3,3])
+     title('Before')
+
+
+
+subplot(1,3,2)
+filename = '/Users/noahday/Maths1/iceh.2005-09.nc';
+
+
+
+[lat,lon,row] = grid_read("gx1");
+swh = data_format(filename,"wave_sig_ht"); %data_format_sector(filename,"wave_sig_ht","SH");
+aice = data_format(filename,"aice");
+idx = aice > 0.01;
+swh(~idx) = 0;
+
+
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,swh)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    cmocean('balance',31)
+    caxis([-3,3])
+    title('After')
+
+
+subplot(1,3,3)
+
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,swh-swh2)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    c = colorbar;
+    cmocean('balance',31)
+    caxis([-3,3])
+    c.Label.String = "Signficant wave height [m]";
+    title('Difference (After - Before)')
+
+
+
+
+
+figure
+subplot(1,2,1)
+idx = swh>eps;
+swh(~idx) = NaN;
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,swh)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    cmocean('balance',31)
+    caxis([-3,3])
+    title('New thresholds')
+
+
+subplot(1,2,2)
+idx = swh2>eps;
+swh2(~idx) = NaN;
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,swh2)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    c = colorbar;
+    cmocean('balance',31)
+    caxis([-3,3])
+    c.Label.String = "Signficant wave height [m]";
+    title('Old thresholds')

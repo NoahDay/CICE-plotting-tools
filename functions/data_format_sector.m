@@ -23,7 +23,7 @@ addpath functions
         lat = ncread(filedir,"ULAT");
         lon = ncread(filedir,"ULON");
     else
-        error('ND: Unspecified grid type');
+        error('ND: Unspecified grid configuration');
     end
     data_size = info.Size;
     idx = (data_size == 1);
@@ -36,6 +36,13 @@ addpath functions
 
         lon = [zeros(1,384);lon];
         lat = [lat(1,:); lat];
+    elseif data_size(1) == 360 && data_size(2) == 300
+       % OM2 grid
+        row = 281;
+        lat = rearrange_matrix(lat,row,2);
+        lon = rearrange_matrix(lon,row,2);
+ 
+        %error('ND: om2.')
     else
         error('ND: Unrecognised grid size.')
     end
@@ -49,8 +56,12 @@ addpath functions
             % Export a grid of the the specific sector
             % Coordinates
             coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE)
+
+            clear lat_out lon_out
+            lat_out = zeros(1,4);
+            lon_out = zeros(1,4);
             for i = 1:4
-                [lat_out(i),lon_out(i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
+                [lat_out(1,i),lon_out(1,i)] = lat_lon_finder(coords(i,1),coords(i,2),lat,lon);
             end
             [len,wid] = size(data);
             sector_data = zeros(len,wid);
