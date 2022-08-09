@@ -23,18 +23,18 @@ end
 
 NCAT = ncread(filename,"NCAT");
 NFSD = ncread(filename,"NFSD");
-floe_rad_c = NCAT;
+floe_rad_c = NFSD;
 
 Nf = numel(NFSD);
 Nc = numel(NCAT);
 
 % Set up
-lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
-floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
-floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
-floe_binwidth = floe_rad_h - floe_rad_l;
-floe_rad_c = (floe_rad_l+floe_rad_h)/2;
-
+%lims = [6.65000000e-02,   5.31030847e+00,   1.42865861e+01,   2.90576686e+01, 5.24122136e+01,   8.78691405e+01,   1.39518470e+02,   2.11635752e+02, 3.08037274e+02,   4.31203059e+02,   5.81277225e+02,   7.55141047e+02, 9.45812834e+02,   1.34354446e+03,   1.82265364e+03,   2.47261361e+03,  3.35434988e+03];
+%floe_rad_l = [lims(1:Nf)]; % Floe radius lower bound
+%floe_rad_h = lims(2:Nf+1); % Floe radius higher bound
+%floe_binwidth = floe_rad_h - floe_rad_l;
+%floe_rad_c = (floe_rad_l+floe_rad_h)/2;
+ [floe_binwidth, floe_rad_l, floe_rad_h, floe_area_binwidth] = cice_parameters(NFSD);
 % Grab the concentration data
 if output == "aice"
     nx = 321;
@@ -54,8 +54,8 @@ end
 
 
 
-% Convert the data
-if input == "afsdn"
+% Convert the data ------------------------------------------------------------
+if input == "afsdn" 
    if output == "afsdn"
        % Do nothing
         processed_data = raw_data;
@@ -140,7 +140,7 @@ if input == "afsdn"
        % Get tracer array
        aicen_data(:,:,:) = data_format_sector(filename,"aicen",sector);
        afsdn = data_format_sector(filename,"afsdn",sector);
-%       error(sprintf('%d\n',size(afsdn)))
+      
         for i = 1:nx
             for j = 1:ny
                 for k = 1:Nf
@@ -150,6 +150,7 @@ if input == "afsdn"
                 end
             end
         end
+         %error(sprintf('%d\n',size(trcrn)))
         % Calculate nfstd
         alpha = 0.66; % Dimensionless
         floe_area_c = 4*alpha*(floe_rad_c*(10^(-3))).^2; % Area: (m^2)
@@ -157,6 +158,7 @@ if input == "afsdn"
             for j = 1:ny
                 for k = 1:Nf
                     for n = 1:Nc
+                        %error(sprintf('%d\n',size(floe_area_c)))
                         nfstd(i,j,k,n) = trcrn(i,j,k,n)/floe_area_c(k); % Dimensionless: something / Length
                     end
                 end
@@ -193,7 +195,7 @@ if input == "afsdn"
    end
 
    
-   % AFSD input
+   % AFSD input ----------------------------------------------------------------------
 elseif input == "afsd"
     if output == "afsdn"
        % Not possible
@@ -234,10 +236,30 @@ elseif input == "afsd"
         end
     end
     processed_data = work;
+    
+
+    elseif output == "n_fsd"
+        alpha = 0.66; % Rothrock and Thorndike (1984)
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:Nf
+                    trcrn(i,j,k) = raw_data(i,j,k).*floe_binwidth(k)*(10^(-3))./aice(i,j); % something x Length: (something m)
+                end
+            end
+        end
+        % Calculate nfstd
+        alpha = 0.66; % Dimensionless
+        floe_area_c = 4*alpha*(floe_rad_c*(10^(-3))).^2; % Area: (m^2)
+        for i = 1:nx
+            for j = 1:ny
+                for k = 1:Nf
+                    nfstd(i,j,k) = trcrn(i,j,k)/floe_area_c(k); % Dimensionless: something / Length
+                end
+            end
+        end    
+        processed_data = nfstd;
     end
-    
-    
-    % FSDRAD input
+    % FSDRAD input ------------------------------------------------------------
 elseif input == "fsdrad"
     if output == "fsd"
         % Convert from fsdrad to areal FSD

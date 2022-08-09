@@ -34,15 +34,15 @@ for i = 1:n_files
     afsd = data_format_sector(filenames(i,:),"afsd",sector);
 
     % Integrate over space
-    int.latm = integrate_dafsd_hemi(dafsd.latm, aice, floe_binwidth);
-    int.latg = integrate_dafsd_hemi(dafsd.latg, aice, floe_binwidth);
-    int.newi = integrate_dafsd_hemi(dafsd.newi, aice, floe_binwidth);
-    int.weld = integrate_dafsd_hemi(dafsd.weld, aice, floe_binwidth);
-    int.wave = integrate_dafsd_hemi(dafsd.wave, aice, floe_binwidth);
-    data(:,:,i) = [int.latm; int.latg; int.newi; int.weld; int.wave];
+    int.latm(i,:) = integrate_dafsd_hemi(dafsd.latm, aice, floe_binwidth);
+    int.latg(i,:) = integrate_dafsd_hemi(dafsd.latg, aice, floe_binwidth);
+    int.newi(i,:) = integrate_dafsd_hemi(dafsd.newi, aice, floe_binwidth);
+    int.weld(i,:) = integrate_dafsd_hemi(dafsd.weld, aice, floe_binwidth);
+    int.wave(i,:) = integrate_dafsd_hemi(dafsd.wave, aice, floe_binwidth);
+    data(:,:,i) = [int.latm(i,:); int.latg(i,:); int.newi(i,:); int.weld(i,:); int.wave(i,:)];
     int.afsd(i,:) = integrate_afsd_hemi(afsd, aice, floe_binwidth);
 end
-%% Plotting change in afsd due to each process
+%% Plotting change in afsd due to each process [dimless]
 close all
 colour.latm = [0.8500, 0.3250, 0.0980];
 colour.latg = [0.4660, 0.6740, 0.1880];
@@ -54,10 +54,11 @@ month_label = {'J','F','M','A','M','J','J','A','S','O','N','D','J','F','M','A','
 fig = figure;
 conFigure(11)
 clear temp
-for i = 1:n_files
-    temp(:,:) = data(:,:,i);
+year_idx = 12;
+for i = 1:11
+    temp(:,:) = data(:,:,i+year_idx);
     [len,wid] = size(temp);
-    subplot(2,6,i)
+    subplot(3,6,i)
     b = bar(1:length(NFSD),temp,'stacked');
     b(1).FaceColor = colour.latm;
     b(2).FaceColor = colour.latg;
@@ -70,7 +71,7 @@ for i = 1:n_files
     
 end
 i = i + 1;
-subplot(2,6,i)
+subplot(3,6,i)
  b = bar(1:length(NFSD),nan(len,wid),'stacked');
     b(1).FaceColor = colour.latm;
     b(2).FaceColor = colour.latg;
@@ -85,6 +86,54 @@ han.Title.Visible='on';
 han.XLabel.Visible='on';
 han.YLabel.Visible='on';
 ylabel(han,'Change in SIC [\%/day]');
+xlabel(han,'Floe size categories');
+%title(han,'yourTitle');
+
+%% Plotting change in afsd due to each process [1/m]
+close all
+colour.latm = [0.8500, 0.3250, 0.0980];
+colour.latg = [0.4660, 0.6740, 0.1880];
+colour.newi = [0.9290, 0.6940, 0.1250];
+colour.weld = [0.3010, 0.7450, 0.9330];
+colour.wave = [0, 0.4470, 0.7410];
+ymax = 0.002;%max(max(abs(sum(data))))*1.2;
+month_label = {'J','F','M','A','M','J','J','A','S','O','N','D','J','F','M','A','M','J','J','A','S','O','N','D'};
+fig = figure;
+conFigure(11)
+clear temp
+year_idx = 12;
+for i = 1:12
+    temp(:,:) = data(:,:,i+year_idx);
+    temp = temp./floe_binwidth;
+    [len,wid] = size(temp);
+    subplot(3,6,i)
+    b = bar(1:length(NFSD),temp,'stacked');
+    b(1).FaceColor = colour.latm;
+    b(2).FaceColor = colour.latg;
+    b(3).FaceColor = colour.newi;
+    b(4).FaceColor = colour.weld;
+    b(5).FaceColor = colour.wave;
+    title(month_label(i))
+
+    ylim([-ymax,ymax])
+    
+end
+i = i + 1;
+subplot(3,6,i)
+ b = bar(1:length(NFSD),nan(len,wid),'stacked');
+    b(1).FaceColor = colour.latm;
+    b(2).FaceColor = colour.latg;
+    b(3).FaceColor = colour.newi;
+    b(4).FaceColor = colour.weld;
+    b(5).FaceColor = colour.wave;
+axis off
+legend('Lat. melt','Lat. growth','New floes','Welding','Breakup','Orientation','vertical','Location','west')
+
+han=axes(fig,'visible','off'); 
+han.Title.Visible='on';
+han.XLabel.Visible='on';
+han.YLabel.Visible='on';
+ylabel(han,'Change in FSD [m$^{-1}$day$^{-1}$]');
 xlabel(han,'Floe size categories');
 %title(han,'yourTitle');
 
@@ -104,6 +153,88 @@ for i = 1:n_files
     title(month_label(i))
     xticklabels(round(NFSD))
     ylim([0,ymax])
+    
+end
+han=axes(fig,'visible','off'); 
+han.Title.Visible='on';
+han.XLabel.Visible='on';
+han.YLabel.Visible='on';
+ylabel(han,'Fraction of SIC');
+xlabel(han,'Floe radius [m]');
+%title(han,'yourTitle');
+%% Changes in newi over a year
+close all
+ymax = max(max(abs(int.newi(:,:))))*1.2;
+month_label = {'J','F','M','A','M','J','J','A','S','O','N','D','J','F','M','A','M','J','J','A','S','O','N','D'};
+conFigure(14.5,5)
+fig = figure;
+
+clear temp
+for i = 1:12 % Month index
+    temp(:,:) = int.newi(i,:); % Each month
+    [len,wid] = size(temp);
+    subplot(2,6,i)
+    b = bar(1:length(NFSD),temp);
+    b.FaceColor = colour.newi;
+    title(month_label(i))
+    xticklabels(round(NFSD))
+    ylim([-ymax,ymax])
+    
+end
+han=axes(fig,'visible','off'); 
+han.Title.Visible='on';
+han.XLabel.Visible='on';
+han.YLabel.Visible='on';
+ylabel(han,'Fraction of SIC');
+xlabel(han,'Floe radius [m]');
+%title(han,'yourTitle');
+
+
+
+%% Changes in welding over a year
+close all
+ymax = max(max(abs(int.weld(:,:))))*1.2;
+month_label = {'J','F','M','A','M','J','J','A','S','O','N','D','J','F','M','A','M','J','J','A','S','O','N','D'};
+conFigure(14.5,5)
+fig = figure;
+
+clear temp
+for i = 1:12 % Month index
+    temp(:,:) = int.weld(i,:); % Each month
+    [len,wid] = size(temp);
+    subplot(2,6,i)
+    b = bar(1:length(NFSD),temp);
+    b.FaceColor = colour.weld;
+    title(month_label(i))
+    xticklabels(round(NFSD))
+    ylim([-ymax,ymax])
+    
+end
+han=axes(fig,'visible','off'); 
+han.Title.Visible='on';
+han.XLabel.Visible='on';
+han.YLabel.Visible='on';
+ylabel(han,'Fraction of SIC');
+xlabel(han,'Floe radius [m]');
+%title(han,'yourTitle');
+
+%% Changes in wave over a year
+close all
+ymax = max(max(abs(int.wave(:,:))))*1.2;
+month_label = {'J','F','M','A','M','J','J','A','S','O','N','D','J','F','M','A','M','J','J','A','S','O','N','D'};
+conFigure(14.5,5)
+fig = figure;
+
+clear temp
+for i = 1:12 % Month index
+    temp(:,:) = int.wave(i,:); % Each month
+    [len,wid] = size(temp);
+    subplot(2,6,i)
+    b = bar(1:length(NFSD),temp);
+    b.FaceColor = colour.wave;
+    title(month_label(i))
+    xticklabels(round(NFSD))
+    ylim([-ymax,ymax])
     
 end
 han=axes(fig,'visible','off'); 
@@ -133,7 +264,7 @@ for i = 1:n_files
     temp(:,i) = data(:,1,i);
 end
     
-b = bar(1:12,temp,"stacked");
+b = bar(1:12,temp(:,13:24),"stacked");
 b(1).FaceColor = colour.latm;
 b(2).FaceColor = colour.latg;
 b(3).FaceColor = colour.newi;
@@ -176,7 +307,8 @@ caxis([0,850])
 
 %%
 close all
-i = 9;
+i = 21;
+sector = "SH";
 conFigure(13)
 dafsd_newi = data_format_sector(filenames(i,:),"dafsd_newi",sector);
 dafsd_newi12(:,:) = dafsd_newi(:,:,12).*floe_binwidth(12);
@@ -213,13 +345,30 @@ caxis([0,850])
 
 
 afsdn = data_format_sector(filenames(i,:),"afsdn","SH");
-afsd1(:,:) = afsd(:,:,1,1);
+afsd1(:,:) = afsdn(:,:,1,1);
 idx = aice > 0.1;
 afsd1(~idx) = NaN;
 f = figure;
 [w, a, ~] = map_plot(afsd1.*floe_binwidth(1)./aice,"aice","SHplain"); 
-a.Label.String = 'Proportion of pancake ice';
+a.Label.String = 'Proportion of smallest floe size and thickness';
 exportgraphics(f,'pancakeprop.pdf','ContentType','vector')
+
+
+
+afsd = data_format_sector(filenames(i,:),"afsd","SH");
+afsd1(:,:) = afsd(:,:,1);
+idx = aice > 0.1;
+afsd1(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd1.*floe_binwidth(1)./aice,"aice","SHplain"); 
+a.Label.String = 'Proportion of smallest floe size';
+exportgraphics(f,'smallprop.pdf','ContentType','vector')
+%%
+pan_prop = afsd1.*floe_binwidth(1)./aice;
+
+f = figure;
+[w, a, ~] = map_plot(afsd1.*floe_binwidth(1)./aice,"aice","SHplain"); 
+a.Label.String = 'Proportion of pancake ice';
 
 %% Functions
 function [data_out] = integrate_dafsd_hemi(dafsd,aice,floe_binwidth)

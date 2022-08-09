@@ -55,6 +55,12 @@ function coords = sector_coords(sector)
         max_lon = 40;
         min_lat = -75;
         coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
+    elseif sector == "toyota2016" % Coords from Vichi et al. (2019) Figure 3.
+        max_lat = -55;
+        min_lon = 105;
+        max_lon = 130;
+        min_lat = -75;
+        coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
     else
         error("ND: no sector specified")
     end

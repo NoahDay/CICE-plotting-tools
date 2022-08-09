@@ -48,3 +48,64 @@ w = worldmap('world');
     colorbar
     %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
     caxis([0,100])
+
+%%
+clear all; close all; clc
+addpath functions
+filename = "/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh_inst.2005-01-01-03600.nc";
+[lat,lon] = grid_read("om2");
+
+sst = data_format(filename, "uocn");
+conFigure(30)
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,sst)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    caxis([-1,1])
+
+
+%%
+clear all; close all; clc
+addpath functions
+filename = "/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/ocean/ocean_output2017.nc";
+%[lat,lon] = grid_read("om2");
+
+data = ncread(filename, "u");
+lat = ncread(filename, "yu_ocean");
+lon = ncread(filename, "xu_ocean");
+data1d(:,:) = data(:,:,1)';
+
+conFigure(30)
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,data1d)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    %geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    %caxis([120,130])
