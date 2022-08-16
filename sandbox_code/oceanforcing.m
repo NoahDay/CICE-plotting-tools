@@ -52,10 +52,10 @@ w = worldmap('world');
 %%
 clear all; close all; clc
 addpath functions
-filename = "/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh_inst.2005-01-01-03600.nc";
-[lat,lon] = grid_read("om2");
+filename = "/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh.2005-01-01.nc";
+[lat_cice,lon_cice] = grid_read("om2");
 
-sst = data_format(filename, "uocn");
+sst = data_format(filename, "vocn");
 conFigure(30)
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
@@ -70,24 +70,26 @@ w = worldmap('world');
     setm(w, 'grid', 'on');
     %setm(w, 'frame', 'on');
     setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,sst)
+    pcolorm(lat_cice,lon_cice,sst)
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
     %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
-    caxis([-1,1])
+    caxis([0,1])
 
 
 %%
-clear all; close all; clc
+close all; clc
 addpath functions
-filename = "/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/ocean/ocean_output2017.nc";
+filename = "/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/ocean/output2010.nc";
 %[lat,lon] = grid_read("om2");
-
+tmask = ncread("/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh.2005-01-01.nc",'tmask');
 data = ncread(filename, "u");
+datav = ncread(filename, "v");
 lat = ncread(filename, "yu_ocean");
 lon = ncread(filename, "xu_ocean");
-data1d(:,:) = data(:,:,1)';
+data1d(:,:) = data(:,:,1);
+datav1d(:,:) = datav(:,:,1);
 
 conFigure(30)
 w = worldmap('world');
@@ -103,9 +105,64 @@ w = worldmap('world');
     setm(w, 'grid', 'on');
     %setm(w, 'frame', 'on');
     setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,data1d)
+    pcolorm(lat',lon',(data1d.*tmask)')
     land = shaperead('landareas', 'UseGeoCoords', true);
     %geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
     %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
     %caxis([120,130])
+
+    min(min(data1d))
+
+sprintf('The maximum u-velocity is: %g', max(max(data1d)))
+sprintf('The minimum v-velocity is: %g', min(min(datav1d)))
+
+sprintf('The maximum v-velocity is: %g', max(max(datav1d)))
+sprintf('The minimum v-velocity is: %g', min(min(datav1d)))
+
+
+
+%% JRA55 data
+close all; clc
+addpath functions
+filename = "/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/ocean/output2010.nc";
+%[lat,lon] = grid_read("om2");
+tmask = ncread("/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh.2005-01-01.nc",'tmask');
+data = ncread(filename, "u");
+datav = ncread(filename, "v");
+lat = ncread(filename, "yu_ocean");
+lon = ncread(filename, "xu_ocean");
+data1d(:,:) = data(:,:,1);
+datav1d(:,:) = datav(:,:,1);
+
+conFigure(30)
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat',lon',(data1d.*tmask)')
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    %geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    %quiverm(lat_vec,lon_vec,u_vec,v_vec,'k')
+    %caxis([120,130])
+
+    min(min(data1d))
+
+sprintf('The maximum u-velocity is: %g', max(max(data1d)))
+sprintf('The minimum v-velocity is: %g', min(min(datav1d)))
+
+sprintf('The maximum v-velocity is: %g', max(max(datav1d)))
+sprintf('The minimum v-velocity is: %g', min(min(datav1d)))
+
+
+

@@ -643,3 +643,6 @@ w = worldmap('world');
     caxis([-3,3])
     c.Label.String = "Signficant wave height [m]";
     title('Old thresholds')
+
+
+    %%

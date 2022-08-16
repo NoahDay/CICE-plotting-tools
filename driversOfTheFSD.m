@@ -96,30 +96,39 @@ colour.latg = [0.4660, 0.6740, 0.1880];
 colour.newi = [0.9290, 0.6940, 0.1250];
 colour.weld = [0.3010, 0.7450, 0.9330];
 colour.wave = [0, 0.4470, 0.7410];
-ymax = 0.002;%max(max(abs(sum(data))))*1.2;
+ymax = 0.001;%max(max(abs(sum(data))))*1.2;
 month_label = {'J','F','M','A','M','J','J','A','S','O','N','D','J','F','M','A','M','J','J','A','S','O','N','D'};
 fig = figure;
 conFigure(11)
 clear temp
-year_idx = 12;
+year_idx = 24;
 for i = 1:12
     temp(:,:) = data(:,:,i+year_idx);
     temp = temp./floe_binwidth;
+    % Log the positive values
+    %idx = temp > 0;
+    %temp(idx) = log10(temp(idx));
+    % Log the negative values
+    %idx = temp < 0;
+    %temp(idx) = -log10(-temp(idx));
+
     [len,wid] = size(temp);
-    subplot(3,6,i)
+    subplot(2,7,i)
     b = bar(1:length(NFSD),temp,'stacked');
+    %set(gca,'YScale','log')
     b(1).FaceColor = colour.latm;
     b(2).FaceColor = colour.latg;
     b(3).FaceColor = colour.newi;
     b(4).FaceColor = colour.weld;
     b(5).FaceColor = colour.wave;
     title(month_label(i))
-
+    %ytick([-5, -4, -3, -2, -1, 0])
+    %yticklabels(['10^(-5)', '10^(-4)', '10^(-3)', '10^(-2)', '10^(-1)', '1'])
     ylim([-ymax,ymax])
     
 end
 i = i + 1;
-subplot(3,6,i)
+subplot(2,7,[i,i+1])
  b = bar(1:length(NFSD),nan(len,wid),'stacked');
     b(1).FaceColor = colour.latm;
     b(2).FaceColor = colour.latg;
@@ -350,10 +359,62 @@ idx = aice > 0.1;
 afsd1(~idx) = NaN;
 f = figure;
 [w, a, ~] = map_plot(afsd1.*floe_binwidth(1)./aice,"aice","SHplain"); 
+caxis([0,1])
 a.Label.String = 'Proportion of smallest floe size and thickness';
 exportgraphics(f,'pancakeprop.pdf','ContentType','vector')
 
 
+afsdn = data_format_sector(filenames(i,:),"afsdn","SH");
+afsd2(:,:) = afsdn(:,:,2,1);
+idx = aice > 0.1;
+afsd2(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd2.*floe_binwidth(2)./aice,"aice","SHplain"); 
+caxis([0,1])
+a.Label.String = 'Proportion of FSTD(2,1)';
+exportgraphics(f,'fstd2prop.pdf','ContentType','vector')
+
+
+afsdn = data_format_sector(filenames(i,:),"afsdn","SH");
+afsd2(:,:) = afsdn(:,:,1,2);
+idx = aice > 0.1;
+afsd2(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd2.*floe_binwidth(1)./aice,"aice","SHplain"); 
+caxis([0,1])
+a.Label.String = 'Proportion of FSTD(1,2)';
+exportgraphics(f,'fstd1-2prop.pdf','ContentType','vector')
+
+afsdn = data_format_sector(filenames(i,:),"afsdn","SH");
+afsd2(:,:) = afsdn(:,:,1,3);
+idx = aice > 0.1;
+afsd2(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd2.*floe_binwidth(1)./aice,"aice","SHplain"); 
+caxis([0,1])
+a.Label.String = 'Proportion of FSTD(1,3)';
+exportgraphics(f,'fstd1-3prop.pdf','ContentType','vector')
+
+afsdn = data_format_sector(filenames(i,:),"afsdn","SH");
+afsd2(:,:) = afsdn(:,:,1,4);
+idx = aice > 0.1;
+afsd2(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd2.*floe_binwidth(1)./aice,"aice","SHplain"); 
+caxis([0,1])
+a.Label.String = 'Proportion of FSTD(1,4)';
+exportgraphics(f,'fstd1-4prop.pdf','ContentType','vector')
+
+
+afsdn = data_format_sector(filenames(i,:),"afsdn","SH");
+afsd2(:,:) = afsdn(:,:,1,5);
+idx = aice > 0.1;
+afsd2(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd2.*floe_binwidth(1)./aice,"aice","SHplain"); 
+caxis([0,1])
+a.Label.String = 'Proportion of FSTD(1,5)';
+exportgraphics(f,'fstd1-5prop.pdf','ContentType','vector')
 
 afsd = data_format_sector(filenames(i,:),"afsd","SH");
 afsd1(:,:) = afsd(:,:,1);
@@ -361,14 +422,97 @@ idx = aice > 0.1;
 afsd1(~idx) = NaN;
 f = figure;
 [w, a, ~] = map_plot(afsd1.*floe_binwidth(1)./aice,"aice","SHplain"); 
+caxis([0,1])
 a.Label.String = 'Proportion of smallest floe size';
 exportgraphics(f,'smallprop.pdf','ContentType','vector')
+
+
+afsd = data_format_sector(filenames(i,:),"afsd","SH");
+afsd2(:,:) = afsd(:,:,2);
+idx = aice > 0.1;
+afsd2(~idx) = NaN;
+f = figure;
+[w, a, ~] = map_plot(afsd2.*floe_binwidth(2)./aice,"aice","SHplain"); 
+caxis([0,1])
+a.Label.String = 'Proportion of FSD(2)';
+exportgraphics(f,'smallfsd2.pdf','ContentType','vector')
 %%
 pan_prop = afsd1.*floe_binwidth(1)./aice;
 
 f = figure;
 [w, a, ~] = map_plot(afsd1.*floe_binwidth(1)./aice,"aice","SHplain"); 
 a.Label.String = 'Proportion of pancake ice';
+
+
+
+%% Transect FSD
+close
+ind_lon = 28;
+clear temp afsd
+for i = 7
+    [dafsd.latm, sector_mask] = data_format_sector(filenames(i,:),"dafsd_latm",sector);
+    dafsd.latg = data_format_sector(filenames(i,:),"dafsd_latg",sector);
+    dafsd.weld = data_format_sector(filenames(i,:),"dafsd_weld",sector);
+    dafsd.newi = data_format_sector(filenames(i,:),"dafsd_newi",sector);
+    dafsd.wave = data_format_sector(filenames(i,:),"dafsd_wave",sector);
+    aice  = data_format_sector(filenames(i,:),"aice",sector);
+    afsd_data = data_format_sector(filenames(i,:),"afsd",sector);
+
+    for nf = 1:length(floe_binwidth)
+        temp(:,:) = dafsd.latg(:,:,nf);
+        afsd.latg(:,:,nf,i) = temp(:,:).*floe_binwidth(nf);
+        clear temp
+        temp(:,:) = dafsd.latm(:,:,nf);
+        afsd.latm(:,:,nf,i) = temp(:,:).*floe_binwidth(nf);
+        clear temp
+        temp(:,:) = dafsd.newi(:,:,nf);
+        afsd.newi(:,:,nf,i) = temp(:,:).*floe_binwidth(nf);
+        clear temp
+        temp(:,:) = dafsd.weld(:,:,nf);
+        afsd.weld(:,:,nf,i) = temp(:,:).*floe_binwidth(nf);
+        clear temp
+        temp(:,:) = dafsd.wave(:,:,nf);
+        afsd.wave(:,:,nf,i) = temp(:,:).*floe_binwidth(nf);
+        clear temp
+    end
+end
+
+
+[len,wid] = size(aice);
+for k = 1
+    for i = 1:len
+        for j = 1:wid
+            afsd.latg2d(i,j,k) = sum(afsd.latg(i,j,:,k));
+            afsd.latm2d(i,j,k) = sum(afsd.latm(i,j,:,k));
+            afsd.newi2d(i,j,k) = sum(afsd.newi(i,j,:,k));
+            afsd.weld2d(i,j,k) = sum(afsd.weld(i,j,:,k));
+            afsd.wave2d(i,j,k) = sum(afsd.wave(i,j,:,k));
+        end
+    end
+end
+%data = [dafsd.latm(ind_lon,:); dafsd.latg(ind_lon,:); dafsd.newi(ind_lon,:); dafsd.weld(ind_lon,:); dafsd.wave(ind_lon,:)];
+data = [afsd_data(ind_lon,:,1).*floe_binwidth(1); afsd_data(ind_lon,:,2).*floe_binwidth(2); afsd_data(ind_lon,:,3).*floe_binwidth(3); afsd_data(ind_lon,:,4).*floe_binwidth(4); afsd_data(ind_lon,:,5).*floe_binwidth(5); afsd_data(ind_lon,:,6).*floe_binwidth(6); afsd_data(ind_lon,:,7).*floe_binwidth(7); afsd_data(ind_lon,:,8).*floe_binwidth(8); afsd_data(ind_lon,:,9).*floe_binwidth(9); afsd_data(ind_lon,:,10).*floe_binwidth(10); afsd_data(ind_lon,:,11).*floe_binwidth(11); afsd_data(ind_lon,:,12).*floe_binwidth(12)];
+x = -lat(ind_lon,:);
+
+conFigure(20,2)
+figure
+area(repmat(x,12,1)',data')
+xlim([60,70])
+title(sprintf('Transect at %g E', lon(ind_lon,1)))
+xlabel('Latitude [$^\circ$ S]')
+ylabel('SIC [$\%$]')
+legend(["1","2",'3','4','5','6','7','8','9','10','11','12'],'Location','Northwest')
+
+
+data = [afsd.latg2d(ind_lon,:); afsd.latm2d(ind_lon,:); afsd.newi2d(ind_lon,:); afsd.weld2d(ind_lon,:); afsd.wave2d(ind_lon,:)]; 
+conFigure(20,2)
+figure
+bar(repmat(x,5,1)',data')
+xlim([60,70])
+title(sprintf('Transect at %g E', lon(ind_lon,1)))
+xlabel('Latitude [$^\circ$ S]')
+ylabel('SIC [$\%$]')
+legend(["Lat. Melt", "Lat. Growth", "New ice", "Weld", "Wave"],'Location','Northwest')
 
 %% Functions
 function [data_out] = integrate_dafsd_hemi(dafsd,aice,floe_binwidth)
