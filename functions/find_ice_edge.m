@@ -8,14 +8,34 @@ function [lat_ice_edge_new, lon_ice_edge_new, edge] = find_ice_edge(aice,SIC,sec
     coords = sector_coords(sector);
     [lat_north, lon_east] = lat_lon_finder(coords(1,1),coords(1,2),lat,lon);
     [lat_south, lon_west] = lat_lon_finder(-75,coords(3,2),lat,lon);
-    
+
     edge = ones(1,len);
     
-    for j = lon_east:lon_west
-        for i = lat_north:-1:lat_south
-            if aice(j,i) > SIC
-                edge(j) = i+1;
-                break
+    if lon_east > lon_west
+        for j = lon_east:len
+            for i = lat_north:-1:lat_south
+                if aice(j,i) > SIC
+                    edge(j) = i+1;
+                    break
+                end
+            end
+        end
+        for j = 1:lon_west
+            for i = lat_north:-1:lat_south
+                if aice(j,i) > SIC
+                    edge(j) = i+1;
+                    break
+                end
+            end
+        end
+
+    else
+        for j = lon_east:lon_west
+            for i = lat_north:-1:lat_south
+                if aice(j,i) > SIC
+                    edge(j) = i+1;
+                    break
+                end
             end
         end
     end

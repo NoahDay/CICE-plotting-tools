@@ -6,6 +6,11 @@ shelf = 0.0*(shelf == 1);
 shelf(shelf==0) = NaN; % 1 iceshelf
 [latshelf,lonshelf] = bedmap2_data('latlon');
 
+%%
+filename = '/Users/noahday/GitHub/CICE-plotting-tools/bedmap2shelf.mat';
+ Z = double(imread(filename));
+
+%%
 filename = 'cases/8month/history/iceh.2005-01-10.nc';
 
 % Read the header

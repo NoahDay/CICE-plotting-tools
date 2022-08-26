@@ -37,11 +37,17 @@ addpath functions
         lon = [zeros(1,384);lon];
         lat = [lat(1,:); lat];
     elseif data_size(1) == 360 && data_size(2) == 300
-       % OM2 grid
-        row = 281;
-        lat = rearrange_matrix(lat,row,2);
-        lon = rearrange_matrix(lon,row,2);
+        if coord_type == "u"
+            row = 280;
+            lat = rearrange_matrix(lat,row,2);
+            lon = mod(rearrange_matrix(lon,row,2)+360,360);
+        else % t-grid
+           % OM2 grid
+            row = 281;
+            lat = rearrange_matrix(lat,row,2);
+            lon = rearrange_matrix(lon,row,2);
  
+        end
         %error('ND: om2.')
     else
         error('ND: Unrecognised grid size.')
@@ -55,7 +61,8 @@ addpath functions
         if isstring(sector)
             % Export a grid of the the specific sector
             % Coordinates
-            coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE)
+            
+            coords = sector_coords(sector); % (NW;NE;SW;SW) (lat,lon) %(NW;SW,NE,SE) lat = [-90,90] lon = [0,360]
 
             clear lat_out lon_out
             lat_out = zeros(1,4);

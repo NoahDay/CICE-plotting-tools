@@ -33,8 +33,17 @@ if data_size(1) == 320 && data_size(2) == 384
     lon = [zeros(1,384);lon];
     lat = [lat(1,:); lat];
 elseif data_size(1) == 360 && data_size(2) == 300
-        row = 1;
         % OM2 grid
+         if coord_type == "u"
+            row = 280;
+            lat = rearrange_matrix(lat,row,2);
+            lon = mod(rearrange_matrix(lon,row,2)+360,360);
+        else % t-grid
+           % OM2 grid
+            row = 281;
+            lat = rearrange_matrix(lat,row,2);
+            lon = rearrange_matrix(lon,row,2);
+        end
 end
 
  

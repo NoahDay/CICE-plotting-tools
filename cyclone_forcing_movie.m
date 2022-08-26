@@ -1,0 +1,779 @@
+% 1. Read in JRA55 air pressure data
+% 2. Read in air vectors 
+% 3. For our sub-domain/region plot the air pressure and vectors
+clear all 
+clc
+close all
+addpath functions
+
+% JRA55 filename
+filename.airPressure = '/Users/noahday/GitHub/CICE-plotting-tools/observations/jra55/psl_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_201701010000-201712312100.nc';
+airPressure = ncread(filename.airPressure, "psl");
+lat_jra = ncread(filename.airPressure, "lat");
+lon_jra = ncread(filename.airPressure, "lon");
+%
+%airPressure2D(:,:) = airPressure(:,:,150+15)/100;
+
+
+% CICE data
+clear aice air_u air_v ice_u ice_v swh  filename ice_u 
+historydir = '/Users/noahday/Maths1/access-forcing-2010-fixed-ic/history_h/';
+sector = "SH";
+user = "noahday";
+grid = 'om2';
+
+a = dir([historydir '/*.nc']);
+n_files = numel(a);
+
+% Read in file names
+for i = 1:n_files
+   filename.cice(i,:) = strcat(historydir,a(i).name);
+   dirdates(i,:) = a(i).name(11:end-3);
+    
+   NFSD = ncread(filename.cice(1,:),"NFSD");
+   [floe_binwidth, floe_rad_l, floe_rad_h, floe_area_binwidth] = cice_parameters(NFSD);
+   [aice(:,:,i), sector_mask] = data_format_sector(filename.cice(i,:), "aice",sector);
+   air_u(:,:,i) = data_format_sector(filename.cice(i,:),"uatm",sector); % m/s
+   air_v(:,:,i) = data_format_sector(filename.cice(i,:),"vatm",sector); % m/s
+   ice_u(:,:,i) = data_format_sector(filename.cice(i,:),"uvel",sector); % m/s
+   ice_v(:,:,i) = data_format_sector(filename.cice(i,:),"vvel",sector); % m/s
+   %ice_u(:,:,i) = data_format(filename.cice(i,:),"uvel"); % m/s
+   %ice_v(:,:,i) = data_format(filename.cice(i,:),"vvel"); % m/s
+   swh(:,:,i) = data_format_sector(filename.cice(i,:),"wave_sig_ht",sector); % m
+   daidtd(:,:,i) = data_format_sector(filename.cice(i,:),"daidtd",sector); % SIC
+   daidtt(:,:,i) = data_format_sector(filename.cice(i,:),"daidtt",sector); % SIC
+   afsdn = data_format_sector(filename.cice(i,:),"afsdn",sector); % SIC
+   pancake(:,:,i) = afsdn(:,:,1,1).*floe_binwidth(1);
+   
+   ice_mask = aice(:,:,1) < 0.01;
+   temp = daidtd(:,:,i);
+   temp(ice_mask) = NaN;
+   daidtd(:,:,i) = temp;
+
+   temp = daidtt(:,:,i);
+   temp(ice_mask) = NaN;
+   daidtt(:,:,i) = temp;
+
+   %temp = ice_u(:,:,i);
+   %temp(ice_mask) = NaN;
+   %ice_u(:,:,i) = temp;
+
+   %temp = ice_v(:,:,i);
+   %temp(ice_mask) = NaN;
+   %ice_v(:,:,i) = temp;
+
+   temp = pancake(:,:,i);
+   temp(ice_mask) = NaN;
+   pancake(:,:,i) = temp;
+end
+%
+filedir = filename.cice(1,:);
+info = ncinfo(filedir,"aice");
+attributes = info.Attributes;
+
+coord_type = "t"; % T-grid
+tlat = ncread(filedir,"TLAT");
+tlon = ncread(filedir,"TLON");
+
+coord_type = "u"; % U-grid
+ulat = ncread(filedir,"ULAT");
+ulon = ncread(filedir,"ULON");
+
+data_size = info.Size;
+dim = length(data_size);
+if data_size(1) == 320 && data_size(2) == 384
+    grid = "gx1";
+    row = 37;
+    tlat = rearrange_matrix(tlat,row,2);
+    tlon = rearrange_matrix(tlon,row,2);
+    tlon = [zeros(1,384);tlon];
+    tlat = [tlat(1,:); tlat];
+
+    ulat = rearrange_matrix(ulat,row,2);
+    ulon = rearrange_matrix(ulon,row,2);
+    ulon = [zeros(1,384);ulon];
+    ulat = [ulat(1,:); ulat];
+elseif data_size(1) == 360 && data_size(2) == 300
+        row = 281;
+        % OM2 grid
+        tlat = rearrange_matrix(tlat,row,2);
+        tlon = rearrange_matrix(tlon,row,2);
+        tlon = [zeros(1,300);tlon];
+        tlat = [tlat(1,:); tlat];
+        row = 280;
+        ulat = rearrange_matrix(ulat,row,2);
+        ulon = mod(rearrange_matrix(ulon,row,2)+360,360);
+        ulon = [zeros(1,300);ulon];
+        ulat = [ulat(1,:); ulat];
+end
+
+
+
+% w = worldmap('world');
+%     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+%     setm(w, 'Origin', [-90 0 0]);
+%     setm(w, 'maplatlimit', [-90,-30]);
+%     setm(w, 'maplonlimit', [-180,180]);
+%     setm(w, 'meridianlabel', 'on')
+%     setm(w, 'parallellabel', 'off') 
+%     setm(w, 'mlabellocation', 30);
+%     setm(w, 'plabellocation', 10);
+%     setm(w, 'mlabelparallel', -45);
+%     setm(w, 'grid', 'on');
+%     setm(w, 'labelrotation', 'on')
+%     pcolorm(ulat,ulon,ice_u(:,:,1))
+%     land = shaperead('landareas', 'UseGeoCoords', true);
+%     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+%     colorbar
+%     cmocean('balance',31)
+%     caxis([0,1])
+% 
+
+
+% Interpolate the time data to hourly
+sector = "AU";
+coords = sector_coords(sector);
+% September start iceh_inst.2007-07-01-75600.nc
+jra_idx = 181*8; % July 1st
+[len,wid,~] = size(airPressure);
+for i = 1:ceil(n_files/3) % Data is every 3 hr
+    for j = 1:len
+        for k = 1:wid
+            if lat_jra(k) > coords(2,1) && lat_jra(k) < coords(1,1) && mod(lon_jra(j)+180,360) > mod(coords(1,2)+180,360)&& mod(lon_jra(k)+180,360) < mod(coords(3,2)+180,360)
+                temp = squeeze(airPressure(j,k,jra_idx:jra_idx+ceil(n_files/3)-1));
+                airPressureInterp(j,k,1:n_files) = interp1(1:ceil(n_files/3),temp,linspace(1,ceil(n_files/3),n_files));
+            else
+                airPressureInterp(j,k,1:n_files) = NaN;
+            end
+        end
+    end
+end
+
+%% AICE
+
+sector = "SH";
+coords = sector_coords(sector);
+user = 'noahday';
+%warning('off')
+pram.ice_edge_color = 0.9*[0.4660 0.6740 0.1880];
+vid_max = n_files;
+line_width = 2;
+FigWidth = 1500;
+FigHeight = 900;
+BufferWidth = 50;
+Height = 100;
+
+%pixels = 1000;
+%shelf = double(isiceshelf(tlat(:,1:65),tlon(:,1:65)));
+%lon_shelf = interp2(tlon(:,1:90),2);%repmat(linspace(1,365,pixels)',1,pixels);
+%lat_shelf = interp2(tlat(:,1:90),2);%repmat(linspace(-90,-10,pixels),pixels,1);
+%shelf = double(isiceshelf(lat_shelf,lon_shelf));
+%idx = shelf == 0;
+%shelf(idx) = NaN;
+font_size = 18;
+%shelf_vec = shelf(~idx);
+%lat_shelf_vec = lat_shelf(~idx);
+%lon_shelf_vec = lon_shelf(~idx);
+for i = 1:vid_max
+    f = figure('PaperPositionMode','manual','visible','off');
+    f.Position = [100 100 540 200];
+    AX = gca;
+    f.Resize = 'off'; f.Units = 'points'; f.PaperUnits = 'points';
+    AX.Units = 'points'; AX.Clipping = 'on'; AX.PositionConstraint = 'innerposition';
+    AX.InnerPosition = [0 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
+    f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
+    f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
+    %axesHandles = findall(f,'type','axes');
+    %get(axesHandles,'position')
+    %pos = [0.3 0.6 0.2 0.4]; % [left bottom width height]
+    %subplot('Position',pos);
+   % fullfig
+    camlight
+    set(gca,'color','k')
+    set(gcf,'color','k')
+    w = worldmap('world');
+        axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+        %%tightmap
+        setm(w, 'Origin', [0 90 0]); 
+        %setm(w, 'maplatlimit', [coords(2,1),coords(1,1)]); setm(w, 'maplonlimit', [coords(1,2)-360,coords(3,2)]); 
+        setm(w, 'maplatlimit', [-75,coords(1,1)]); setm(w, 'maplonlimit', [0,150]); 
+        setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+        setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
+        setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',12);
+        setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
+        %%imagescn(tlon,tlat,aice(:,:,i)') 
+        pcolorm(tlat,tlon,aice(:,:,i))
+        ylabel('Latitude')
+        sb = scalebar('color',[1.0 1.0 1.0], 'location','sw','position',[.87 .13 .02 .85]);
+        cb = colorbar; set(cb,'position',[.87 .2 .02 .65])
+        cmocean('ice')
+        cb.Label.String = 'Sea ice concentration'; cb.Label.Interpreter = 'latex';
+        cb.FontSize = font_size+1;cb.Color = 'white';
+        caxis([0,1])
+        [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LineColor','r','LevelStep',20,'LineWidth',1.2,'ShowText','on');
+        qv = quivermc(ulat,ulon,air_u(:,:,i),air_v(:,:,i),'density',50,'units','Wind speed [m/s]','reference',15,'color',[.9 .1 .1],'colormap',autumn(256),'FontSize',font_size);
+        t = clabelm(c1,h);
+        set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+        set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+        title(dirdates(i,:),'Color','white','FontSize',font_size+5)%,'Position',[1.0, -0.5, 0])
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        %hold on
+        %pcolorm(lat_shelf,lon_shelf,shelf,'FaceAlpha', 0.5)
+    
+        geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+        
+
+        han=axes(f,'visible','off'); 
+        han.Title.Visible='on';
+        
+
+    set(gcf,'Color',[0 0 0]); % color of the frame around the figure
+    set(gca,'Color','k')%color for the plot area
+    set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
+    set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
+    if i == 1
+        gif('aice.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
+    else
+        gif
+    end
+
+   % F = getframe(gcf);
+    
+   % figname = sprintf('image%d.png', i); 
+   % filedir = sprintf('/Users/%s/GitHub/CICE-plotting-tools/frames', user);
+    %exportgraphics(f,figname,'ContentType','vector')
+    %saveas(f,fullfile(filedir, figname));
+    %exportgraphics(F,fullfile(filedir, figname),'Resolution',1000)
+   % im = frame2im(F);
+   % imwrite(im,fullfile(filedir, figname),'XResolution',4920,'YResolution',1080);
+    %close all
+end
+
+
+%% DAIDTD
+sector = "vichi2";
+coords = sector_coords(sector);
+user = 'noahday';
+%warning('off')
+pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
+vid_max = n_files;
+line_width = 2;
+FigWidth = 1920;
+FigHeight = 1080;
+BufferWidth = 200;
+Height = 100;
+%
+clear aice_sector
+
+font_size = 20;
+
+for i = 1:vid_max
+    
+    [aice_sector] = sector_data(tlon,tlat,coords,aice(:,:,i));
+    [tlon_sector] = sector_data(tlon,tlat,coords,tlon);
+    [tlat_sector] = sector_data(tlon,tlat,coords,tlat);
+    [ulon_sector] = sector_data(ulon,ulat,coords,ulon);
+    [ulat_sector] = sector_data(ulon,ulat,coords,ulat);
+    [daidtd_sector] = sector_data(tlon,tlat,coords,daidtd(:,:,i));
+    [ice_u_sector] = sector_data(tlon,tlat,coords,ice_u(:,:,i));
+    [ice_v_sector] = sector_data(tlon,tlat,coords,ice_v(:,:,i));
+    %
+    
+    [airPressureInterp_sector] = sector_data(lon_jra,lat_jra,coords,airPressureInterp(:,:,i)/100);
+    % %[lat_jra_sector] = sector_data(lon_jra,lat_jra,coords,lat_jra);
+    %[lon_jra_sector] = sector_data(lon_jra,lat_jra,coords,lon_jra);
+    min_lon = near1(lon_jra,coords(1,2));
+    max_lon = near1(lon_jra,coords(3,2));
+    
+    max_lat = near1(lat_jra,coords(3,1));
+    
+    
+    lat_jra_sector = lat_jra(1:max_lat);
+    
+    for j = 1:(length(lon_jra)-min_lon)+max_lon
+        if j <= (length(lon_jra)-min_lon)
+            lon_jra_sector(j) = lon_jra(min_lon+j-1);
+        else
+            lon_jra_sector(j) = lon_jra(j-(length(lon_jra)-min_lon));
+        end
+    
+    end
+
+
+    f = figure('PaperPositionMode','manual','visible','off');
+    f.Position = [1 1 540 200];
+    AX = gca;
+    f.Resize = 'off'; f.Units = 'points'; f.PaperUnits = 'points';
+    AX.Units = 'points'; AX.Clipping = 'on'; AX.PositionConstraint = 'innerposition';
+    AX.InnerPosition = [10 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
+    f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
+    f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
+    camlight
+    set(gca,'color','k')
+    set(gcf,'color','k')
+    w = worldmap('World');
+        axesm eqdcylin; 
+        setm(w, 'Origin', [0 28 0]); 
+        setm(w, 'maplatlimit', [coords(2,1),coords(1,1)-10]); setm(w, 'maplonlimit', [coords(1,2)-360,coords(3,2)-0]); 
+        setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+        setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
+        setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',font_size);
+        setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
+        pcolorm(tlat_sector,tlon_sector,daidtd_sector)
+        ylabel('Latitude')
+        scalebar('color',[1.0 1.0 1.0], 'location','sw');
+       cb = colorbar; set(cb,'position',[.89 .15 .02 .75])
+        cb.Label.String = 'Change in SIC due to dynamics [%]'; cb.Label.Interpreter = 'latex';
+        cb.FontSize = font_size;cb.Color = 'white';
+        cmocean('balance',31)
+        caxis([-50,50])
+
+        %[c1,h] = contourm(lat_jra_sector,lon_jra_sector,airPressureInterp_sector');%,'LevelStep',20)%,'ShowText','on')
+        [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LevelStep',20);%,'ShowText','on')
+        
+        quivermc(ulat_sector,ulon_sector,ice_u_sector,ice_v_sector,'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+        t = clabelm(c1,h);
+        set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+        set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+        title(dirdates(i,:),'Color','white','Position',[0.0500 -0.8663 5000],'FontSize',font_size+5)
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+        han=axes(f,'visible','off'); 
+        han.Title.Visible='on';
+        
+
+    set(gcf,'Color',[0 0 0]); % color of the frame around the figure
+    set(gca,'Color','k')%color for the plot area
+    set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
+    set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
+    if i == 1
+        gif('daidtd.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
+    else
+        gif
+    end
+end
+
+
+%% PANCAKE
+sector = "vichi2";
+coords = sector_coords(sector);
+user = 'noahday';
+%warning('off')
+pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
+vid_max = n_files;
+line_width = 1;
+FigWidth = 1920;
+FigHeight = 1080;
+BufferWidth = 200;
+Height = 100;
+%
+clear aice_sector pancake_sector ulon_sector ulat_sector lon_jra_sector
+
+
+
+for i = 1:vid_max
+    [pancake_sector] = sector_data(tlon,tlat,coords,pancake(:,:,i));
+    [tlon_sector] = sector_data(tlon,tlat,coords,tlon);
+    [tlat_sector] = sector_data(tlon,tlat,coords,tlat);
+    [ulon_sector] = sector_data_u(ulon,ulat,coords,ulon);
+    [ulat_sector] = sector_data_u(ulon,ulat,coords,ulat);
+    [daidtd_sector] = sector_data(tlon,tlat,coords,daidtd(:,:,i));
+    [ice_u_sector] = sector_data_u(ulon,ulat,coords,ice_u(:,:,i));
+    [ice_v_sector] = sector_data_u(ulon,ulat,coords,ice_v(:,:,i));
+    %
+    [airPressureInterp_sector] = sector_data(lon_jra,lat_jra,coords,airPressureInterp(:,:,i)/100);
+    min_lon = near1(lon_jra,coords(1,2));
+    max_lon = near1(lon_jra,coords(3,2));
+    max_lat = near1(lat_jra,coords(3,1));
+    lat_jra_sector = lat_jra(1:max_lat);
+    for j = 1:(length(lon_jra)-min_lon)+max_lon
+        if j <= (length(lon_jra)-min_lon)
+            lon_jra_sector(j) = lon_jra(min_lon+j-1);
+        else
+            lon_jra_sector(j) = lon_jra(j-(length(lon_jra)-min_lon));
+        end
+    end
+    f = figure('PaperPositionMode','manual','visible','off');
+    f.Position = [1 1 540 200];
+    AX = gca;
+    f.Resize = 'off'; f.Units = 'points'; f.PaperUnits = 'points';
+    AX.Units = 'points'; AX.Clipping = 'on'; AX.PositionConstraint = 'innerposition';
+    AX.InnerPosition = [20 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
+    f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
+    f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
+    camlight
+    set(gca,'color','k')
+    set(gcf,'color','k')
+    w = worldmap('World');
+        axesm eqdcylin; 
+        setm(w, 'Origin', [0 28 0]); 
+        setm(w, 'maplatlimit', [coords(2,1),coords(1,1)-10]); setm(w, 'maplonlimit', [coords(1,2)-360,coords(3,2)-0]); 
+        setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+        setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10);  
+        setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',font_size);
+        setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
+        pcolorm(tlat_sector,tlon_sector,pancake_sector)
+        hold on
+        ylabel('Latitude')
+        scalebar('color',[1.0 1.0 1.0], 'location','sw');
+        cb = colorbar; set(cb,'position',[.91 .15 .02 .75])
+        cb.Label.String = 'Proportion of pancake ice [%]'; cb.Label.Interpreter = 'latex';
+        cb.FontSize = font_size;cb.Color = 'white';
+        cmocean('haline',31)
+        caxis([0,1])
+
+
+        %[c1,h] = contourm(lat_jra_sector,lon_jra_sector,airPressureInterp_sector');%,'LevelStep',20)%,'ShowText','on')
+        [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LevelStep',20);%,'ShowText','on')
+        
+%         quivermc(ulat_sector,ulon_sector,ice_u_sector,ice_v_sector,'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+%         %quivermc(tlat,tlon,ice_u(:,:,i),ice_v(:,:,i),'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+%         %quivermc(ulat,ulon,ice_u(:,:,i),ice_v(:,:,i),'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256))'
+%         t = clabelm(c1,h);
+%         set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+%         set(t,'FontWeight','bold'); set(t,'FontSize',9);
+%         title(dirdates(i,:),'Color','white','Position',[0.0500 -0.8663 5000])
+%         land = shaperead('landareas', 'UseGeoCoords', true);
+%         geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+%         han=axes(f,'visible','off'); 
+%         han.Title.Visible='on';
+
+        quivermc(ulat_sector,ulon_sector,ice_u_sector,ice_v_sector,'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+        t = clabelm(c1,h);
+        set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+        set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+        title(dirdates(i,:),'Color','white','Position',[0.0500 -0.8663 5000],'FontSize',font_size+5)
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+        han=axes(f,'visible','off'); 
+        han.Title.Visible='on';
+        
+
+    set(gcf,'Color',[0 0 0]); % color of the frame around the figure
+    set(gca,'Color','k')%color for the plot area
+    set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
+    set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
+    if i == 1
+        gif('pancake.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
+    else
+        gif
+    end
+end
+
+%% DAIDTT
+sector = "vichi2";
+coords = sector_coords(sector);
+user = 'noahday';
+%warning('off')
+pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
+vid_max = n_files;
+line_width = 2;
+FigWidth = 1920;
+FigHeight = 1080;
+BufferWidth = 200;
+Height = 100;
+%
+clear aice_sector
+
+font_size = 20;
+
+for i = 1:vid_max
+    
+    [aice_sector] = sector_data(tlon,tlat,coords,aice(:,:,i));
+    [tlon_sector] = sector_data(tlon,tlat,coords,tlon);
+    [tlat_sector] = sector_data(tlon,tlat,coords,tlat);
+    [ulon_sector] = sector_data(ulon,ulat,coords,ulon);
+    [ulat_sector] = sector_data(ulon,ulat,coords,ulat);
+    [daidtt_sector] = sector_data(tlon,tlat,coords,daidtt(:,:,i));
+    [ice_u_sector] = sector_data(tlon,tlat,coords,ice_u(:,:,i));
+    [ice_v_sector] = sector_data(tlon,tlat,coords,ice_v(:,:,i));
+    %
+    
+    [airPressureInterp_sector] = sector_data(lon_jra,lat_jra,coords,airPressureInterp(:,:,i)/100);
+    % %[lat_jra_sector] = sector_data(lon_jra,lat_jra,coords,lat_jra);
+    %[lon_jra_sector] = sector_data(lon_jra,lat_jra,coords,lon_jra);
+    min_lon = near1(lon_jra,coords(1,2));
+    max_lon = near1(lon_jra,coords(3,2));
+    
+    max_lat = near1(lat_jra,coords(3,1));
+    
+    
+    lat_jra_sector = lat_jra(1:max_lat);
+    
+    for j = 1:(length(lon_jra)-min_lon)+max_lon
+        if j <= (length(lon_jra)-min_lon)
+            lon_jra_sector(j) = lon_jra(min_lon+j-1);
+        else
+            lon_jra_sector(j) = lon_jra(j-(length(lon_jra)-min_lon));
+        end
+    
+    end
+
+
+    f = figure('PaperPositionMode','manual','visible','off');
+    f.Position = [1 1 540 200];
+    AX = gca;
+    f.Resize = 'off'; f.Units = 'points'; f.PaperUnits = 'points';
+    AX.Units = 'points'; AX.Clipping = 'on'; AX.PositionConstraint = 'innerposition';
+    AX.InnerPosition = [10 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
+    f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
+    f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
+    camlight
+    set(gca,'color','k')
+    set(gcf,'color','k')
+    w = worldmap('World');
+        axesm eqdcylin; 
+        setm(w, 'Origin', [0 28 0]); 
+        setm(w, 'maplatlimit', [coords(2,1),coords(1,1)-10]); setm(w, 'maplonlimit', [coords(1,2)-360,coords(3,2)-0]); 
+        setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+        setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
+        setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',font_size);
+        setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
+        pcolorm(tlat_sector,tlon_sector,daidtt_sector)
+        ylabel('Latitude')
+        scalebar('color',[1.0 1.0 1.0], 'location','sw');
+       cb = colorbar; set(cb,'position',[.89 .15 .02 .75])
+        cb.Label.String = 'Change in SIC due to thermodynamics [%]'; cb.Label.Interpreter = 'latex';
+        cb.FontSize = font_size;cb.Color = 'white';
+        cmocean('balance',31)
+        caxis([-50,50])
+
+        %[c1,h] = contourm(lat_jra_sector,lon_jra_sector,airPressureInterp_sector');%,'LevelStep',20)%,'ShowText','on')
+        [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LevelStep',20);%,'ShowText','on')
+        
+        quivermc(ulat_sector,ulon_sector,ice_u_sector,ice_v_sector,'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+        t = clabelm(c1,h);
+        set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+        set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+        title(dirdates(i,:),'Color','white','Position',[0.0500 -0.8663 5000],'FontSize',font_size+5)
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+        han=axes(f,'visible','off'); 
+        han.Title.Visible='on';
+        
+
+    set(gcf,'Color',[0 0 0]); % color of the frame around the figure
+    set(gca,'Color','k')%color for the plot area
+    set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
+    set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
+    if i == 1
+        gif('daidtt.gif','DelayTime',20/n_files,'resolution',400,'overwrite',true)
+    else
+        gif
+    end
+end
+
+
+
+    %% FRAME
+% From Vichi "The minimum pressure found along the track simulated by ERA5 was 927"
+close all
+coord_grid = meshgrid(lat_jra,lon_jra);
+figure
+w = worldmap('world');
+    %axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    %setm(w, 'Origin', [-90 0 0]);
+    %setm(w, 'maplatlimit', [-90,-50]);
+    %setm(w, 'maplonlimit', [0,50]);
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-80,-30]);
+    setm(w, 'maplonlimit', [345,90]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat_cice,lon_cice,aice)
+    c = colorbar;
+    cmocean('ice')
+    %pcolorm(lat_cice,lon_cice,swh)
+    %c.Label.String = 'Sea level pressure [Pa]';
+    caxis([0,1])
+    [c1,h] = contourm(lat_jra,lon_jra,airPressure2D');%,'LevelStep',20)%,'ShowText','on')
+    quivermc(lat_cice,lon_cice,air_u,air_v,'density',50,'units','Wind speed [m/s]','reference',10,'color',[.9 .1 .1])
+    t = clabelm(c1,h);
+    set(t,'Color','r')
+    set(t,'BackgroundColor','none')
+    set(t,'FontWeight','bold')
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+
+    %% GIF
+    % Some sample data:
+    clear all
+close all
+t = sin(linspace(0,2*pi,30));
+[X,Y,Z] = peaks(500);
+
+% Plot the first frame:
+h = surf(X,Y,Z*t(1));
+shading interp
+axis([-3 3 -3 3 -9 9])
+
+% Make it fancy:
+camlight
+set(gca,'color','k')
+set(gcf,'color','k')
+caxis([min(Z(:)) max(Z(:))])
+
+%gif('myfile.gif')
+%If you want to specify certain options, include them the first time you call gif. For example, if you want a 1/24 second delay between each frame, you want the loop to run five times, and you want to use the entire figure window rather than the current axes, specifying all those options would look like this:
+
+%gif('myfile.gif','DelayTime',1/24,'LoopCount',5)
+%Or, if you want a high-resolution gif that uses export_fig, specify a resolution in units of dpi. This option is slower and creates larger files, but in some cases the difference in image quality may be significant. Here's how you might specify 400 dpi:
+gif('myfile.gif','DelayTime',1/24,'resolution',400)
+
+for k = 2:29
+   set(h,'Zdata',Z*t(k))
+   gif
+end
+
+web('myfile.gif')
+
+%%
+
+for k =1:2 
+t = sin(linspace(0,2*pi,30));
+[X,Y,Z] = peaks(500);
+
+% Plot the first frame:
+h = surf(X,Y,Z*t(1));
+shading interp
+axis([-3 3 -3 3 -9 9])
+
+% Make it fancy:
+camlight
+set(gca,'color','k')
+set(gcf,'color','k')
+caxis([min(Z(:)) max(Z(:))])
+if k==10 
+    for kk = 1:48 
+    gif('resolution',400) 
+    end 
+else 
+    gif 
+end
+end
+
+%%
+clear all
+close all
+%cdt deseason
+load pacific_sst
+whos
+
+
+sst_mean = mean(sst,3); % Along third dimension
+imagescn(lon,lat,sst_mean) % n sets NAN to transparent
+
+xlabel longitude
+ylabel latitude
+
+
+cmocean thermal
+hold on
+borders
+row = near1(lat,23) % Nearest row to 23 degrees N
+col = near1(lon,-115)
+
+plot(lon(col),lat(row),'ko')
+
+sst1 = squeeze(sst(row,col,:));
+%%
+clf
+
+plot(t,sst1)
+ylabel temperate
+xlabel time
+datetick
+
+sst_ds = deseason(sst1,t);
+hold on
+plot(t,sst_ds)
+polyplot(t,sst1) % Linear trend, least squares fit
+polyplot(t,sst_ds)
+trend(sst1,12) % Trend per year, 12 months
+%%
+clf 
+sst_tr = trend(sst,12);
+imagescn(lon,lat,sst_tr)
+cb = colorbar;
+ylabel(cb,'sst trend \circC/ye')
+cmocean('balance','pivot')
+
+[sst_tr,p]  = trend(sst,12); % get p values
+mk = mann_kendall(sst); % is this statistically significant 1 = yes
+hold 
+stipple(lon,lat,mk)
+
+
+%% Functions
+
+function [aice_sector] = sector_data(tlon,tlat,coords,aice)
+    [len,wid] = size(tlon);
+    min_lat = near1(tlon(:,1),coords(1,2)); % lat should be lon
+    max_lat = near1(tlon(:,1),coords(3,2));
+    
+    if size(tlat(1,:)) == 1
+        max_height = near1(tlat,coords(3,1));
+    else
+        max_height = near1(tlat(1,:),coords(3,1));
+    end
+    if min_lat > max_lat
+        % Take the edge slices
+        for i = 1:len-min_lat + max_lat
+            if i <= len-min_lat
+                % West slice
+                aice_sector(i,:) = aice(min_lat+i-1,1:max_height,1);
+            else
+                % East slice
+                aice_sector(i,:) = aice(i-(len-min_lat),1:max_height,1);
+            end
+        end
+    
+    else
+        % Take middle bit
+        for i = 1:max_lat-min_lat
+            %disp(size(aice(min_lat+i-1,1:max_height)))
+            aice_sector(i,:) = aice(min_lat+i-1,1:max_height);
+        end
+    end
+
+end
+
+
+function [aice_sector] = sector_data_u(tlon,tlat,coords,aice)
+    [len,wid] = size(tlon);
+    min_lat = 346;%near1(tlon(:,1),coords(1,2));
+    max_lat = 41;%near1(tlon(:,1),coords(3,2));
+    
+    if size(tlat(1,:)) == 1
+        max_height = near1(tlat,coords(3,1));
+    else
+        max_height = near1(tlat(1,:),coords(3,1));
+    end
+    
+    if min_lat > max_lat
+        % Take the edge slices
+        for i = 1:len-min_lat + max_lat
+            if i <= len-min_lat
+                % West slice
+                aice_sector(i,:) = aice(min_lat+i-1,1:max_height,1);
+            else
+                % East slice
+                aice_sector(i,:) = aice(i-(len-min_lat),1:max_height,1);
+            end
+        end
+    
+    else
+        % Take middle bit
+        
+        for i = 1:max_lat-min_lat
+            aice_sector(i) = aice(min_lat+i-1,1:max_height);
+        end
+    end
+
+end
