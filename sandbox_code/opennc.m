@@ -914,3 +914,35 @@ w = worldmap('world');
     cmocean('balance',31)
     caxis([-3,3])
 
+
+
+
+  %%
+  filename = '/Users/noahday/GitHub/random-code/ocean-2d-surface_pot_temp-1-daily-mean-ym_2013_12.nc';
+
+  lon = ncread(filename,"xt_ocean");
+  lat = ncread(filename,"yt_ocean");
+
+  data = ncread(filename,"temp") - 273.15;
+
+close all
+figure
+  w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,data(:,:,1,1)')
+    %land = shaperead('landareas', 'UseGeoCoords', true);
+    %geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    %cmocean('balance',31)
+    %caxis([-3,3])
+

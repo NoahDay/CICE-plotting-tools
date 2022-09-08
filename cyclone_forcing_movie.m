@@ -15,7 +15,7 @@ lon_jra = ncread(filename.airPressure, "lon");
 %airPressure2D(:,:) = airPressure(:,:,150+15)/100;
 
 
-% CICE data
+%% CICE data
 clear aice air_u air_v ice_u ice_v swh  filename ice_u 
 historydir = '/Users/noahday/Maths1/access-forcing-2010-fixed-ic/history_h/';
 sector = "SH";
@@ -40,10 +40,17 @@ for i = 1:n_files
    %ice_u(:,:,i) = data_format(filename.cice(i,:),"uvel"); % m/s
    %ice_v(:,:,i) = data_format(filename.cice(i,:),"vvel"); % m/s
    swh(:,:,i) = data_format_sector(filename.cice(i,:),"wave_sig_ht",sector); % m
+   Tair(:,:,i) = data_format_sector(filename.cice(i,:),"Tair",sector); % C
    daidtd(:,:,i) = data_format_sector(filename.cice(i,:),"daidtd",sector); % SIC
    daidtt(:,:,i) = data_format_sector(filename.cice(i,:),"daidtt",sector); % SIC
    afsdn = data_format_sector(filename.cice(i,:),"afsdn",sector); % SIC
    pancake(:,:,i) = afsdn(:,:,1,1).*floe_binwidth(1);
+   dafsd_newi = data_format_sector(filename.cice(i,:),"dafsd_newi",sector); % 
+   dafsd_newi_pan(:,:,i) = dafsd_newi(:,:,1).*floe_binwidth(1);
+   dafsd_wave = data_format_sector(filename.cice(i,:),"dafsd_wave",sector); % 
+   dafsd_wave_pan(:,:,i) = dafsd_wave(:,:,1).*floe_binwidth(1);
+   dafsd_weld = data_format_sector(filename.cice(i,:),"dafsd_weld",sector); % 
+   dafsd_weld_pan(:,:,i) = dafsd_weld(:,:,1).*floe_binwidth(1);
    
    ice_mask = aice(:,:,1) < 0.01;
    temp = daidtd(:,:,i);
@@ -366,21 +373,30 @@ FigWidth = 1920;
 FigHeight = 1080;
 BufferWidth = 200;
 Height = 100;
+font_size = 20;
 %
+SIC = 0.15;
 clear aice_sector pancake_sector ulon_sector ulat_sector lon_jra_sector
 
 
 
 for i = 1:vid_max
     [pancake_sector] = sector_data(tlon,tlat,coords,pancake(:,:,i));
+    [swh_sector] = sector_data(tlon,tlat,coords,swh(:,:,i));
+    [Tair_sector] = sector_data(tlon,tlat,coords,Tair(:,:,i));
+    [dafsd_newi_sector] = sector_data(tlon,tlat,coords,dafsd_weld_pan(:,:,i));
     [tlon_sector] = sector_data(tlon,tlat,coords,tlon);
     [tlat_sector] = sector_data(tlon,tlat,coords,tlat);
     [ulon_sector] = sector_data_u(ulon,ulat,coords,ulon);
     [ulat_sector] = sector_data_u(ulon,ulat,coords,ulat);
     [daidtd_sector] = sector_data(tlon,tlat,coords,daidtd(:,:,i));
-    [ice_u_sector] = sector_data_u(ulon,ulat,coords,ice_u(:,:,i));
-    [ice_v_sector] = sector_data_u(ulon,ulat,coords,ice_v(:,:,i));
+    [ice_u_sector] = sector_data(tlon,tlat,coords,ice_u(:,:,i));%sector_data_u(ulon,ulat,coords,ice_u(:,:,i));
+    [ice_v_sector] = sector_data(tlon,tlat,coords,ice_v(:,:,i));%sector_data_u(ulon,ulat,coords,ice_v(:,:,i));
+    [lat_ice_edge, lon_ice_edge, edge] = find_ice_edge(aice(:,:,i),SIC,sector,tlat,tlon);
     %
+    [aice_sector] = sector_data(tlon,tlat,coords,aice(:,:,i));
+    icemask = aice_sector > 0.01;
+    dafsd_newi_sector(~icemask) = NaN;
     [airPressureInterp_sector] = sector_data(lon_jra,lat_jra,coords,airPressureInterp(:,:,i)/100);
     min_lon = near1(lon_jra,coords(1,2));
     max_lon = near1(lon_jra,coords(3,2));
@@ -412,15 +428,17 @@ for i = 1:vid_max
         setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10);  
         setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',font_size);
         setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
-        pcolorm(tlat_sector,tlon_sector,pancake_sector)
+        pcolorm(tlat_sector,tlon_sector,Tair_sector)
         hold on
         ylabel('Latitude')
         scalebar('color',[1.0 1.0 1.0], 'location','sw');
         cb = colorbar; set(cb,'position',[.91 .15 .02 .75])
-        cb.Label.String = 'Proportion of pancake ice [%]'; cb.Label.Interpreter = 'latex';
+        cb.Label.String = '10 m air temp. [C]'; cb.Label.Interpreter = 'latex';
         cb.FontSize = font_size;cb.Color = 'white';
-        cmocean('haline',31)
-        caxis([0,1])
+        cmocean('thermal',31)
+       
+        caxis([-30,10])
+        plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width) %lat_vec,lon_vec,
 
 
         %[c1,h] = contourm(lat_jra_sector,lon_jra_sector,airPressureInterp_sector');%,'LevelStep',20)%,'ShowText','on')
@@ -438,7 +456,9 @@ for i = 1:vid_max
 %         han=axes(f,'visible','off'); 
 %         han.Title.Visible='on';
 
-        quivermc(ulat_sector,ulon_sector,ice_u_sector,ice_v_sector,'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+        %quivermc(tlat_sector,tlon_sector,air_u_sector,air_v_sector,'density',50,'units','Wind velocity [m/s]','reference',10,'color',[.9 .1 .1],'colormap',autumn(256));
+        quivermc(ulat,ulon,air_u(:,:,i),air_v(:,:,i),'density',50,'units','Wind velocity [m/s]','reference',10,'color',[.9 .1 .1],'colormap',autumn(256));
+        
         t = clabelm(c1,h);
         set(t,'Color','r'); set(t,'BackgroundColor','none'); 
         set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
@@ -454,7 +474,7 @@ for i = 1:vid_max
     set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
     set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
     if i == 1
-        gif('pancake.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
+        gif('Tair.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
     else
         gif
     end
@@ -557,7 +577,7 @@ for i = 1:vid_max
     set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
     set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
     if i == 1
-        gif('daidtt.gif','DelayTime',20/n_files,'resolution',400,'overwrite',true)
+        gif('daidtt.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
     else
         gif
     end
@@ -708,6 +728,106 @@ cmocean('balance','pivot')
 mk = mann_kendall(sst); % is this statistically significant 1 = yes
 hold 
 stipple(lon,lat,mk)
+
+
+%% Calculating curl
+
+
+clear aice air_u air_v ice_u ice_v swh  filename ice_u dirdates
+historydir = '/Users/noahday/Maths1/access-forcing-2010-fixed-ic/history_h/';
+sector = "SH";
+user = "noahday";
+grid = 'om2';
+
+a = dir([historydir '/*.nc']);
+n_files = numel(a);
+
+% Read in file names
+for i = 1:n_files
+    filename.cice(i,:) = strcat(historydir,a(i).name);
+    dirdates(i,:) = a(i).name(11:end-3);
+end
+i = 60;
+NFSD = ncread(filename.cice(1,:),"NFSD");
+[lat,lon,~,ulat,ulon] = grid_read('om2');
+
+[floe_binwidth, floe_rad_l, floe_rad_h, floe_area_binwidth] = cice_parameters(NFSD);
+[aice(:,:,i), sector_mask] = data_format_sector(filename.cice(i,:), "aice",sector);
+air_u(:,:,i) = data_format_sector(filename.cice(i,:),"uatm",sector); % m/s
+air_v(:,:,i) = data_format_sector(filename.cice(i,:),"vatm",sector); % m/s
+ice_u(:,:,i) = data_format_sector(filename.cice(i,:),"uvel",sector); % m/s
+ice_v(:,:,i) = data_format_sector(filename.cice(i,:),"vvel",sector); % m/s
+
+%cav = curl(lon,lat,ice_u,ice_v);
+
+% pcolor(lon,lat,cav); shading interp
+% ylim([-90,-60])
+% colorbar
+% hold on; quiver(lon,lat,ice_u,ice_v)
+
+[Lat,Lon] = meshgrid(lat(1,:),lon(:,180));
+[Lat,Lon,u,v] = recenter(Lat,Lon,ice_u(:,:,i),ice_v(:,:,i));
+C = cdtcurl(Lat,Lon,u,v);
+C = C.*sign(Lat); % Multiply in the south with -1
+%C = cdtcurl(lat',lon',ice_u',ice_v');
+%
+lat_pos = near1(Lat(1,:),-62);
+lon_pos = near1(Lon(:,180), 8);
+
+C(lon_pos,lat_pos) = 10;
+
+font_size = 12;
+close all
+figure
+w = worldmap('world');
+    axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [0 0 0]);
+    setm(w, 'maplatlimit', [-80,-30]);
+    setm(w, 'maplonlimit', [345,90]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(Lat,Lon,C)
+    ylabel('Latitude')
+    scalebar('color',[0.0 0.0 0.0], 'location','sw');
+    cb = colorbar; set(cb,'position',[.89 .15 .02 .75])
+    cb.Label.String = 'CURL '; cb.Label.Interpreter = 'latex';
+    cb.FontSize = font_size;cb.Color = 'black';
+    cmocean('balance',31)
+    caxis([-10^(-5),10^(-5)])
+    [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LevelStep',20);%,'ShowText','on')
+    quivermc(ulat,ulon,ice_u(:,:,i),ice_v(:,:,i),'density',50,'units','Ice drift [m/s]','reference',0.2,'color',[.9 .1 .1],'colormap',cool(256));
+    t = clabelm(c1,h);
+    set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+    set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+    %title(dirdates(i,:),'Color','black','Position',[0.0500 -0.8663 5000],'FontSize',font_size+5)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+
+
+
+%%
+ice_mag = sqrt(ice_u(:,:,i).^2 + ice_v(:,:,i).^2);
+ice_mag = reshape(ice_mag,[numel(ice_mag),1]);
+C_vec = reshape(C,[numel(C),1]);
+figure
+scatter(C_vec,ice_mag)
+%%
+close all
+ load wind
+   k = 4; 
+   x = x(:,:,k); % LON
+   y = y(:,:,k); % LAT
+   u = u(:,:,k); 
+   v = v(:,:,k); 
+ Cz = cdtcurl(y,x,u,v)  
+   cav = curl(x,y,u,v);
+   pcolor(x,y,cav); shading interp
+   hold on; quiver(x,y,u,v)
 
 
 %% Functions
