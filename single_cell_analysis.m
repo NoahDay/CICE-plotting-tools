@@ -63,7 +63,7 @@ for i = 1:n_files
     % Multiply in the south with -1
     air_curl(:,:,i) = air_curl(:,:,i).*sign(Lat);
     if mod(i,10) == 1
-        disp(i)
+        disp(i/n_files)
     end
 end
 
@@ -75,7 +75,7 @@ row = 281;
 hte = rearrange_matrix(hte,row,2);
 hte = [hte(1,:); hte];
 %% Air pressure
-filename.airPressure = '/Users/noahday/GitHub/CICE-plotting-tools/observations/jra55/psl_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_201701010000-201712312100.nc';
+filename.airPressure = '/Users/noahday/GitHub/CICE-plotting-tools/observations/jra55/psl_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_201901010000-201912312100.nc';
 airPressure = ncread(filename.airPressure, "psl");
 lat_jra = ncread(filename.airPressure, "lat");
 lon_jra = ncread(filename.airPressure, "lon");
@@ -350,7 +350,7 @@ lon_desired = 2;
 
 lat_pos_jra = near1(lat_jra,lat_desired);
 lon_pos_jra = near1(lon_jra, lon_desired);
-lat_diff = -1;
+lat_diff = 1;
 
 [lon_pos,lat_pos,~] = near2(lon,lat,lon_desired,lat_desired);
 lat_pos = edge(:,lon_pos) + lat_diff;
@@ -474,12 +474,17 @@ hold off
 
 
 subplot(n_panes,2,6)
-%yyaxis left
-area(xlabel_date,dafsd_data)
+yyaxis left
+plot(xlabel_date,dafsd_data(:,[3,2,5]))
+ylim([-0.5,0.5])
+hold on
 ylabel('Change in FSD cat 1 [\%]')
+yyaxis right 
+plot(xlabel_date,dafsd_data(:,[4]))
+ylim([-0.001,0.001])
 xline(SIC_change,'LineStyle','--')
-legend(["Latg","Latm","Newi","Weld","Wave",""],'Location','northwest')
-% hold off
+legend(["New ice","Wave","Latm","Weld",""],'Location','northeast')
+hold off
 
 
 subplot(n_panes,1,4)

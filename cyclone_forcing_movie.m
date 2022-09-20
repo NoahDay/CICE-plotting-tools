@@ -7,7 +7,7 @@ close all
 addpath functions
 
 % JRA55 filename
-filename.airPressure = '/Users/noahday/GitHub/CICE-plotting-tools/observations/jra55/psl_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_201701010000-201712312100.nc';
+filename.airPressure = '/Users/noahday/GitHub/CICE-plotting-tools/observations/jra55/psl_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_201901010000-201912312100.nc';
 airPressure = ncread(filename.airPressure, "psl");
 lat_jra = ncread(filename.airPressure, "lat");
 lon_jra = ncread(filename.airPressure, "lon");
@@ -17,7 +17,7 @@ lon_jra = ncread(filename.airPressure, "lon");
 
 %% CICE data
 clear aice air_u air_v ice_u ice_v swh  filename ice_u 
-historydir = '/Users/noahday/Maths1/access-forcing-2010-fixed-ic/history_h/';
+historydir = '/Users/noahday/Maths1/access-forcing-2010-fixed-ic/history/2019/';
 sector = "SH";
 user = "noahday";
 grid = 'om2';
@@ -141,21 +141,38 @@ end
 sector = "AU";
 coords = sector_coords(sector);
 % September start iceh_inst.2007-07-01-75600.nc
-jra_idx = 181*8; % July 1st
+jra_idx = 181*8 - 240; % June 1st
 [len,wid,~] = size(airPressure);
-for i = 1:ceil(n_files/3) % Data is every 3 hr
-    for j = 1:len
-        for k = 1:wid
-            if lat_jra(k) > coords(2,1) && lat_jra(k) < coords(1,1) && mod(lon_jra(j)+180,360) > mod(coords(1,2)+180,360)&& mod(lon_jra(k)+180,360) < mod(coords(3,2)+180,360)
-                temp = squeeze(airPressure(j,k,jra_idx:jra_idx+ceil(n_files/3)-1));
-                airPressureInterp(j,k,1:n_files) = interp1(1:ceil(n_files/3),temp,linspace(1,ceil(n_files/3),n_files));
-            else
-                airPressureInterp(j,k,1:n_files) = NaN;
+model_timestep = 'd';
+
+if model_timestep == 'h'
+    for i = 1:ceil(n_files/3) % Data is every 3 hr
+        for j = 1:len
+            for k = 1:wid
+                if lat_jra(k) > coords(2,1) && lat_jra(k) < coords(1,1) && mod(lon_jra(j)+180,360) > mod(coords(1,2)+180,360)&& mod(lon_jra(k)+180,360) < mod(coords(3,2)+180,360)
+                    temp = squeeze(airPressure(j,k,jra_idx:jra_idx+ceil(n_files/3)-1));
+                    airPressureInterp(j,k,1:n_files) = interp1(1:ceil(n_files/3),temp,linspace(1,ceil(n_files/3),n_files));
+                else
+                    airPressureInterp(j,k,1:n_files) = NaN;
+                end
+            end
+        end
+    end
+elseif model_timestep == 'd'
+    for i = 1:n_files % Data is every 8 times a day
+        for j = 1:len
+            for k = 1:wid
+                if lat_jra(k) > coords(2,1) && lat_jra(k) < coords(1,1) && mod(lon_jra(j)+180,360) > mod(coords(1,2)+180,360)&& mod(lon_jra(k)+180,360) < mod(coords(3,2)+180,360)
+                    temp = squeeze(airPressure(j,k,jra_idx+(i-1)*8));
+                    %airPressureInterp(j,k,1:n_files) = interp1(1:ceil(n_files/3),temp,linspace(1,ceil(n_files/3),n_files));
+                    airPressureInterp(j,k,i) = temp;
+                else
+                    airPressureInterp(j,k,i) = NaN;
+                end
             end
         end
     end
 end
-
 %% AICE
 
 sector = "SH";
@@ -239,7 +256,7 @@ for i = 1:vid_max
     set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
     set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
     if i == 1
-        gif('aice.gif','DelayTime',20/n_files,'resolution',100,'overwrite',true)
+        gif('aice.gif','DelayTime',0.5,'resolution',100,'overwrite',true)
     else
         gif
     end

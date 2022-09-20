@@ -31,3 +31,4 @@ grid/gx3/kmt_gx3.bin
 .DS_Store
 *.gif
 *packages/
+*.mat
