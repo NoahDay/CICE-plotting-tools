@@ -11,9 +11,6 @@ filename.airPressure = '/Users/noahday/GitHub/CICE-plotting-tools/observations/j
 airPressure = ncread(filename.airPressure, "psl");
 lat_jra = ncread(filename.airPressure, "lat");
 lon_jra = ncread(filename.airPressure, "lon");
-%
-%airPressure2D(:,:) = airPressure(:,:,150+15)/100;
-
 
 %% CICE data
 clear aice air_u air_v ice_u ice_v swh  filename ice_u 
@@ -21,17 +18,14 @@ historydir = '/Users/noahday/Maths1/access-forcing-2010-fixed-ic/history/2019/';
 sector = "SH";
 user = "noahday";
 grid = 'om2';
-
 a = dir([historydir '/*.nc']);
 n_files = numel(a);
-
 % Read in file names
 for i = 1:n_files
    filename.cice(i,:) = strcat(historydir,a(i).name);
    dirdates(i,:) = a(i).name(11:end-3);
-    
    NFSD = ncread(filename.cice(1,:),"NFSD");
-   [floe_binwidth, floe_rad_l, floe_rad_h, floe_area_binwidth] = cice_parameters(NFSD);
+   [floe_binwidth, ~, ~, ~] = cice_parameters(NFSD);
    [aice(:,:,i), sector_mask] = data_format_sector(filename.cice(i,:), "aice",sector);
    air_u(:,:,i) = data_format_sector(filename.cice(i,:),"uatm",sector); % m/s
    air_v(:,:,i) = data_format_sector(filename.cice(i,:),"vatm",sector); % m/s
@@ -73,7 +67,10 @@ for i = 1:n_files
    temp(ice_mask) = NaN;
    pancake(:,:,i) = temp;
 end
-%
+%%
+i = 1;
+filename.cice(i,:) = strcat(historydir,a(i).name);
+dirdates(i,:) = a(i).name(11:end-3);
 filedir = filename.cice(1,:);
 info = ncinfo(filedir,"aice");
 attributes = info.Attributes;
@@ -115,7 +112,32 @@ elseif data_size(1) == 360 && data_size(2) == 300
 end
 
 
+%% 
+load('kmeans_may_sep_2019_4_classes.mat');
+idx = kmeans_cluster.idx;
+row_idx = kmeans_cluster.row_idx;
+label_vec = kmeans_cluster.label_vec;
+C = kmeans_cluster.C;
+X_new = kmeans_cluster.X_new;
+num_clusters = size(C,1);
+region_label = {'Sheet ice','Consolidated','Wavey','Pancake'};
+[len,wid] = size(tlat);
 
+index_lat = X_new(:,end-1) == X_new(1,end-1);
+index_lon = X_new(:,end) == X_new(1,end);
+index_both = index_lat.*index_lon;
+
+row_file = find(index_both);%[0,cumsum(row_idx)];
+for file_number = 1:n_files-1
+    row_vec = row_file(file_number)+1:row_file(file_number+1);
+    file_idx = idx(row_vec);
+    X_map = [file_idx, X_new(row_vec,end-1:end)];%[file_idx, X_new(:,end-1:end)];%
+    k_means(:,:,file_number) = NaN.*ones(len,wid);
+    for i = 1:length(file_idx)
+        [lon_pos,lat_pos,~] = near2(tlon,tlat,X_map(i,3),X_map(i,2));
+        k_means(lon_pos,lat_pos,file_number) = file_idx(i); 
+    end
+end
 % w = worldmap('world');
 %     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
 %     setm(w, 'Origin', [-90 0 0]);
@@ -141,7 +163,7 @@ end
 sector = "AU";
 coords = sector_coords(sector);
 % September start iceh_inst.2007-07-01-75600.nc
-jra_idx = 181*8 - 240; % June 1st
+jra_idx = 181*8 - 240 - 31*8; % May 1st (July - June - May)
 [len,wid,~] = size(airPressure);
 model_timestep = 'd';
 
@@ -207,11 +229,6 @@ for i = 1:vid_max
     AX.InnerPosition = [0 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
     f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
     f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
-    %axesHandles = findall(f,'type','axes');
-    %get(axesHandles,'position')
-    %pos = [0.3 0.6 0.2 0.4]; % [left bottom width height]
-    %subplot('Position',pos);
-   % fullfig
     camlight
     set(gca,'color','k')
     set(gcf,'color','k')
@@ -225,7 +242,6 @@ for i = 1:vid_max
         setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
         setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',12);
         setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
-        %%imagescn(tlon,tlat,aice(:,:,i)') 
         pcolorm(tlat,tlon,aice(:,:,i))
         ylabel('Latitude')
         sb = scalebar('color',[1.0 1.0 1.0], 'location','sw','position',[.87 .13 .02 .85]);
@@ -243,14 +259,9 @@ for i = 1:vid_max
         land = shaperead('landareas', 'UseGeoCoords', true);
         %hold on
         %pcolorm(lat_shelf,lon_shelf,shelf,'FaceAlpha', 0.5)
-    
         geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
-        
-
         han=axes(f,'visible','off'); 
         han.Title.Visible='on';
-        
-
     set(gcf,'Color',[0 0 0]); % color of the frame around the figure
     set(gca,'Color','k')%color for the plot area
     set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
@@ -260,17 +271,83 @@ for i = 1:vid_max
     else
         gif
     end
+end
 
-   % F = getframe(gcf);
-    
-   % figname = sprintf('image%d.png', i); 
-   % filedir = sprintf('/Users/%s/GitHub/CICE-plotting-tools/frames', user);
-    %exportgraphics(f,figname,'ContentType','vector')
-    %saveas(f,fullfile(filedir, figname));
-    %exportgraphics(F,fullfile(filedir, figname),'Resolution',1000)
-   % im = frame2im(F);
-   % imwrite(im,fullfile(filedir, figname),'XResolution',4920,'YResolution',1080);
-    %close all
+%% SWH
+
+sector = "SH";
+coords = sector_coords(sector);
+user = 'noahday';
+pram.ice_edge_color = 0.9*[0.4660 0.6740 0.1880];
+vid_max = n_files;
+line_width = 2;
+FigWidth = 1500;
+FigHeight = 900;
+BufferWidth = 50;
+Height = 100;
+
+%pixels = 1000;
+%shelf = double(isiceshelf(tlat(:,1:65),tlon(:,1:65)));
+%lon_shelf = interp2(tlon(:,1:90),2);%repmat(linspace(1,365,pixels)',1,pixels);
+%lat_shelf = interp2(tlat(:,1:90),2);%repmat(linspace(-90,-10,pixels),pixels,1);
+%shelf = double(isiceshelf(lat_shelf,lon_shelf));
+%idx = shelf == 0;
+%shelf(idx) = NaN;
+font_size = 18;
+%shelf_vec = shelf(~idx);
+%lat_shelf_vec = lat_shelf(~idx);
+%lon_shelf_vec = lon_shelf(~idx);
+for i = 1:vid_max
+    f = figure('PaperPositionMode','manual','visible','off');
+    f.Position = [100 100 540 200];
+    AX = gca;
+    f.Resize = 'off'; f.Units = 'points'; f.PaperUnits = 'points';
+    AX.Units = 'points'; AX.Clipping = 'on'; AX.PositionConstraint = 'innerposition';
+    AX.InnerPosition = [0 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
+    f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
+    f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
+    camlight
+    set(gca,'color','k')
+    set(gcf,'color','k')
+    w = worldmap('world');
+        axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+        %%tightmap
+        setm(w, 'Origin', [0 90 0]); 
+        %setm(w, 'maplatlimit', [coords(2,1),coords(1,1)]); setm(w, 'maplonlimit', [coords(1,2)-360,coords(3,2)]); 
+        setm(w, 'maplatlimit', [-75,coords(1,1)]); setm(w, 'maplonlimit', [0,150]); 
+        setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+        setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
+        setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',12);
+        setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
+        pcolorm(tlat,tlon,aice(:,:,i))
+        ylabel('Latitude')
+        sb = scalebar('color',[1.0 1.0 1.0], 'location','sw','position',[.87 .13 .02 .85]);
+        cb = colorbar; set(cb,'position',[.87 .2 .02 .65])
+        cmocean('haline')
+        cb.Label.String = 'Significant wave height'; cb.Label.Interpreter = 'latex';
+        cb.FontSize = font_size+1;cb.Color = 'white';
+        caxis([0,1])
+        [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LineColor','r','LevelStep',20,'LineWidth',1.2,'ShowText','on');
+        qv = quivermc(ulat,ulon,air_u(:,:,i),air_v(:,:,i),'density',50,'units','Wind speed [m/s]','reference',15,'color',[.9 .1 .1],'colormap',autumn(256),'FontSize',font_size);
+        t = clabelm(c1,h);
+        set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+        set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+        title(dirdates(i,:),'Color','white','FontSize',font_size+5)%,'Position',[1.0, -0.5, 0])
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        %hold on
+        %pcolorm(lat_shelf,lon_shelf,shelf,'FaceAlpha', 0.5)
+        geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+        han=axes(f,'visible','off'); 
+        han.Title.Visible='on';
+    set(gcf,'Color',[0 0 0]); % color of the frame around the figure
+    set(gca,'Color','k')%color for the plot area
+    set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
+    set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
+    if i == 1
+        gif('swh.gif','DelayTime',0.5,'resolution',100,'overwrite',true)
+    else
+        gif
+    end
 end
 
 
@@ -845,6 +922,89 @@ close all
    cav = curl(x,y,u,v);
    pcolor(x,y,cav); shading interp
    hold on; quiver(x,y,u,v)
+
+%% k-means with cyclone data (k_means)
+
+sector = "SH";
+coords = sector_coords(sector);
+user = 'noahday';
+pram.ice_edge_color = 0.9*[0.4660 0.6740 0.1880];
+vid_max = n_files-1;
+line_width = 2;
+FigWidth = 1500;
+FigHeight = 900;
+BufferWidth = 50;
+Height = 100;
+pram.ice_edge_color = 0.7*[0.4660 0.6740 0.1880];
+
+font_size = 18;
+SIC = 0.15;
+region_label = {'Sheet ice','Consolidated','Wavey','Pancake'};
+for i = 1:vid_max
+    [tlon_sector] = sector_data(tlon,tlat,coords,tlon);
+    [tlat_sector] = sector_data(tlon,tlat,coords,tlat);
+    [ulon_sector] = sector_data_u(ulon,ulat,coords,ulon);
+    [ulat_sector] = sector_data_u(ulon,ulat,coords,ulat);
+    [lat_ice_edge, lon_ice_edge, edge] = find_ice_edge(aice(:,:,i),SIC,sector,tlat,tlon);
+
+    f = figure('PaperPositionMode','manual','visible','off');
+    f.Position = [100 100 540 200];
+    AX = gca;
+    f.Resize = 'off'; f.Units = 'points'; f.PaperUnits = 'points';
+    AX.Units = 'points'; AX.Clipping = 'on'; AX.PositionConstraint = 'innerposition';
+    AX.InnerPosition = [0 0 FigWidth-BufferWidth FigHeight-Height]*72/96; % converting from pixels to points
+    f.OuterPosition = [0 0 FigWidth FigHeight]*72/96; % converting from pixels to points
+    f.PaperPosition = [0 0 FigWidth FigHeight]*72/96;% converting from pixels to points
+    camlight
+    set(gca,'color','k')
+    set(gcf,'color','k')
+    w = worldmap('world');
+        axesm miller; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+        %%tightmap
+        setm(w, 'Origin', [0 90 0]); 
+        %setm(w, 'maplatlimit', [coords(2,1),coords(1,1)]); setm(w, 'maplonlimit', [coords(1,2)-360,coords(3,2)]); 
+        setm(w, 'maplatlimit', [-75,coords(1,1)]); setm(w, 'maplonlimit', [0,150]); 
+        setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+        setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
+        setm(w, 'mlabelparallel', -80,'FontColor','white','FontSize',12);
+        setm(w, 'grid', 'on'); setm(w, 'labelrotation', 'on');
+        pcolorm(tlat,tlon,k_means(:,:,i))
+        ylabel('Latitude')
+        sb = scalebar('color',[1.0 1.0 1.0], 'location','sw','position',[.87 .13 .02 .85]);
+        cb = colorbar; set(cb,'position',[.87 .2 .02 .65])
+        cmocean('deep',num_clusters)
+        %cb.Label.String = 'Sea ice concentration'; 
+        cb.FontSize = font_size+1;cb.Color = 'white';
+        cb.TickLabels = region_label;
+        cb.Ticks = 1:num_clusters;
+        cb.Label.Interpreter = 'latex';
+        caxis([1,num_clusters])
+        [c1,h] = contourm(lat_jra,lon_jra,airPressureInterp(:,:,i)'/100,'LineColor','r','LevelStep',20,'LineWidth',1.2,'ShowText','on');
+        qv = quivermc(ulat,ulon,air_u(:,:,i),air_v(:,:,i),'density',50,'units','Wind speed [m/s]','reference',20,'color',[.9 .1 .1],'colormap',autumn(256),'FontSize',font_size);
+        t = clabelm(c1,h);
+        set(t,'Color','r'); set(t,'BackgroundColor','none'); 
+        set(t,'FontWeight','bold'); set(t,'FontSize',font_size);
+        title(dirdates(i,:),'Color','white','FontSize',font_size+5)%,'Position',[1.0, -0.5, 0])
+        land = shaperead('landareas', 'UseGeoCoords', true);
+        plotm(lat_ice_edge,lon_ice_edge+1,'-','color',pram.ice_edge_color,'LineWidth',line_width)
+        geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+        han=axes(f,'visible','off'); 
+        han.Title.Visible='on';
+        
+
+    set(gcf,'Color',[0 0 0]); % color of the frame around the figure
+    set(gca,'Color','k')%color for the plot area
+    set(gca,'XColor',[1 1 1]); % Set RGB value to what you want
+    set(gca,'YColor',[1 1 1]); % Set RGB value to what you want
+    if i == 1
+        gif('kmeans_cyclone.gif','DelayTime',0.5,'resolution',100,'overwrite',true)
+    else
+        gif
+    end
+end
+
+
+
 
 
 %% Functions

@@ -25,7 +25,7 @@ function coords = sector_coords(sector)
     if sector == "SA" % South African sector
         coords = [-55,20;-70,20;-55,40;-70,40]; %(NW;SW,NE,SE)
     elseif sector == "EA" % Eastern Antarctica sector
-        coords = [-45,10;-75,10;-45,110;-75,110]; %(NW;SW,NE,SE) %% Need to verify these points with papers!!
+        coords = [-45,1;-75,1;-45,140;-75,140]; %(NW;SW,NE,SE) %% Need to verify these points with papers!!
     elseif sector == "AU" % Australia
         coords = [-25,1;-75,1;-25,150;-75,150]; %(NW;SW,NE,SE) %% Need to verify these points with papers!!
     elseif sector == "WS" % Weddell sea
@@ -62,6 +62,12 @@ function coords = sector_coords(sector)
         min_lon = 105;
         max_lon = 130;
         min_lat = -75;
+        coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
+    elseif sector == "global" % Coords from Vichi et al. (2019) Figure 3.
+        max_lat = 0;
+        min_lon = 0;
+        max_lon = 365;
+        min_lat = -90;
         coords = [max_lat,min_lon;min_lat,min_lon;max_lat,max_lon;min_lat,max_lon]; %(NW;SW,NE,SE)
     else
         error("ND: no sector specified")

@@ -11,7 +11,7 @@ function [lat_ice_edge_new, lon_ice_edge_new, edge] = find_ice_edge(aice,SIC,sec
 
     edge = ones(1,len);
     
-    if lon_east > lon_west
+    if lon_east > lon_west % Sub-domain crosses 0
         for j = lon_east:len
             for i = lat_north:-1:lat_south
                 if aice(j,i) > SIC
@@ -29,11 +29,13 @@ function [lat_ice_edge_new, lon_ice_edge_new, edge] = find_ice_edge(aice,SIC,sec
             end
         end
 
-    else
+    else % Normal case
         for j = lon_east:lon_west
-            for i = lat_north:-1:lat_south
-                if aice(j,i) > SIC
-                    edge(j) = i+1;
+            %for i = lat_north:-1:lat_south
+            for i = lat_south:1:lat_north
+                if aice(j,i) < SIC
+                    %edge(j) = i+1;
+                    edge(j) = i;
                     break
                 end
             end
