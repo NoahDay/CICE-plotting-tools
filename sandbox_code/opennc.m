@@ -130,21 +130,73 @@ w = worldmap('world');
 
 %% Ice age
 close all
+[lat,lon] = grid_read('om2');
+
 conFigure(11,1.5)
-filename1= "cases/31freq/history/iceh.2008-07-31.nc";
-filename2 = "cases/forcingoff/history/iceh.2008-07-31.nc";
-f = figure
+filename1= "/Volumes/NoahDay5TB/WIMonAlessandroRun/history/iceh.2019-12-31.nc";
+filename2 = "/Volumes/NoahDay5TB/WIMoffSheetIceAlessandroRun/history/iceh.2019-12-31.nc";
+f1 = figure;
 data1 = data_format(filename1,"iage");
 data2 = data_format(filename2,"iage");
 %idx = data1 < 12/12;
 %data1(idx) = NaN;
-[p,a] = map_plot(data1-data2,"iage","SH","gx1",[-0.5,0.5])
-cmocean('balance')
+%[p,a] = map_plot(data1-data2,"iage","SH","gx1",[-0.5,0.5])
+figure;
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,data1-data2)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis([-1,1])
+    cmocean('balance','pivot')
 a.Label.String = "Ice age, years";
 a.Label.Interpreter = "latex";
 %a.Limits = [-0.5,0.5];
 
-exportgraphics(f,'iagecomp.pdf','ContentType','vector')
+%exportgraphics(f,'iagecomp.pdf','ContentType','vector')
+
+
+
+f2 = figure;
+data1 = data_format(filename1,"aice");
+data2 = data_format(filename2,"aice");
+%idx = data1 < 12/12;
+%data1(idx) = NaN;
+%[p,a] = map_plot(data1-data2,"iage","SH","gx1",[-0.5,0.5])
+figure;
+w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 10);
+    setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'on');
+    %setm(w, 'frame', 'on');
+    setm(w, 'labelrotation', 'on')
+    pcolorm(lat,lon,data1-data2)
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+    colorbar
+    caxis([-0.5,0.5])
+    cmocean('balance','pivot')
+a.Label.String = "SIC";
+a.Label.Interpreter = "latex";
 
 %%
 f = figure;
@@ -833,16 +885,18 @@ w = worldmap('world');
 
 
 %%
-filename = '/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/JRA55-do/1-4-0/8XDAILY/JRA55_03hr_forcing_2005.nc';
+%filename = '/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/JRA55-do/1-4-0/8XDAILY/JRA55_03hr_forcing_2005.nc';
+%lat = ncread(filename,"LAT");
+%lon = ncread(filename,"LON");
 
 
-lat = ncread(filename,"LAT");
-lon = ncread(filename,"LON");
-airtmp3d = ncread(filename,"airtmp");
-airtemp = airtmp3d(:,:,301);
-
-
-
+filename = '/Volumes/NoahDay5TB/Gadi/JRA55-do-1-5-0/atmos/3hrPt/vas/gr/v20200916/vas_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-5-0_gr_201901010000-201912312100.nc';
+lat = ncread(filename,"lat");
+lon = ncread(filename,"lon");
+data3d = ncread(filename,"vas");
+data = data3d(:,:,1);
+%%
+close all
 figure
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
@@ -860,8 +914,7 @@ w = worldmap('world');
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
-    %cmocean('ice')
-    %caxis([0,1])
+    caxis([0-30,30])
 
 %%
 filename = '/Users/noahday/GitHub/cice-dirs/input/CICE_data/forcing/access-om2_1deg/CAWCR/MONTHLY/2005/ww3_om2_1deg_200501.nc';
