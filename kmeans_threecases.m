@@ -92,7 +92,7 @@ Xnan.all = [Xnan.waves;Xnan.sheet;Xnan.pancake];
 cleaned_data.X_no_nan = Xnan.all;
 cleaned_data.row_idx = row_idx;
 cleaned_data.dimension = dimension;
-save('cleanded_kmeans_data.mat','cleaned_data');
+save('cleanded_kmeans_data.mat','cleaned_data','-v7.3');
 %%
 %load('kmeans_3cases_4_classes.mat')
 %% Standardise the data
@@ -158,17 +158,17 @@ for i = 1:num_clusters
 end
 
 close all
-conFigure(11)
-f = figure('Position',[100, 100, 100, 100]);
+conFigure(12,0.2)
+f = figure;%('Position',[1, 1, 50, 100]);
 %set(gcf,'Visible', 'on')
-for i = 1:13
+for i = 1:14
   subplot(7,2,i)
   bar(average_stats(:,i))
   xticks(1:length(average_stats(:,i)))
   %set(gca, 'XTickLabel',label_vec)
   title(label_vec{i})
 end
-exportgraphics(f,'statcomp.pdf','ContentType','vector')
+exportgraphics(f,strcat('stat_comparison_',sprintf('%g',num_clusters),'_clusters.pdf'),'ContentType','vector')
 
 %% Distributions of each class
 
@@ -193,8 +193,8 @@ index_lon = X_new(:,end) == X_new(1,end);
 index_both = index_lat.*index_lon;
 sum(index_both)
 
-index_lat = X_new(:,end-1) == X_new(10,end-1);
-index_lon = X_new(:,end) == X_new(5,end);
+index_lat = X_new(:,end-1) == X_new(30,end-1);
+index_lon = X_new(:,end) == X_new(30,end);
 index_both = index_lat.*index_lon;
 sum(index_both)
 %%
@@ -206,37 +206,39 @@ addpath functions
 [lat,lon,~,ulat,ulon] = grid_read('om2');
 clear X_map MIZ_width
 % Make worldmap with colour matching
-uarea = data_format(filenames.waves(1,:),"uarea");
+uarea = data_format(filenames.sheet(1,:),"uarea");
 
-[num_files,~] = size(filenames.waves);
+[num_files,~] = size(filenames.sheet);
 sector = "EA";
 coords = sector_coords(sector);
 font_size = 5;
 plot_type = "kmeans";
 plotting = "on";
 conFigure(11)
-X_standard_all(:,end-1:end) = Xnan.all(:,end-1:end);
-X_new = X_standard_all(1:dimension.waves(1),1:dimension.waves(2));
+%X_standard_all(:,end-1:end) = Xnan.all(:,end-1:end);
+%X_new = X_standard_all(dimension.waves(1):dimension.waves(1)+dimension.sheet(1),1:dimension.sheet(2));
+X_new = Xnan.sheet;
 [len,wid] = size(lat);
 
 file_number_vec = 1:365;
 for file_number = file_number_vec %num_files-1
-    row_file = [0,cumsum(row_idx.waves)];
+    row_file = [0,cumsum(row_idx.sheet)];
     if plot_type == "pc1"
         file_idx = score(row_file(file_number)+1:row_file(file_number+1),1);
         file_idx = file_idx + abs(min(file_idx));
         file_idx = file_idx./max(file_idx);
     elseif plot_type == "kmeans"
-        index_lat = X_new(:,end-1) == X_new(10,end-1);
-        index_lon = X_new(:,end) == X_new(10,end);
+        index_lat = X_new(:,end-1) == X_new(30,end-1);
+        index_lon = X_new(:,end) == X_new(30,end);
         index_both = index_lat.*index_lon;clc
         diff_index = diff(find(index_both)');
         row_file = [0,cumsum(diff_index)];
         %row_file = find(index_both);%[0,cumsum(row_idx)];
         row_vec = row_file(file_number)+1:row_file(file_number+1);
-        file_idx = idx(row_vec);
+        temp_idx = idx(3206890:3206890+3243025); % waves:waves+sheet
+        file_idx = temp_idx(row_vec);
     end
-    %[aice, sector_mask] = data_format_sector(filenames.waves(file_number,:),'aice',sector);
+    [aice, sector_mask] = data_format_sector(filenames.sheet(file_number,:),'aice',sector);
     %[lat_ice_edge, lon_ice_edge, edge] = find_ice_edge(aice,SIC,sector,lat,lon);
     X_map = [file_idx, X_new(row_vec,end-1:end)];%[file_idx, X_new(:,end-1:end)];%
     k_means = NaN.*ones(len,wid);
@@ -246,8 +248,8 @@ for file_number = file_number_vec %num_files-1
         k_means(~sector_mask) = NaN;
     end
     
-        %ice_mask =  aice > 0.15;
-        %k_means(~ice_mask) = NaN;
+    ice_mask =  aice > 0.15;
+    k_means(~ice_mask) = NaN;
     if plotting == "on"
         f = figure;
         set(gcf,'Visible', 'off')
@@ -262,18 +264,18 @@ for file_number = file_number_vec %num_files-1
             setm(w, 'Origin', [0 28 0]); 
             setm(w, 'maplatlimit', [-75,-50]); setm(w, 'maplonlimit', [1,150]); 
 
-            setm(w, 'meridianlabel', 'off')
-            setm(w, 'parallellabel', 'off') 
-            setm(w, 'mlabellocation', 60);
-            setm(w, 'plabellocation', 10);
-            setm(w, 'mlabelparallel', -45);
+            %setm(w, 'meridianlabel', 'off')
+            %setm(w, 'parallellabel', 'off') 
+            setm(w, 'meridianlabel', 'on'); setm(w, 'parallellabel', 'on'); 
+            setm(w, 'mlabellocation', 30); setm(w, 'plabellocation', 10); 
+            setm(w, 'mlabelparallel', 'south','FontColor','black','FontSize',3);
             setm(w, 'grid', 'off');
             setm(w, 'labelrotation', 'on')
             pcolorm(lat,lon,k_means)
             land = shaperead('landareas', 'UseGeoCoords', true);
             geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
             colorbar; cmocean('deep');
-            title(dirdates.waves(file_number,:),'Color','black','FontSize',font_size+5)
+            title(dirdates.sheet(file_number,:),'Color','black','FontSize',font_size+5)
             %plotm(lat_ice_edge,lon_ice_edge,'-','color',pram.ice_edge_color,'LineWidth',line_width)
             
             if plot_type == "pc1"
@@ -282,13 +284,15 @@ for file_number = file_number_vec %num_files-1
                 cb = colorbar; cmocean('deep',num_clusters)
                 %cb.TickLabels = region_label; 
                 cb.Ticks = 1:num_clusters;
-                cb.Location = 'southoutside';%cb.Location = 'northoutside';
+                %cb.Location = 'southoutside';%cb.Location = 'northoutside';
+                cb.Location = 'eastoutside';
                 caxis([1,num_clusters])
+                cb.AxisLocation = 'in';
             end
     end
     % Calculate the width of the MIZ
     % CHECK WHAT number MIZ is !!!!!!!!
-    [MIZ_width(file_number,:), miz_class, MIZ_zone] = calculate_miz_width(convertStringsToChars(filenames.waves(file_number,:)),sector,k_means,1);
+    [MIZ_width(file_number,:), miz_class, MIZ_zone] = calculate_miz_width(convertStringsToChars(filenames.sheet(file_number,:)),sector,k_means,1);
     
 
     % Calculate the perimeter and area of the zones
@@ -310,26 +314,45 @@ for file_number = file_number_vec %num_files-1
     clear aice ice_mask k_means file_idx X_map
 end
 
+%% Save the files
+ap_waves.perimeter_region = perimeter_region;
+ap_waves.area_region = area_region;
+ap_waves.xvec = file_number_vec;
+ap_waves.MIZ_width = MIZ_width;
+save_filename = strcat('a_p_waves.mat');
+save(save_filename,'ap_waves','-v7.3');
+
+
 %%
-region_label = {'1','2','3','4'};
+cbar = cmocean('deep',num_clusters);
+close all
+N = 6;
+%cmocean()
+file_number_vec = 1:351;
+region_label = {'1','2','4'};
 date_label = datetime(dirdates.waves);
 date_label_vec = date_label(file_number_vec);
-conFigure(11)
-figure
-subplot(2,3,1)
-plot(date_label_vec,[perimeter_region; sum(perimeter_region)],'LineWidth',5)
+
+
+conFigure(11,0.2)
+f = figure;
+subplot(3,1,2)
+C = linspecer(N);
+axes('NextPlot','replacechildren', 'ColorOrder',C);
+plot(date_label_vec,[perimeter_region([1,2,4],file_number_vec); sum(perimeter_region(:,file_number_vec))],'LineWidth',5);
+%set(p, {'color'}, {[cbar(1,:)];[cbar(2,:)];[cbar(4,:)];[0.5,0.1,0.1]});
 ylabel('Perimeter [block edges]')
 %legend(region_label,'Location','southeast')
 
-subplot(2,3,2)
-plot(date_label_vec,[area_region.*1e-6.*1e-6; sum(area_region.*1e-6.*1e-6)],'LineWidth',5)
+subplot(3,1,3)
+plot(date_label_vec,[area_region([1,2,4],file_number_vec).*1e-6.*1e-6; sum(area_region(:,file_number_vec).*1e-6.*1e-6)],'LineWidth',5)
 ylabel('Area [million km$^2$]')
 %legend(region_label,'Location','southeast')
 
 % Create a tile on the right column to get its position
 legend_label = region_label;
 legend_label{end+1} = 'Sum of regions';
-ax = subplot(2,3,3,'Visible','off');
+ax = subplot(3,1,1,'Visible','off');
 axPos = ax.Position;
 delete(ax)
 % Construct a Legend with the data from the sub-plots
@@ -337,10 +360,18 @@ hL = legend(legend_label);
 % Move the legend to the position of the extra axes
 hL.Position(1:2) = axPos(1:2);
 
-subplot(2,3,4)
-perim_per_area = perimeter_region./(area_region.*1e-6.*1e-6);
-plot(date_label_vec,perim_per_area,'LineWidth',5)
-ylabel('Perimeter per Area [block per million km$^2$]')
+
+
+
+
+
+% subplot(4,1,4)
+% perim_per_area = perimeter_region([1,2,4],file_number_vec)./(area_region([1,2,4],file_number_vec).*1e-6.*1e-6);
+% plot(date_label_vec,perim_per_area,'LineWidth',5)
+% ylabel('Perimeter per Area [block per million km$^2$]')
+
+
+
 %text(1,1,sprintf("$sigma =$ %g",std(perimeter_region'./(area_region./1000)')))
 % ta = annotation('textarrow', [0.76 0.83], [0.71 0.71]);
 % ta.String = sprintf("$\sigma =$ %g",std(perimeter_region(4,:)'./(area_region(4,:)./1000)'));
@@ -349,16 +380,74 @@ ylabel('Perimeter per Area [block per million km$^2$]')
 
 
 
-diff_perim = perim_per_area(:,2:end)' - perim_per_area(:,1:end-1)';
-subplot(2,3,5)
-bar(std(diff_perim))
-xticklabels(region_label)
-ylabel('S.D. $\Delta$ perimeter per area')
+% diff_perim = perim_per_area(:,2:end)' - perim_per_area(:,1:end-1)';
+% subplot(2,3,5)
+% bar(std(diff_perim))
+% xticklabels(region_label)
+% ylabel('S.D. $\Delta$ perimeter per area')
+
+
+
+%exportgraphics(f,'wave_area_perimeter.pdf','ContentType','vector')
+
+%%
+% LINE COLORS
+close all
+N=6;
+X = linspace(0,pi*3,1000);
+Y = bsxfun(@(x,n)sin(x+2*n*pi/N), X.', 1:N);
+
+subplot(2,2,1);
+nexttile
+C = linspecer(N);
+axes('NextPlot','replacechildren', 'ColorOrder',C);
+p = plot(date_label_vec,[perimeter_region([1,2,4],file_number_vec); sum(perimeter_region(:,file_number_vec))],'LineWidth',5);
+%ylim([-1.1 1.1]);
+%%
+close all
+conFigure(11,1.4)
+f = figure;
+N = 4;
+C1 = linspecer(N);
+C(1,:) = C1(4,:);
+C(2,:) = C1(3,:);
+C(3,:) = C1(1,:);
+C(4,:) = C1(2,:);
+axes('NextPlot','replacechildren', 'ColorOrder',C);
+plot(date_label_vec,[perimeter_region([1,2,4],file_number_vec); sum(perimeter_region(:,file_number_vec))],'LineWidth',3);
+%set(p, {'color'}, {[cbar(1,:)];[cbar(2,:)];[cbar(4,:)];[0.5,0.1,0.1]});
+ylabel('Perimeter [block edges]')
+%legend(region_label,'Location','southeast')
+exportgraphics(f,'wave_perimeter.pdf','ContentType','vector')
+
+f = figure;
+axes('NextPlot','replacechildren', 'ColorOrder',C);
+plot(date_label_vec,[area_region([1,2,4],file_number_vec).*1e-6.*1e-6; sum(area_region(:,file_number_vec).*1e-6.*1e-6)],'LineWidth',3)
+%set(p, {'color'}, {[cbar(1,:)];[cbar(2,:)];[cbar(4,:)];[0.5,0.1,0.1]});
+ylabel('Area [million km$^2$]')
+%legend(region_label,'Location','southeast')
+exportgraphics(f,'wave_area.pdf','ContentType','vector')
+%%
+subplot(2,1,2)
+C = linspecer(N);
+axes('NextPlot','replacechildren', 'ColorOrder',C);
+plot(date_label_vec,[area_region([1,2,4],file_number_vec).*1e-6.*1e-6; sum(area_region(:,file_number_vec).*1e-6.*1e-6)],'LineWidth',5)
+ylabel('Area [million km$^2$]')
+%legend(region_label,'Location','southeast')
 
 
 
 
-
+% % Create a tile on the right column to get its position
+% legend_label = region_label;
+% legend_label{end+1} = 'Sum of regions';
+% ax = subplot(3,1,1,'Visible','off');
+% axPos = ax.Position;
+% delete(ax)
+% % Construct a Legend with the data from the sub-plots
+% hL = legend(legend_label);
+% % Move the legend to the position of the extra axes
+% hL.Position(1:2) = axPos(1:2);
 
 
 
@@ -711,7 +800,14 @@ function [MIZ_width, class,MIZ] = calculate_miz_width(filename,sector,k_means,mi
     [len,~] = size(aice);
     for i = 1:len
         temp = k_means(i,~idx_miz);
-        edge_class(i) = temp(end); % Take the last cell that > 0.15 SIC
+        [len1,wid1] = size(temp);
+        if len1 == 0
+            edge_class(i) = 0;
+        elseif wid1 == 0
+            edge_class(i) = 0;
+        else
+            edge_class(i) = temp(end); % Take the last cell that > 0.15 SIC
+        end
     end
     idx = isnan(edge_class);
     class = mode(edge_class(~idx));
