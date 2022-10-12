@@ -1,8 +1,18 @@
-% 3 cases:
-%   1. With full WIM
-%   2. With WIM off
-%   3. With Waves off
+% Classification of CICE ice covers
 
+% We want to experiment with different combination of variables over
+% multiple years of data. 
+% 1. Only ice cover "snapshot" variables
+% 2. Add dynamic terms
+% 3. Add thermodynamic terms
+% 4. All of the terms
+
+% Each case will have its own method:
+% 1. Get filenames
+% 2. Read in data
+% 3. Clear NaNs
+% 4. Standardise the data
+% 5.Classify using kmeans
 
 % Setup
 clear all
@@ -13,84 +23,50 @@ close all
 addpath functions
 addpath /Users/noahday/GitHub/CICE-analyser/processing
 
-historydir.waves = '/Volumes/NoahDay5TB/WIMonAlessandroRun/history/2019/';
-historydir.sheet = '/Volumes/NoahDay5TB/WIMoffSheetIceAlessandroRun/history/';
-historydir.pancake = '/Volumes/NoahDay5TB/WIMoffPancakeAlessandroRun/history/';
+historydir = '/Volumes/NoahDay5TB/WIMonAlessandroRun/history/2019/';
 
-
-a.waves = dir([historydir.waves '/*.nc']);
-n_files = numel(a.waves);
+a = dir([historydir '/*.nc']);
+n_files = numel(a);
 
 for i = 1:n_files
-   filenames.waves(i,:) = strcat(historydir.waves,a.waves(i).name);
-   dirdates.waves(i,:) = a.waves(i).name(6:end-3);
+   filenames(i,:) = strcat(historydir,a(i).name);
+   dirdates(i,:) = a(i).name(6:end-3);
 end
 
-a.sheet = dir([historydir.sheet '/*.nc']);
-n_files = numel(a.sheet);
-for i = 1:n_files
-   filenames.sheet(i,:) = strcat(historydir.sheet,a.sheet(i).name);
-   dirdates.sheet(i,:) = a.sheet(i).name(6:end-3);
-end
-
-a.pancake = dir([historydir.pancake '/*.nc']);
-n_files = numel(a.pancake);
-for i = 1:n_files
-   filenames.pancake(i,:) = strcat(historydir.pancake,a.pancake(i).name);
-   dirdates.pancake(i,:) = a.pancake(i).name(6:end-3);
-end
 
 %% Select the relevant variables
 % Columns are data
 sector = "SH";
 close all
-var_list = {'aice','hi','iage','fsdrad','frazil','frzmlt','congel','sice','strint','dafsd_latg','dafsd_latm','dafsd_newi','dafsd_weld','dafsd_wave','full_fstd'};
-[X_temp, row_idx]= read_data_vec(filenames.waves,sector,var_list); % [var_list, lon, lat]
+var_list = {'aice','hi','hs','sice','ice_present','iage','alvl','vlvl','ardg','vrdg','FYarea'};
+[X_raw, row_idx]= read_data_vec(filenames,sector,var_list); % [var_list, lon, lat]
 %[~, ~,dep] = size(X_temp);
 
 %clear X_temp
 label_vec = variable_dict(var_list);
-size(X_temp)
+size(X_raw)
 %
-data.Xunstandard = X_temp;
+data.Xunstandard = X_raw;
 data.row_idx = row_idx;
-save_filename = strcat('X_wave2019.mat');
+save_filename = strcat('coversnapshot_5percent_2019.mat');
 save(save_filename,'data','-v7.3');
 clear data
-%%
-var_list = {'aice','hi','iage','fsdrad','frazil','frzmlt','congel','sice','strint','dafsd_latg','dafsd_latm','dafsd_newi','dafsd_weld','dafsd_wave','full_fstd'};
-label_vec = variable_dict(var_list);
-%%
+
+%% Load in data
 clear X row_idx
 load('X_waves.mat')
 X.waves = data.Xunstandard;
 row_idx.waves = data.row_idx;
 clear data
 
-load('X_sheet.mat')
-X.sheet = data.Xunstandard;
-row_idx.sheet = data.row_idx;
-clear data
-
-load('X_pancake.mat')
-X.pancake = data.Xunstandard;
-row_idx.pancake = data.row_idx;
-clear data
 
 %% Clean the data
 % NEED TO DO THIS ALL TOGETHER SO ITS ALL STANDARDISED CORRECTLY
 
-[Xnan.waves,row_idx.waves] = clearNaN(X.waves);
-disp('Waves done!')
-[Xnan.sheet, row_idx.sheet] = clearNaN(X.sheet);
-disp('Sheet done!')
-[Xnan.pancake, row_idx.pancake] = clearNaN(X.pancake);
-disp('Pancake done!')
+[Xnan,row_idx] = clearNaN(X_raw);
+disp('Clear NaN done!')
 
-dimension.waves = size(Xnan.waves);
-dimension.sheet = size(Xnan.sheet);
-dimension.pancake = size(Xnan.pancake);
-Xnan.all = [Xnan.waves;Xnan.sheet;Xnan.pancake];
+dimension = size(Xnan);
 % Xnan = NaN's have been removed.
 %%
 %Xnan.all = Xnan.waves;
@@ -99,7 +75,7 @@ cleaned_data.Xnan = Xnan;
 cleaned_data.label_vec = label_vec;
 cleaned_data.row_idx = row_idx;
 cleaned_data.dimension = dimension;
-save('cleanded_kmeans_data2019.mat','cleaned_data','-v7.3');
+save('cleanded_cover_data2019.mat','cleaned_data','-v7.3');
 
 %%
 load('cleanded_kmeans_data.mat')
@@ -108,73 +84,71 @@ dimension = cleaned_data.dimension;
 row_idx = cleaned_data.row_idx;
 clear cleaned_data
 %% Standardise the data
-X_standard_all = Xnan.all;
+X_standard_all = Xnan;
 [~,wid] = size(X_standard_all);
 
 for j = 1:wid-2 % Don't standardise latitude and longitude
-    if min(Xnan.all(:,j)) < 0
+    if min(X_standard_all(:,j)) < 0
         % If negatives, then recentre so its all positive
         max_X(j) = max(X_standard_all(:,j));
         min_X(j) = min(X_standard_all(:,j));
         X_standard_all(:,j) = (X_standard_all(:,j) - min_X(j))/(max_X(j) - min_X(j));
     end
     %Step 1: Log transformation as almost all of the data is highly skewed
-    X_standard_all(:,j) = log(X_standard_all(:,j)+1);
+        X_standard_all(:,j) = log(X_standard_all(:,j)+1);
     %Step 2: Standardization
     % Calculate mean
-    mean_X(j) = mean(X_standard_all(:,j));
-     % Calculate standard deviation
-    std_X(j) = std(X_standard_all(:,j));
-    
-    X_standard_all(:,j) = X_standard_all(:,j)/std_X(j);
-
+        mean_X(j) = mean(X_standard_all(:,j));
+        % Calculate standard deviation
+        std_X(j) = std(X_standard_all(:,j));
+        X_standard_all(:,j) = X_standard_all(:,j)/std_X(j);
     % Standardise the data
-   max_X(j) = max(X_standard_all(:,j));
-   min_X(j) = min(X_standard_all(:,j));
-   X_standard_all(:,j) = (X_standard_all(:,j) - min_X(j))/(max_X(j) - min_X(j));
+        max_X(j) = max(X_standard_all(:,j));
+        min_X(j) = min(X_standard_all(:,j));
+        X_standard_all(:,j) = (X_standard_all(:,j) - min_X(j))/(max_X(j) - min_X(j));
 end
+disp('Standardisation done!')
 %clear X_temp
 %%
 eva = evalclusters(X_standard_all(:,1:end-2),'kmeans','CalinskiHarabasz','KList',1:5);
 temp = eva.CriterionValues;
+conFigure(11)
 f = figure;
 plot(eva)
+exportgraphics(f,'calinskiHarabasz_cover.pdf','ContentType','vector')
+
 %% k-means clustering
 rng(2022)
-
 X = X_standard_all(:,1:end-2);
-num_clusters = 4;
+num_clusters = 3;
 tic
 [idx,C] = kmeans(X,num_clusters,'MaxIter',300);
 toc
-%%
-kmeans_cluster.idx = idx;
-kmeans_cluster.row_idx = row_idx;
-kmeans_cluster.label_vec = label_vec;
-kmeans_cluster.C = C;
-kmeans_cluster.X_standard_all = X_standard_all;
-kmeans_cluster.num_clusters = num_clusters;
-%%
-save_filename = strcat('kmeans_3cases_',sprintf('%g',num_clusters),'_classes.mat');
-save(save_filename,'kmeans_cluster','-v7.3');
-%%
-%save_filename = strcat('kmeans_3cases_',sprintf('%g',num_clusters),'_classes.mat');
-%load(save_filename);
-
-C = kmeans_cluster.C;
-idx = kmeans_cluster.idx;
-row_idx = kmeans_cluster.row_idx;
-X_standard_all = kmeans_cluster.X_new_unstandard;%X_standard_all;
-num_clusters = kmeans_cluster.num_clusters;
-label_vec = kmeans_cluster.label_vec;
+% %%
+% kmeans_cluster.idx = idx;
+% kmeans_cluster.row_idx = row_idx;
+% kmeans_cluster.label_vec = label_vec;
+% kmeans_cluster.C = C;
+% kmeans_cluster.X_standard_all = X_standard_all;
+% kmeans_cluster.num_clusters = num_clusters;
+% 
+% save_filename = strcat('kmeans_3cases_',sprintf('%g',num_clusters),'_classes.mat');
+% save(save_filename,'kmeans_cluster','-v7.3');
+% %%
+% %save_filename = strcat('kmeans_3cases_',sprintf('%g',num_clusters),'_classes.mat');
+% %load(save_filename);
+% 
+% C = kmeans_cluster.C;
+% idx = kmeans_cluster.idx;
+% row_idx = kmeans_cluster.row_idx;
+% X_standard_all = kmeans_cluster.X_new_unstandard;%X_standard_all;
+% num_clusters = kmeans_cluster.num_clusters;
+% label_vec = kmeans_cluster.label_vec;
 %% Average stats
 average_stats = [];
 X_temp = [];
-[~,~,dep] = size(Xnan.all);
-%for i = 1:dep
-%    X_temp = [X_temp; Xnan.all(:,:,i)];
-%end
-X_temp = Xnan.all;
+[~,~,dep] = size(Xnan);
+X_temp = Xnan;
 X_temp = [X_temp(:,1:end-2), idx];
 
 for i = 1:num_clusters
@@ -186,13 +160,13 @@ end
 close all
 conFigure(12,10)
 f = figure('Position',[0, 0, 60, 10]);
-for i = 1:14
-  subplot(2,7,i)
+for i = 1:length(label_vec)
+  subplot(2,ceil(length(label_vec)/2),i)
   bar(average_stats(:,i))
   xticks(1:length(average_stats(:,i)))
   title(label_vec{i})
 end
-%exportgraphics(f,strcat('stat_comparison_',sprintf('%g',num_clusters),'_clusters.pdf'),'ContentType','vector')
+exportgraphics(f,strcat('stat_comparison_',sprintf('%g',num_clusters),'_cover_5_percent_clusters.pdf'),'ContentType','vector')
 
 %% FSD plots
 close all
@@ -822,25 +796,25 @@ end
 
 %% FUNCTIONS
 function [X_total, idx] = read_data_vec(filenames,sector,var_list)
-    [len,~] = size(filenames);
-    if len == 1
+    [nfiles,~] = size(filenames);
+    if nfiles == 1
         filename = filenames;
     else
         filename = filenames(1,:);
     end
     
-    SIC_threshold = 0.01;
-    [aice, sector_mask] = data_format_sector(filename,"aice",sector);
-    [lat,lon,~,ulat,ulon] = grid_read('om2');
+    SIC_threshold = 0.05;
+    [~, sector_mask] = data_format_sector(filename,"aice",sector);
+    [lat,lon,~,~,~] = grid_read('om2');
     lat_vec = reshape(lat(sector_mask),numel(lat(sector_mask)),1);
     lon_vec = reshape(lon(sector_mask),numel(lon(sector_mask)),1);
 
     NFSD = ncread(filename,"NFSD");
     NCAT = ncread(filename,"NCAT");
-    [floe_binwidth, floe_rad_l, floe_rad_h, floe_area_binwidth] = cice_parameters(NFSD);
+    [floe_binwidth, ~, ~, ~] = cice_parameters(NFSD);
     
     X_total = [];
-    for j = 1:len
+    for j = 1:nfiles % Each file
         filename = filenames(j,:);
         [aice, sector_mask] = data_format_sector(filename,"aice",sector);
         ice_mask = aice > SIC_threshold;
@@ -1052,8 +1026,18 @@ function [X_total, idx] = read_data_vec(filenames,sector,var_list)
                 X_temp = [X_temp, temp_vec];  
             else
                 temp = data_format_sector(filename,var_list{i},sector);
-                temp(~ice_mask) = NaN;
-                temp_vec = reshape(temp(sector_mask),numel(temp(sector_mask)),1);
+                [len, wid] = size(aice);
+                for ii = 1:len
+                    for jj = 1:wid
+                        if aice(ii,jj) > SIC_threshold
+                            temp_fsd(:) = temp(ii,jj,:);
+                            temp2(ii,jj) =  sum((temp_fsd./aice(ii,jj)).*NFSD');
+                        else
+                            temp2(ii,jj) =  NaN;
+                        end
+                    end
+                end
+                temp_vec = reshape(temp2(sector_mask),numel(temp2(sector_mask)),1);
                 X_temp = [X_temp, temp_vec];
             end
         end 

@@ -32,3 +32,4 @@ grid/gx3/kmt_gx3.bin
 *.gif
 *packages/
 *.mat
+*.tiff

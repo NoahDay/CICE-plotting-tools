@@ -1,5 +1,5 @@
 addpath functions
-clear all
+%clear all
 % Truncated power law
 % N(x|d_{min} <= x <= l_{max}) = Cx^{-alpha}
 alpha = 2
@@ -26,7 +26,7 @@ for i = 1:length(alpha)
    label_vec{i} = strcat('$\alpha$',sprintf(' = %g',alpha(i)));
 end
 label_vec = ["Consolidated","Unconsolidated","Ice edge"];
-close all
+close all  
 conFigure(30)
 f = figure;
 loglog(linspace(d_min,l_max,n),(p_fsd),'Linewidth',5)
@@ -92,9 +92,10 @@ font_size = 25;
 x = [0.74 0.79];    % adjust length and location of arrow 
 y = [0.8 0.8];      % adjust hieght and width of arrow
 annotation('textarrow',x,y,'String',' Lateral growth ','FontSize',font_size,'Linewidth',2,'Interpreter','latex')
+Xadj = 1.34;
 x = [0.74 0.79];
 y = [0.7 0.7];
-annotation('textarrow',x,y,'String',' Lateral melt ','FontSize',font_size,'Linewidth',2,'Interpreter','latex')
+annotation('textarrow',-x+Xadj,y,'String',' Lateral melt ','FontSize',font_size,'Linewidth',2,'Interpreter','latex')
 % Arrow with two head at both end and text between
 y = [0.6 0.6];    
 Xadj = 1.34;      % adjust location of left arrow starting point (the sum of this with 'x' should not be negative)
@@ -105,9 +106,10 @@ x = [0.74 0.79];
 y = [0.5 0.5];
 annotation('textarrow',x,y,'String',' Welding ','FontSize',font_size,'Linewidth',2,'Interpreter','latex')
 % Wave breakup
+Xadj = 1.34;
 x = [0.74 0.79];
 y = [0.4 0.4];
-annotation('textarrow',x,y,'String',' Wave breakup ','FontSize',font_size,'Linewidth',2,'Interpreter','latex')
+annotation('textarrow',-x+Xadj,y,'String',' Wave breakup ','FontSize',font_size,'Linewidth',2,'Interpreter','latex')
 
 
 exportgraphics(f,'change_fsd.pdf','ContentType','vector')
