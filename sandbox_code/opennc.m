@@ -133,36 +133,36 @@ close all
 [lat,lon] = grid_read('om2');
 
 conFigure(11,1.5)
-filename1= "/Volumes/NoahDay5TB/WIMonAlessandroRun/history/iceh.2019-12-31.nc";
-filename2 = "/Volumes/NoahDay5TB/WIMoffSheetIceAlessandroRun/history/iceh.2019-12-31.nc";
+filename1= "/Volumes/NoahDay5TB/WIMonAlessandroRun/history/iceh.2017-09-08.nc";
+%filename2 = "/Volumes/NoahDay5TB/WIMoffSheetIceAlessandroRun/history/iceh.2019-12-31.nc";
 f1 = figure;
 data1 = data_format(filename1,"iage");
-data2 = data_format(filename2,"iage");
+%data2 = data_format(filename2,"iage");
 %idx = data1 < 12/12;
 %data1(idx) = NaN;
 %[p,a] = map_plot(data1-data2,"iage","SH","gx1",[-0.5,0.5])
-figure;
-w = worldmap('world');
-    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
-    setm(w, 'Origin', [-90 0 0]);
-    setm(w, 'maplatlimit', [-90,-30]);
-    setm(w, 'maplonlimit', [-180,180]);
-    setm(w, 'meridianlabel', 'on')
-    setm(w, 'parallellabel', 'off')
-    setm(w, 'mlabellocation', 30);
-    setm(w, 'plabellocation', 10);
-    setm(w, 'mlabelparallel', -45);
-    setm(w, 'grid', 'on');
-    %setm(w, 'frame', 'on');
-    setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,data1-data2)
-    land = shaperead('landareas', 'UseGeoCoords', true);
-    geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
-    colorbar
-    caxis([-1,1])
-    cmocean('balance','pivot')
-a.Label.String = "Ice age, years";
-a.Label.Interpreter = "latex";
+% figure;
+% w = worldmap('world');
+%     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+%     setm(w, 'Origin', [-90 0 0]);
+%     setm(w, 'maplatlimit', [-90,-30]);
+%     setm(w, 'maplonlimit', [-180,180]);
+%     setm(w, 'meridianlabel', 'on')
+%     setm(w, 'parallellabel', 'off')
+%     setm(w, 'mlabellocation', 30);
+%     setm(w, 'plabellocation', 10);
+%     setm(w, 'mlabelparallel', -45);
+%     setm(w, 'grid', 'on');
+%     %setm(w, 'frame', 'on');
+%     setm(w, 'labelrotation', 'on')
+%     pcolorm(lat,lon,data1-data2)
+%     land = shaperead('landareas', 'UseGeoCoords', true);
+%     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
+%     colorbar
+%     caxis([-1,1])
+%     cmocean('balance','pivot')
+% a.Label.String = "Ice age, years";
+% a.Label.Interpreter = "latex";
 %a.Limits = [-0.5,0.5];
 
 %exportgraphics(f,'iagecomp.pdf','ContentType','vector')
@@ -171,11 +171,11 @@ a.Label.Interpreter = "latex";
 
 f2 = figure;
 data1 = data_format(filename1,"aice");
-data2 = data_format(filename2,"aice");
+%data2 = data_format(filename2,"aice");
 %idx = data1 < 12/12;
 %data1(idx) = NaN;
 %[p,a] = map_plot(data1-data2,"iage","SH","gx1",[-0.5,0.5])
-figure;
+f = figure;
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
     setm(w, 'Origin', [-90 0 0]);
@@ -189,15 +189,16 @@ w = worldmap('world');
     setm(w, 'grid', 'on');
     %setm(w, 'frame', 'on');
     setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,data1-data2)
+    pcolorm(lat,lon,data1)
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
-    colorbar
-    caxis([-0.5,0.5])
-    cmocean('balance','pivot')
+    a = colorbar
+    caxis([0.9,1])
+    cmocean('ice')
 a.Label.String = "SIC";
 a.Label.Interpreter = "latex";
 
+exportgraphics(f,'SIC90.pdf','ContentType','vector')
 %%
 f = figure;
 idx = data < 12/12;
