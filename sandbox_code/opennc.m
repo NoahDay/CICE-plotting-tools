@@ -948,6 +948,15 @@ w = worldmap('world');
     caxis([0,5])
 
 %%
+filename = '/Users/noahday/Gadi/hs200002.nc';%'/Volumes/NoahDay5TB/raw_CAWCR/ww3_om2_1deg_200002.nc'
+figure
+lon = ncread(filename, 'LON');
+lat = ncread(filename, 'LAT');
+hs = ncread(filename, 'hs');
+
+hs = hs(:,:,end);
+%
+close all
 figure
 w = worldmap('world');
     axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
@@ -961,14 +970,14 @@ w = worldmap('world');
     setm(w, 'mlabelparallel', -45);
     setm(w, 'grid', 'on');
     setm(w, 'labelrotation', 'on')
-    pcolorm(lat,lon,swh)
+    pcolorm(lat,lon,hs)
     land = shaperead('landareas', 'UseGeoCoords', true);
     geoshow(w, land, 'FaceColor', [0.5 0.7 0.5])
     colorbar
-    cmocean('balance',31)
-    caxis([-3,3])
-
-
+    cmocean('haline')
+    caxis([0,10])
+%
+%clear hs lat lon
 
 
   %%
