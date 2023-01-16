@@ -59,7 +59,10 @@ save_filename = strcat('cover_5percent_2015-19.mat');
 save(save_filename,'data','-v7.3');
 clear data
 
+%%
+var_list = {'aice','hi','hs','fsdrad','sice','iage','vlvl','vrdg'};
 
+label_vec = variable_dict(var_list);
 %% Load in data
 clear X row_idx
 load('cover_5percent_2013-14.mat')
@@ -133,8 +136,8 @@ cleaned_data.dimension = dimension;
 save('cleanded_cover_data2015-19.mat','cleaned_data','-v7.3');
 
 %%
-load('cleanded_kmeans_data.mat')
-Xnan.all = cleaned_data.X_no_nan;
+load('cleanded_cover_data2015-19.mat')
+Xnan = cleaned_data.Xnan;
 dimension = cleaned_data.dimension;
 row_idx = cleaned_data.row_idx;
 clear cleaned_data
@@ -177,13 +180,13 @@ exportgraphics(f,'calinskiHarabasz_cover.pdf','ContentType','vector')
 rng(2022)
 idx_temp = 10000000:16339048;
 aice_idx = X_standard_all(:,1)>0.15;
-%X = X_standard_all(:,1:end-2);
-%X = X_standard_all(:,1:end-2);%
-X = X_standard_all(:,[1:3 5:end-2]);
-num_clusters = 3;
+X = X_standard_all(:,1:end-2);
+%X = X_standard_all(:,[1:3 5:end-2]);
+%
+num_clusters = 4;
 tic
-%[kmeans_idx,C] = kmeans(X,num_clusters,'MaxIter',300);
-[kmeans_idx_without_floe,C] = kmeans(X,num_clusters,'MaxIter',300);
+[kmeans_idx,C] = kmeans(X,num_clusters,'MaxIter',300);
+%[kmeans_idx_without_floe,C] = kmeans(X,num_clusters,'MaxIter',300);
 toc
 
 
@@ -295,6 +298,20 @@ end
 %sgtitle("\textbf{without floe size}",'FontSize',15)
 exportgraphics(f,strcat('stat_comparison_',sprintf('%g',num_clusters),'_with_fsd_cover_15_percent_clusters.pdf'),'ContentType','vector')
 label_vec = label_vec_temp;
+
+%% Spider plot
+% Initialize data points
+P = average_stats(:,1:8);
+%{'SIC','Ice thick.','Snow thick.','FSD','Salinity'}
+% Spider plot
+close all
+figure
+spider_plot(P,...
+    'AxesLabels', label_vec,...
+    'AxesInterval', 2,...
+    'FillOption', {'on', 'on','on','on'},...
+    'FillTransparency', 0.2*ones(1,num_clusters),...
+    'AxesLimits', [zeros(1,8);1,3,1,850,15,1,1,2]);
 %% Comparison of MIZ with and without floe size
 ylabs = {"SIC [\%]", "Ice thickness [m]", "Snow thickness [m]", "Mean floe size [m]",  "Bulk ice salinity [ppt]", "Ice age [years]", "Level ice volume", "Ridged ice volume"};
 
@@ -515,13 +532,14 @@ conFigure(11)
 X_new = Xnan;
 
 [len,wid] = size(lat);
-file_number = 1826;%1705%1826;%1705;%366;%609;
+file_number = 1705;%1705%1826;%1705;%366;%609;
 
 
 
 row_file = [0,cumsum(row_idx)];
 row_vec = row_file(file_number)+1:row_file(file_number+1);
-temp_idx = kmeans_idx_without_floe;
+%temp_idx = kmeans_idx_without_floe;
+temp_idx = kmeans_idx;
 file_idx = temp_idx(row_vec);
 file_idx = reshape(file_idx,length(file_idx),1);
 if hdd == "on"
@@ -559,7 +577,7 @@ if plotting == "on"
         land = shaperead('landareas', 'UseGeoCoords', true);
         geoshow(w, land, 'FaceColor', [0.5 0.5 0.5],'FaceAlpha',.5)
         %colorbar; %cmocean('deep');
-        colormap(Cmap)
+        %colormap(Cmap)
         cb = colorbar;
         title(dirdates(file_number,:),'Color','black','FontSize',font_size+3)
         %plotm(lat_ice_edge(1:end-2),lon_ice_edge(1:end-2),'color','#7A7A7A','LineWidth',0.5,'LineStyle','-')
@@ -582,7 +600,7 @@ if plotting == "on"
         end
 end
 
-exportgraphics(f,'screengrapsummerwithout.pdf','ContentType','vector')
+exportgraphics(f,'3cluster.pdf','ContentType','vector')
 clear X_map X_temp sb
 %% MOVIES
 clear area_region MIZ_width
