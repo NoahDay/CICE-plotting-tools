@@ -1,5 +1,6 @@
 function [lat,lon,row,ulat,ulon] = grid_read(grid)
- dim = 2;
+    cd '/Users/noahday/GitHub/CICE-plotting-tools/'
+    dim = 2;
     if grid == "gx3"
         row = 11;
 

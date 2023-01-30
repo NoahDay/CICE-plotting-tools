@@ -5,10 +5,11 @@ addpath functions
 
 SIC = 0.15; 
 filename = "/Users/a1724548/github/cice-dirs/runs/initial/history/iceh_inst.2005-01-01-03600.nc";
+filename = "/Volumes/NoahDay5TB/WIMonAlessandroRun/history/iceh.2017-09-01.nc";
 % Read the header
 ncdisp(filename)
 % 
-grid = 'gx1';
+grid = 'om2';
 
 nw = 16;
 nfreq = nw;
@@ -39,12 +40,12 @@ end
 
 
 %cd /Users/a1724548/Github/CICE-plotting-tools
-wave_spectrum = data_format(filename,"wave_spectrum");
-for i = 1:321
-    for j = 1:384
-        twodspec(i,j) = max(wave_spectrum(i,j,:))>eps;
-    end
-end
+%wave_spectrum = data_format(filename,"wave_spectrum");
+%for i = 1:321
+%    for j = 1:384
+%        twodspec(i,j) = max(wave_spectrum(i,j,:))>eps;
+%    end
+%end
 
 dfreq = dwavefreq/(2*pi); % rad/s to 1/s
 for i = 1:321
