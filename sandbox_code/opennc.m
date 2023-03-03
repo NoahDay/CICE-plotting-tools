@@ -1589,3 +1589,58 @@ f = figure;
     exportgraphics(f,strcat(var,'-diff-cice.png'),'ContentType','image')
 
 
+
+
+        %% Compare two days
+
+filename1 = '/Volumes/NoahDay5TB/WIMonAlessandroRun/history/iceh.2019-07-01.nc'; %'/Users/noahday/Gadi/ia40/nowaves-10/iceh.2000-01-01.nc';
+
+var = "fsdrad";
+data1 = ncread(filename1,var) ;%- 273.15;
+data1 = data1(:,:,1);
+aice = ncread(filename1,'aice');
+idx = aice < 0.01;
+data1(idx) = NaN;
+%ncdisp(filename)
+
+%data(983:993,855:855+10) = 1;
+%data(1345,969) = 100;
+%tmask = ncread(filename, "tmask");
+%tmask(1345,969) = 5;
+%idx = data < 0.01'%== 0;
+%data(idx) = NaN;
+%lon = ncread(filename1,"TLON");
+%lat = ncread(filename1,"TLAT");
+
+idx = lat>-30;
+data(idx) = NaN;
+
+%[lon lat] = meshgrid(lon_vec,lat_vec);
+close all
+f = figure;
+  w = worldmap('world');
+    axesm eqaazim; %, eqaazim eqdazim vperspec, eqdazim flips the x-axis, and y-axis to eqaazim. cassini
+    setm(w, 'Origin', [-90 0 0]);
+    setm(w, 'maplatlimit', [-90,-50]);
+    setm(w, 'maplonlimit', [-180,180]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    setm(w, 'mlabellocation', 30);
+    setm(w, 'plabellocation', 5);
+    setm(w, 'mlabelparallel', 5);
+    setm(w, 'grid', 'off');
+    setm(w, 'labelrotation', 'on')
+    %r = [100 75 40]
+    %circlem(lat(1345,969),lon(1345,969),r,'facecolor','red','facealpha',0.5)
+    pcolorm(lat,lon,data1)
+    %colormap('thermal')
+    cmocean('thermal')
+    colorbar
+    %cmocean('turbo')
+    clim([1,1000])
+    land = shaperead('landareas', 'UseGeoCoords', true);
+    %title(strcat(filename(end-12:end-3)," ",var))
+    geoshow(w, land, 'FaceColor', [0.5 0.5 0.5])
+    exportgraphics(f,strcat(var,'-fsd-07-cice.png'),'ContentType','image')
+
+

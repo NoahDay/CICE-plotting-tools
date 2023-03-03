@@ -212,3 +212,109 @@ w = worldmap('world');
     %c.Limits = [0,5];
     caxis([-0.0291,0.03])
     exportgraphics(f,'tilt.pdf','ContentType','vector')
+
+
+%%
+filename = '/Users/noahday/GitHub/cice-dirs/runs/om2-1deg/history/iceh.2017-01-01.nc';
+[lat,lon] = grid_read('om2');
+
+tmask = data_format(filename,'tmask');
+
+lat = ncread(filename,'TLAT');
+lon = ncread(filename,'TLON');
+tmask = ncread(filename,'tmask');
+
+set(gcf, 'color', 'none')
+
+close all
+f = figure;
+latlim = [-90 0];
+lonlim = [-90 90];
+w = worldmap('world'); 
+    %axesm eqaazim
+    setm(w, 'Origin', [0 -180 0]);
+    setm(w, 'maplatlimit', [-90,-30]);
+    setm(w, 'maplonlimit', [-270,90]);
+    setm(w, 'meridianlabel', 'on')
+    setm(w, 'parallellabel', 'off')
+    %setm(w, 'mlabellocation', 60);
+    %setm(w, 'plabellocation', 10);
+    %setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'off');
+    setm(w, 'frame', 'off');
+    %setm(w, 'labelrotation', 'on')
+    colormap([0.8, 0.8, 0.8; 1,1,1])
+    pcolorm(lat,lon,tmask)
+    %plotm(lat(:,1:10:end),lon(:,1:10:end),'b')
+    %hold on
+    for i = 1:300
+        plotm(lat(1,:),lon(i,:),'b')
+    end
+    for i = 1:5:length(lat(:,1))
+       % plotm(lat(:,i),lon(:,1),'b')
+    end
+    %plotm(lon,lat,'b')
+    
+%exportgraphics(f,'1deg_grid.pdf','ContentType','vector')
+
+%%
+close all
+f = figure;
+latlim = [50 59];
+lonlim = [-10.5 2];
+w = worldmap(latlim,lonlim); 
+    %setm(w, 'Origin', [40 0 0]);
+    %setm(w, 'maplatlimit', [-30,30]);
+    %setm(w, 'maplonlimit', [50,70]);
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    %setm(w, 'mlabellocation', 60);
+    %setm(w, 'plabellocation', 10);
+    %setm(w, 'mlabelparallel', -45);
+    setm(w, 'grid', 'off');
+    setm(w, 'frame', 'off');
+    %setm(w, 'labelrotation', 'on')
+    colormap([0.8, 0.8, 0.8; 1,1,1])
+    pcolorm(lat,lon,tmask)
+    %plotm(lat(:,1:10:end),lon(:,1:10:end),'b')
+    %hold on
+    %for i = 1:10:length(lat(1,:))
+    %    plotm(lat(i,:),lon(i,:),'b')
+    %end
+    %plotm(lon,lat,'b')
+    title('1$^\circ$ resolution','FontSize',20, 'Position', [0.5, 0.75, 0]);
+
+
+%matlab2tikz('Britain_1deg.tex', 'standalone', true)
+exportgraphics(f,'Britain_1deg.pdf','ContentType','vector')
+%imwrite(bitmapData, 'Britain_1deg.png', 'png', 'transparency', backgroundColor)
+
+%f = figure;
+
+
+filename_025 = '/Users/noahday/GitHub/cice-dirs/runs/access-om2_025/history/iceh_inst.2003-01-01-03600.nc';
+
+lat_025 = ncread(filename_025,'TLAT');
+lon_025 = ncread(filename_025,'TLON');
+tmask_025 = ncread(filename_025,'tmask');
+
+f = figure;
+w = worldmap(latlim,lonlim);
+setm(w, 'grid', 'off');
+    setm(w, 'frame', 'off');
+    setm(w, 'meridianlabel', 'off')
+    setm(w, 'parallellabel', 'off')
+    %setm(w, 'labelrotation', 'on')
+    colormap([0.8, 0.8, 0.8; 1,1,1])
+    pcolorm(lat_025,lon_025,tmask_025)
+    title('0.25$^\circ$ resolution','FontSize',20, 'Position', [0.5, 0.75, 0]);
+
+%matlab2tikz('Britain_025deg.tex', 'standalone', true)
+exportgraphics(f,'Britain_025deg.pdf','ContentType','vector')
+%imwrite(bitmapData, 'Britain_025deg.png', 'png', 'transparency', backgroundColor)
+% save to transparented image
+%set(gcf, 'color', 'none');    
+%set(gca, 'color', 'none');
+%exportgraphics(gcf,'transparent.emf',...   % since R2020a
+%    'ContentType','vector',...
+%    'BackgroundColor','none')
