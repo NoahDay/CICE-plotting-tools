@@ -1,0 +1,103 @@
+% This file was created by matlab2tikz.
+%
+%The latest updates can be retrieved from
+%  http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz
+%where you can also make suggestions and rate matlab2tikz.
+%
+\documentclass[tikz]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\usepackage{grffile}
+\pgfplotsset{compat=newest}
+\usetikzlibrary{plotmarks}
+\usetikzlibrary{arrows.meta}
+\usepgfplotslibrary{patchplots}
+\usepackage{amsmath}
+
+\begin{document}
+\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=3.356in,
+height=0.917in,
+at={(0.563in,0.418in)},
+scale only axis,
+xmin=0,
+xmax=450,
+xlabel style={font=\color{white!15!black}},
+xlabel={Corrected MIZ width [km]},
+ymin=0,
+ymax=2194,
+ylabel style={font=\color{white!15!black}},
+ylabel={Frequency},
+axis background/.style={fill=white}
+]
+\addplot[ybar interval, fill=mycolor1, fill opacity=0.6, draw=black, area legend] table[row sep=crcr] {%
+x	y\\
+0	2194\\
+10	58\\
+20	90\\
+30	62\\
+40	55\\
+50	68\\
+60	95\\
+70	221\\
+80	332\\
+90	502\\
+100	654\\
+110	836\\
+120	1008\\
+130	1063\\
+140	951\\
+150	711\\
+160	533\\
+170	455\\
+180	408\\
+190	368\\
+200	285\\
+210	230\\
+220	210\\
+230	199\\
+240	133\\
+250	85\\
+260	91\\
+270	71\\
+280	73\\
+290	73\\
+300	70\\
+310	57\\
+320	72\\
+330	44\\
+340	28\\
+350	27\\
+360	32\\
+370	23\\
+380	24\\
+390	32\\
+400	48\\
+410	23\\
+420	18\\
+430	8\\
+440	5\\
+450	5\\
+460	6\\
+470	3\\
+480	5\\
+490	2\\
+500	1\\
+510	4\\
+520	0\\
+530	0\\
+540	1\\
+550	0\\
+560	0\\
+570	0\\
+580	1\\
+590	1\\
+};
+\end{axis}
+\end{tikzpicture}%
+\end{document}

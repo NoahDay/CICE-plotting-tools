@@ -1,0 +1,214 @@
+% This file was created by matlab2tikz.
+%
+%The latest updates can be retrieved from
+%  http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz
+%where you can also make suggestions and rate matlab2tikz.
+%
+\documentclass[tikz]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\usepackage{grffile}
+\pgfplotsset{compat=newest}
+\usetikzlibrary{plotmarks}
+\usetikzlibrary{arrows.meta}
+\usepgfplotslibrary{patchplots}
+\usepackage{amsmath}
+
+\begin{document}
+\definecolor{mycolor1}{rgb}{0.46600,0.67400,0.18800}%
+\definecolor{mycolor2}{rgb}{0.84766,0.37109,0.05469}%
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=9.154in,
+height=3.209in,
+at={(1.535in,0.433in)},
+scale only axis,
+xmin=737425,
+xmax=737785,
+xtick={737425,737456,737484,737515,737545,737576,737606,737637,737668,737698,737729,737759,737790},
+xticklabels={{Jan},{Feb},{Mar},{Apr},{May},{Jun},{Jul},{Aug},{Sep},{Oct},{Nov},{Dec},{Jan}},
+ymin=0,
+ymax=300,
+ylabel style={font=\color{white!15!black}},
+ylabel={Corrected MIZ width [km]},
+axis background/.style={fill=white},
+axis x line*=bottom,
+axis y line*=left,
+legend style={at={(0.03,0.97)}, anchor=north west, legend cell align=left, align=left, draw=white!15!black}
+]
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737475	20	0	20\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737475	90	0	-50\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737565	100	0	50\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737565	200	0	-50\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737685	130	0	70\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737685	270	0	-70\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737775	30	0	30\\
+};
+\addplot[-, color=mycolor1, point meta={sqrt((\thisrow{u})^2+(\thisrow{v})^2)}, point meta min=0, quiver={u=\thisrow{u}, v=\thisrow{v}}]
+ table[row sep=crcr] {%
+x	y	u	v\\
+737775	130	0	-70\\
+};
+\addplot [color=mycolor2, line width=2.0pt]
+  table[row sep=crcr]{%
+737425	133.009242321345\\
+737435	79.9618649945637\\
+737445	62.2390605769674\\
+737455	58.6940455034688\\
+737465	44.7797354391537\\
+737475	38.3748313837636\\
+737485	43.1157032640973\\
+737495	44.9801970373236\\
+737505	56.6355561632335\\
+737515	75.8782575957014\\
+737525	82.3607259912026\\
+737535	108.973293143946\\
+737545	111.68822583399\\
+737555	128.706559551731\\
+737565	119.877052993574\\
+737575	144.609283722599\\
+737585	176.72993264593\\
+737595	170.375496600817\\
+737605	181.381319083396\\
+737615	181.146246369349\\
+737625	191.917555018393\\
+737635	200.638090394718\\
+737645	214.131542344072\\
+737655	192.923002964192\\
+737665	198.533242934159\\
+737675	186.718423389666\\
+737685	173.838154708083\\
+737695	153.328971222824\\
+737705	138.5805918491\\
+737715	122.323875483882\\
+737725	139.396365410494\\
+737735	135.880632393123\\
+737745	126.144549194226\\
+737755	126.690071880737\\
+737765	141.495313191523\\
+737775	141.198153281235\\
+737785	116.593073173622\\
+};
+\addlegendentry{Unsupervised MIZ}
+
+\addplot [color=mycolor1, line width=1.0pt, only marks, mark size=3.5pt, mark=square*, mark options={solid, fill=mycolor1, mycolor1}]
+  table[row sep=crcr]{%
+737475	40\\
+737565	150\\
+737685	200\\
+737775	60\\
+};
+\addlegendentry{Brouwer et al. (2022)}
+
+
+\addplot[area legend, draw=none, fill=mycolor2, fill opacity=0.2, forget plot]
+table[row sep=crcr] {%
+x	y\\
+737425	50.2222035920863\\
+737435	12.5781590737671\\
+737445	-1.44807648886625\\
+737455	-13.6439685843609\\
+737465	-11.9860934855104\\
+737475	-13.5315673574684\\
+737485	-15.0993786313546\\
+737495	-9.42820031693258\\
+737505	0.105167489007336\\
+737515	12.4967888804795\\
+737525	12.0460997732647\\
+737535	33.0677184129085\\
+737545	33.1351274577952\\
+737555	61.7194585029397\\
+737565	46.1558232635069\\
+737575	73.0071257230684\\
+737585	86.6198925605604\\
+737595	95.1427450576679\\
+737605	113.123009784324\\
+737615	100.797629391794\\
+737625	99.5969611513532\\
+737635	111.782692010616\\
+737645	117.455964311723\\
+737655	104.592517301878\\
+737665	105.061337562721\\
+737675	96.355476166354\\
+737685	105.639508621131\\
+737695	103.449889186094\\
+737705	95.3892372691533\\
+737715	72.4027526746915\\
+737725	96.901278262545\\
+737735	82.2050288912033\\
+737745	65.1094152939152\\
+737755	78.3443316081703\\
+737765	75.5250180878668\\
+737775	62.2744084146076\\
+737785	46.303281030405\\
+737785	186.882865316839\\
+737775	220.121898147863\\
+737765	207.465608295178\\
+737755	175.035812153304\\
+737745	187.179683094536\\
+737735	189.556235895042\\
+737725	181.891452558444\\
+737715	172.244998293073\\
+737705	181.771946429047\\
+737695	203.208053259554\\
+737685	242.036800795035\\
+737675	277.081370612979\\
+737665	292.005148305598\\
+737655	281.253488626506\\
+737645	310.80712037642\\
+737635	289.49348877882\\
+737625	284.238148885433\\
+737615	261.494863346904\\
+737605	249.639628382467\\
+737595	245.608248143966\\
+737585	266.839972731299\\
+737575	216.21144172213\\
+737565	193.598282723642\\
+737555	195.693660600522\\
+737545	190.241324210185\\
+737535	184.878867874983\\
+737525	152.675352209141\\
+737515	139.259726310923\\
+737505	113.16594483746\\
+737495	99.3885943915799\\
+737485	101.330785159549\\
+737475	90.2812301249955\\
+737465	101.545564363818\\
+737455	131.032059591298\\
+737445	125.926197642801\\
+737435	147.34557091536\\
+737425	215.796281050603\\
+}--cycle;
+\end{axis}
+\end{tikzpicture}%
+\end{document}

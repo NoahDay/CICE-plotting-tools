@@ -1,0 +1,338 @@
+% This file was created by matlab2tikz.
+%
+%The latest updates can be retrieved from
+%  http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz
+%where you can also make suggestions and rate matlab2tikz.
+%
+\documentclass[tikz]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\usepackage{grffile}
+\pgfplotsset{compat=newest}
+\usetikzlibrary{plotmarks}
+\usetikzlibrary{arrows.meta}
+\usepgfplotslibrary{patchplots}
+\usepackage{amsmath}
+
+\begin{document}
+\definecolor{mycolor1}{rgb}{0.85098,0.32549,0.09804}%
+\definecolor{mycolor2}{rgb}{0.92941,0.69412,0.12549}%
+\definecolor{mycolor3}{rgb}{0.00000,0.44706,0.74118}%
+\definecolor{mycolor4}{rgb}{0.46667,0.67451,0.18824}%
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=1.375in,
+height=0.933in,
+at={(0.563in,1.828in)},
+scale only axis,
+xmin=-29.5,
+xmax=619.5,
+ymin=0,
+ymax=10000,
+axis background/.style={fill=white},
+title style={font=\bfseries},
+title={Summer}
+]
+\addplot[ybar interval, fill=mycolor1, fill opacity=0.2, draw=mycolor1, area legend] table[row sep=crcr] {%
+x	y\\
+0	9324\\
+10	1332\\
+20	0\\
+30	0\\
+40	333\\
+50	666\\
+60	1998\\
+70	4329\\
+80	1665\\
+90	5994\\
+100	8325\\
+110	3663\\
+120	6993\\
+130	4329\\
+140	3663\\
+150	5994\\
+160	3330\\
+170	5328\\
+180	1665\\
+190	4662\\
+200	1998\\
+210	0\\
+220	1665\\
+230	1332\\
+240	1332\\
+250	999\\
+260	2331\\
+270	1665\\
+280	1665\\
+290	666\\
+300	3330\\
+310	1665\\
+320	1665\\
+330	333\\
+340	333\\
+350	333\\
+360	1332\\
+370	666\\
+380	1998\\
+390	1998\\
+400	1665\\
+410	0\\
+420	333\\
+430	333\\
+440	333\\
+450	666\\
+460	333\\
+470	0\\
+480	0\\
+490	0\\
+500	0\\
+510	333\\
+520	0\\
+530	0\\
+540	333\\
+550	0\\
+560	0\\
+570	0\\
+580	333\\
+590	333\\
+};
+\end{axis}
+
+\begin{axis}[%
+width=1.375in,
+height=0.933in,
+at={(2.544in,1.828in)},
+scale only axis,
+xmin=-29.5,
+xmax=619.5,
+ymin=0,
+ymax=10000,
+axis background/.style={fill=white},
+title style={font=\bfseries},
+title={Autumn}
+]
+\addplot[ybar interval, fill=mycolor2, fill opacity=0.2, draw=mycolor2, area legend] table[row sep=crcr] {%
+x	y\\
+0	8880\\
+10	1110\\
+20	3330\\
+30	740\\
+40	1480\\
+50	2590\\
+60	1850\\
+70	2220\\
+80	2590\\
+90	2960\\
+100	7400\\
+110	7400\\
+120	3700\\
+130	7770\\
+140	5180\\
+150	5180\\
+160	1850\\
+170	1850\\
+180	3700\\
+190	1850\\
+200	3700\\
+210	740\\
+220	1850\\
+230	1110\\
+240	1480\\
+250	1110\\
+260	2590\\
+270	740\\
+280	1110\\
+290	1480\\
+300	1480\\
+310	3330\\
+320	1110\\
+330	2590\\
+340	1110\\
+350	740\\
+360	2590\\
+370	2220\\
+380	1480\\
+390	2590\\
+400	4810\\
+410	4070\\
+420	2220\\
+430	1110\\
+440	370\\
+450	740\\
+460	1110\\
+470	370\\
+480	1480\\
+490	370\\
+500	0\\
+510	370\\
+520	0\\
+530	0\\
+540	0\\
+550	0\\
+560	0\\
+570	0\\
+580	0\\
+590	0\\
+};
+\end{axis}
+
+\begin{axis}[%
+width=1.375in,
+height=0.933in,
+at={(0.563in,0.34in)},
+scale only axis,
+xmin=-29.5,
+xmax=619.5,
+ymin=0,
+ymax=10000,
+axis background/.style={fill=white},
+title style={font=\bfseries},
+title={Winter}
+]
+\addplot[ybar interval, fill=mycolor3, fill opacity=0.2, draw=mycolor3, area legend] table[row sep=crcr] {%
+x	y\\
+0	8325\\
+10	333\\
+20	0\\
+30	0\\
+40	0\\
+50	333\\
+60	999\\
+70	1998\\
+80	1998\\
+90	8325\\
+100	6327\\
+110	9324\\
+120	5661\\
+130	4662\\
+140	1998\\
+150	2331\\
+160	666\\
+170	1332\\
+180	1665\\
+190	1332\\
+200	666\\
+210	666\\
+220	1332\\
+230	3663\\
+240	1665\\
+250	666\\
+260	333\\
+270	333\\
+280	1998\\
+290	3330\\
+300	999\\
+310	333\\
+320	2331\\
+330	2331\\
+340	999\\
+350	666\\
+360	1332\\
+370	666\\
+380	1998\\
+390	666\\
+400	4995\\
+410	1332\\
+420	3330\\
+430	333\\
+440	666\\
+450	333\\
+460	333\\
+470	333\\
+480	333\\
+490	0\\
+500	333\\
+510	0\\
+520	0\\
+530	0\\
+540	0\\
+550	0\\
+560	0\\
+570	0\\
+580	0\\
+590	0\\
+};
+\end{axis}
+
+\begin{axis}[%
+width=1.375in,
+height=0.933in,
+at={(2.544in,0.34in)},
+scale only axis,
+xmin=-29.5,
+xmax=619.5,
+ymin=0,
+ymax=7992,
+axis background/.style={fill=white},
+title style={font=\bfseries},
+title={Spring}
+]
+\addplot[ybar interval, fill=mycolor4, fill opacity=0.2, draw=mycolor4, area legend] table[row sep=crcr] {%
+x	y\\
+0	7992\\
+10	666\\
+20	999\\
+30	0\\
+40	0\\
+50	0\\
+60	333\\
+70	666\\
+80	2331\\
+90	5328\\
+100	3996\\
+110	6993\\
+120	7992\\
+130	6327\\
+140	5328\\
+150	5994\\
+160	3663\\
+170	1332\\
+180	4662\\
+190	999\\
+200	1665\\
+210	1332\\
+220	666\\
+230	1665\\
+240	2997\\
+250	999\\
+260	1665\\
+270	1665\\
+280	1332\\
+290	1332\\
+300	1665\\
+310	1998\\
+320	5661\\
+330	0\\
+340	333\\
+350	333\\
+360	333\\
+370	666\\
+380	666\\
+390	0\\
+400	1665\\
+410	333\\
+420	0\\
+430	0\\
+440	0\\
+450	0\\
+460	0\\
+470	0\\
+480	0\\
+490	0\\
+500	0\\
+510	0\\
+520	0\\
+530	0\\
+540	0\\
+550	0\\
+560	0\\
+570	0\\
+580	0\\
+590	0\\
+};
+\end{axis}
+\end{tikzpicture}%
+\end{document}
