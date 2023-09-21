@@ -36,6 +36,7 @@ if dir_spread == 1
     [S_spread,D,theta_vec] = cosine_spreader(S_init,mwd,thn,n);
     dtheta = theta_vec(1:end) - [0,theta_vec(1:end-1)];
     S_attn(1,:) = S_spread;
+    S_attn_MBK(1,:) = S_spread;
     S_attn_nospread(1,:) = S_init;
     S_attn_scattering(1,:) = S_spread;
     S_attn_adj = S_spread;
@@ -85,6 +86,8 @@ for i = 1:n_points
     if conc < tolice 
         % As there is no ice, apply no attenuation
         S_attn(i+1,:) = S_attn(i,:);
+        S_attn_MBK(i+1,:) = S_attn_MBK(i,:);
+        
     elseif conc > tolice % Attenuate
         % Amplitude drop check
         for om_i = 1:length(omega)
@@ -111,18 +114,23 @@ for i = 1:n_points
                     
         end    
         S_attn(i+1,:) = wave_attenuation(conc,Lcell,nw,S_attn(i,:),omega,"MBK",floe_size);
+        S_attn_MBK(i+1,:) = wave_attenuation(conc,Lcell,nw,S_attn_MBK(i,:),omega,"MBK",floe_size);
     end
     
     Hs(i) = 4*sqrt(sum(S_attn(i,:).*dwavew));
+    Hs_MBK(i) = 4*sqrt(sum(S_attn_MBK(i,:).*dwavew));
 
 end % i, prop_length
 
 
 addpath functions
-conFigure(11)
+conFigure(30,1.5)
 figure
 yyaxis left
 plot(dist,Hs)
+hold on
+plot(dist,Hs_MBK)
+hold off
 ylabel('$H_s$ [m]')
 ylim([0,8])
 yyaxis right
@@ -131,10 +139,13 @@ hold on
 plot(dist,aice_vec)
 ylabel('$r_a$ [km] \& SIC [-]')
 %ylim([0,1000])
-xline(dist(scatter_loc),'--',{'$r_a = 100$'},'Interpreter','latex')
+%xline(dist(scatter_loc),'--',{'$r_a = 100$'},'Interpreter','latex')
 set(gca,'YScale','linear')
 xlabel('Distance [km]')
+legend({'$H_s$ (amp. drop)','$H_s$ (MBK)','SIC','Floe radius ($r_a$)'},'AutoUpdate','off','Location','northoutside','Orientation','horizontal')
 
+exportgraphics(f,'amp_dropoff_MBK.pdf','ContentType','vector')
+%%
 
  T = (2*pi)./omega;
 lambda = (gravity*(T.^2))/(2*pi); % Wave lengths
