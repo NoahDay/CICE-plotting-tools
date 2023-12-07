@@ -26,8 +26,10 @@ dir_spread = 1; % = 1, we are reading in CAWCR data
 nw = 31;
 clear S_attn S_attn_nospread int_D S_attn_scattering
 [S_init,omega,T] = SDF_Bretschneider(Hs_init,Tp_init,nw); 
+
 wavefreq = omega/(2*pi);
 dwavefreq = wavefreq(1:end) - [0,wavefreq(1:end-1)];
+4*sqrt(sum(S_init.*dwavew))
 mwd = 0; % Mean wave direction, rad
 thn = 31; % number of theta bins
 n = 2.5; % Cosine exponent
@@ -235,14 +237,14 @@ floe_size = 10;
 [S_test beta_N] = amplitude_dropoff(ones(1,31),omega,floe_size);
 
 figure
-plot(omega,S_test)
+scatter(omega,S_test)
 xlabel('$\omega$')
 ylim([-0.2,1.2])
 ylabel('$S_{drop}(\omega)/S_{0}(\omega)$')
 
 
 figure
-stairs(omega,beta_N,'linewidth',3)
+scatter(omega,beta_N,'linewidth',3)
 xlabel('$\omega$')
 ylim([-0.1,1.1])
 ylabel('$\beta_N$')
@@ -255,7 +257,7 @@ idx = 2*floe_size < (lambda/2);
 pos = find(idx);
 
 figure
-plot(lambda,S_test,'linewidth',3)
+scatter(lambda,S_test,'linewidth',3)
 set(gca,'XScale','log')
 xlabel('$\lambda$')
 ylim([-0.1,1.1])
